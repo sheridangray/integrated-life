@@ -1,17 +1,18 @@
 {
-  "name": "express-hello-world",
+  "name": "integrated-life",
   "version": "1.0.0",
-  "description": "Express Hello World on Render",
+  "description": "Integrated Life",
   "main": "app.js",
   "repository": "https://github.com/render-examples/express-hello-world",
-  "author": "Render Developers",
+  "author": "Sheridan Gray",
   "license": "MIT",
   "private": false,
   "scripts": {
     "start": "node app.js"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "pug": "^3.0.2"
   },
   "engines": {
     "node": ">=14"
