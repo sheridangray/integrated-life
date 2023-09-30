@@ -1,0 +1,57 @@
+// Define your color variables
+
+// Neutrals
+$neutral-color-0: #FFFFFF;
+$neutral-color-100: #F8F9FC; // Base Background
+$neutral-color-200: #F1F3F9; // Secondary Background
+$neutral-color-300: #E1E6EF; // Line
+$neutral-color-700: #3F444D; // Line
+$neutral-color-800: #23272F; // Secondary Background
+$neutral-color-900: #1B1F27; // Primary Background
+$neutral-color-1000: #0A0D14; // Base Background
+
+// Primary Colors
+$primary-color-100: #F0F5FF; // Background
+$primary-color-700: #2F6FED; // Default
+$primary-color-800: #1D5BD6; // Hover
+$primary-color-900: #1E4EAE; // Pressed
+
+// Secondary Colors
+$secondary-color-100: #F8F5FF; // Background
+$secondary-color-700: #8B54F7; // Default
+$secondary-color-800: #6D35DE; // Hover
+$secondary-color-900: #5221B5; // Pressed
+
+// Success Colors
+$success-color-100: #EDFDF8; // Background
+$success-color-700: #08875D; // Default
+$success-color-800: #04724D; // Hover
+$success-color-900: #066042; // Pressed
+
+// Warning Colors
+$warning-color-100: #FFF8EB; // Background
+$warning-color-700: #B25E09; // Default
+$warning-color-800: #96530F; // Hover
+$warning-color-900: #80460D; // Pressed
+
+// Danger Colors
+$danger-color-100: #FEF1F2; // Background
+$danger-color-700: #E02D3C; // Default
+$danger-color-800: #BA2532; // Hover
+$danger-color-900: #981B25; // Pressed
+
+// Text+Icon Colors
+$primary-dark-text-color: #1D2433; // Primary Dark Text
+$secondary-dark-text-color: rgba(29, 36, 51, 0.8); // Secondary Dark Text
+$disabled-dark-text-color: rgba(29, 36, 51, 0.65); // Disabled Dark Text
+$primary-light-text-color: #FFFFFF; // Primary Light Text
+$secondary-light-text-color: rgba(255, 255, 255, 0.75); // Secondary Light Text
+$disabled-light-text-color: rgba(255, 255, 255, 0.6); // Disabled Light Text
+
+// Gradients
+$neutral-gradient: linear-gradient(180deg, rgba(107, 114, 128, 0.1) 0%, rgba(107, 114, 128, 0.01) 100%);
+$primary-gradient: linear-gradient(180deg, rgba(60, 122, 246, 0.1) 0%, rgba(60, 122, 246, 0.01) 100%);
+$secondary-gradient: linear-gradient(180deg, rgba(142, 90, 246, 0.1) 0%, rgba(142, 90, 246, 0.01) 100%);
+$success-gradient: linear-gradient(180deg, rgba(14, 164, 114, 0.1) 0%, rgba(14, 164, 114, 0.01) 100%);
+$warning-gradient: linear-gradient(180deg, rgba(245, 186, 10, 0.1) 0%, rgba(245, 186, 10, 0.01) 100%);
+$danger-gradient: linear-gradient(180deg, rgba(239, 67, 82, 0.1) 0%, rgba(239, 67, 82, 0.01) 100%);

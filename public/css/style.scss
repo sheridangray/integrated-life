@@ -1,0 +1,27 @@
+@import 'base/base.scss';
+@import 'base/colors.scss';
+@import 'base/typography.scss';
+@import 'base/elevations.scss';
+
+html {
+    background-color: $neutral-color-100;
+    font-size: 16px;
+    font-family: 'SF Pro Text';
+    font-style: normal;
+  }
+  
+.content {
+    display: flex;
+}
+
+.main {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 16px;
+}
+
+a {
+    text-decoration: none;
+}

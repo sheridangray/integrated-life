@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "pug": "^3.0.2"
+    "pug": "^3.0.2",
+    "sass": "^1.68.0"
   },
   "engines": {
     "node": ">=14"
