@@ -1,0 +1,34 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+
+    link(rel="shortcut icon", type="image/png", href="/img/favicon.png")
+    link(
+      rel="stylesheet",
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+    )
+    link(rel="preconnect", href="https://fonts.googleapis.com")
+    link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin)
+    link(
+      href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,700;1,300&display=swap",
+      rel="stylesheet"
+    )
+    link(rel="stylesheet", type="text/css", href="/css/style.css")
+
+    title Life.
+
+  body
+    // HEADER
+    include partials/_header
+
+    // CONTENT
+    block content
+      h1 This is a placeholder heading
+      asdf
+
+    // FOOTER
+    //- include partials/_footer
+
+    //- script(type="module", src="/js/bundled/index.js")

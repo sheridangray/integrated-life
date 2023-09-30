@@ -1,0 +1,18 @@
+header.top_navigation
+  .content
+    a.logo(href="/")
+      img(src="/img/logo-full-colorful-light.svg", alt="Integrated Life Logo")
+    ul.navigation
+      li
+        a(href="/time", class=currentPage === "/time" ? "active" : "") Time
+      li
+        a(href="/food", class=currentPage.startsWith("/food") ? "active" : "") Food
+      li
+        a(href="/money", class=currentPage === "/money" ? "active" : "") Money
+      li
+        a(
+          href="/relationships",
+          class=currentPage === "/relationships" ? "active" : ""
+        ) Relationships
+      li
+        a(href="/health", class=currentPage === "/health" ? "active" : "") Health
