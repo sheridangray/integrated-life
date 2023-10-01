@@ -8,7 +8,9 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "watch:sass": "nodemon --watch ./public/css: --exec \"npm run compile:sass\"",
+    "compile:sass": "sass ./public/css/style.scss public/css/style.css"
   },
   "dependencies": {
     "express": "^4.18.2",
