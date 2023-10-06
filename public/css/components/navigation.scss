@@ -1,43 +1,119 @@
 @import '../base/colors.scss';
 
 .top_navigation {
-    background-color: $neutral-color-0;
-    padding: 8px 12px 8px 12px;
+  background-color: $neutral-color-0;
+  padding: 8px 12px 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 100;
+  position: sticky;
+  top: 0;
+  border-bottom: 1px solid $neutral-color-300;
+
+  .content {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    z-index: 100;
-    position: sticky;
-    top: 0;
-    border-bottom: 1px solid $neutral-color-300;
-  
-    .content {
+
+    /* Nest the logo styles */
+    .logo {
+      img {
+        padding-top: 8px;
+        height: 32px;
+        width: auto;
+      }
+    }
+    
+    /* Nest the navigation links styles */
+    ul.navigation {
       display: flex;
+      list-style: none;
       align-items: center;
-  
-      /* Nest the logo styles */
-      .logo {
-        img {
-          padding-top: 8px;
-          height: 32px;
-          width: auto;
+      margin-top: 2px;
+      
+      li {
+        margin-right: 12px;
+
+        :last-child {
+          margin-right: 0;
+        }
+
+        a {
+          color: $primary-dark-text-color;
+          text-decoration: none;
+          padding: 5px;
+          
+          &:hover {
+            color: $primary-color-800;
+            text-decoration: none;
+          }
+          &:active {
+            color: $primary-color-900;
+            text-decoration: none;
+          }
+          &.active {
+            color: $primary-color-800;
+          }
         }
       }
-      
-      /* Nest the navigation links styles */
+    }
+    @media (max-width: 768px) {
+      // Show hamburger icon on mobile
       ul.navigation {
-        display: flex;
-        list-style: none;
-        align-items: center;
-        margin-top: 2px;
-        
+        display: none;
+      }
+    }
+  }
+  
+  .actions { 
+    display: flex;
+    align-items: center;
+    list-style: none;
+    justify-content: flex-end;
+
+    #mobile-menu-toggle {
+      display: none;
+    }
+
+    // IF MOBILE
+
+    @media (max-width: 768px) {
+      
+      #mobile-menu-toggle {
+        display: block;
+      }
+
+      .mobile-navigation {
+        display: none;  // Hide by default
+        position: fixed;
+        top: 60px;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: $neutral-color-0;
+        z-index: 1000; /* Adjust z-index to ensure it overlays other content */
+        overflow-y: auto; /* Add scrollbars if needed when the content is tall */
+
+        // Use the "show" class to control visibility
+        &.show {
+          display: block !important; // Show when the "show" class is applied
+        }
+
+        ul {
+          list-style: none;
+        }
+
         li {
-          margin-right: 12px;
-  
-          :last-child {
-            margin-right: 0;
+          text-align: left; /* Left-align the list items */
+          padding: 0px 16px ;
+          padding-bottom: 24px;
+          font-size: 1.5rem;
+          letter-spacing: .08em;
+
+          &:first-child {
+            margin-top: 16px;
           }
-  
+
           a {
             color: $primary-dark-text-color;
             text-decoration: none;
@@ -55,164 +131,99 @@
               color: $primary-color-800;
             }
           }
-        }
-      }
-    }
-    
-    /* Nest the login/signup buttons styles */
-    .actions { 
-      display: flex;
-      align-items: center;
-      list-style: none;
-      justify-content: flex-end;
-        
-      li {
-        margin-right: 10px;
-  
-        :last-child {
-          margin-right: 0;
-        }
-      }
 
-      .nav__profile {
-        img {
-          width: 2.4rem;
-          height: 2.4rem;
-          border-radius: 50%;
         }
       }
-
-      .nav__menu {
-        display: none;
-        position: absolute;
-        top: 100%; // Position below the top_navigation
-        right: 0; // Align to the right edge of the parent container
-        margin-right: 16px;
-        margin-top: 16px; 
-        background-color: $neutral-color-100; // Add a background color to the menu
-        border: 1px solid $neutral-color-300;
-        z-index: 10; // Ensure the menu is above other elements
-
-        &.collapsed {
-          display: none;
-        }
-        
-        &.show {
-          display: block;
-        }
-
-        ul {
-          list-style: none;
-          margin: 0;
-        }
-        
-        li {
-          padding: 24px 16px;
-          border-bottom: 1px solid $neutral-color-200;
-  
-          &:last-child {
-            border-bottom: none;
-          }
-  
-          a {
-            color: $primary-dark-text-color;
-            text-decoration: none;
-  
-            &:hover {
-              color: $primary-color-800;
-            }
-          }
-        }
-      }
-    }
-}
-  
-  .left-navigation {
-    width: 250px;
-    min-height: 100vh;
-    padding: 16px 8px;
-    background-color: $neutral-color-700;
-    color: $primary-light-text-color;
-    
-    /* Make the left navigation sticky */
-    // position: sticky;
-    // left: 0;
-    // top: 0;
-  
-    .left-navigation__title {
-      color: $primary-light-text-color;
-      margin-bottom: 16px;
-      padding: 0px 8px;
-    }
-    
-    .left-navigation__list {
-      list-style-type: none;
-      padding: 0;
-      margin: 0;
-    }
-    
-    .left-navigation__list li {
-      
-      margin-bottom: 4px;
-      border-radius: 8px;
-      padding: 8px 10px;
-    
-      a {
-        display: flex;
-        align-items: center;
-        color: $secondary-light-text-color;
-        text-decoration: none;
-      }
-    
-      &:hover {
-        background-color: $neutral-color-800;
-        color: $primary-light-text-color
-      }
-    
-      &.active {
-        color: $primary-light-text-color;
-        font-weight:700;
-        background-color: $neutral-color-900;
-        border-radius: 8px;
-        padding: 8px 10px;
-      }
-    }
-  
-    .left-navigation__user-profile {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      display: flex;
-      align-items: center;
-      background-color: $neutral-color-700;
-      color: $primary-light-text-color;
-      width: 250px;
-    
-      img {
-        width: 2.4rem;
-        height: 2.4rem;
-        border-radius: 50%;
-        padding: 16px 8px 16px 16px;
-      }
-    }
-    
-    .left-navigation-user__profile__details {
-      margin-left: 8px;
-    }
-    
-    .left-navigation-user__profile__name {
-      font-size: 14px;
-      margin: 0;
-    }
-    
-    .left-navigation-user__profile__email {
-      font-size: 12px;
-      margin: 0;
-      color: $secondary-light-text-color;
-    } 
-    
-    .material-symbols-outlined {
-      margin-right: 16px;
-      color: $secondary-light-text-color
     }
   }
+}
+
+.left-navigation {
+  width: 250px;
+  min-height: 100vh;
+  padding: 16px 8px;
+  background-color: $neutral-color-700;
+  color: $primary-light-text-color;
+  
+  /* Make the left navigation sticky */
+  // position: sticky;
+  // left: 0;
+  // top: 0;
+
+  .left-navigation__title {
+    color: $primary-light-text-color;
+    margin-bottom: 16px;
+    padding: 0px 8px;
+  }
+  
+  .left-navigation__list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .left-navigation__list li {
+    
+    margin-bottom: 4px;
+    border-radius: 8px;
+    padding: 8px 10px;
+  
+    a {
+      display: flex;
+      align-items: center;
+      color: $secondary-light-text-color;
+      text-decoration: none;
+    }
+  
+    &:hover {
+      background-color: $neutral-color-800;
+      color: $primary-light-text-color
+    }
+  
+    &.active {
+      color: $primary-light-text-color;
+      font-weight:700;
+      background-color: $neutral-color-900;
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+  }
+
+  .left-navigation__user-profile {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    background-color: $neutral-color-700;
+    color: $primary-light-text-color;
+    width: 250px;
+  
+    img {
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 50%;
+      padding: 16px 8px 16px 16px;
+    }
+  }
+  
+  .left-navigation-user__profile__details {
+    margin-left: 8px;
+  }
+  
+  .left-navigation-user__profile__name {
+    font-size: 14px;
+    margin: 0;
+  }
+  
+  .left-navigation-user__profile__email {
+    font-size: 12px;
+    margin: 0;
+    color: $secondary-light-text-color;
+  } 
+  
+  .material-symbols-outlined {
+    margin-right: 16px;
+    color: $secondary-light-text-color
+  }
+}

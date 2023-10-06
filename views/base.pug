@@ -24,11 +24,12 @@ html
     include partials/_header
 
     // CONTENT
-    block content
-      h1 This is a placeholder heading
-      asdf
+    #content-container
+      block content
+          h1 This is a placeholder heading
 
     // FOOTER
     //- include partials/_footer
 
     //- script(type="module", src="/js/bundled/index.js")
+    script(src="/js/main.js")
