@@ -7,7 +7,7 @@ const mongoose = require("mongoose");
 const app = express();
 const port = process.env.PORT || 3000;
 const clientRouter = require("./routes/client/clientRouter");
-const apiRouter = require("./routes/apiRouter");
+const apiRouter = require("./routes/api/apiRouter");
 
 // Handle uncaught exceptions
 

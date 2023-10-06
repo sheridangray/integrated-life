@@ -233,6 +233,9 @@
 .top_navigation .actions #mobile-menu-toggle {
   display: none;
 }
+.top_navigation .actions .mobile-navigation {
+  display: none;
+}
 @media (max-width: 768px) {
   .top_navigation .actions #mobile-menu-toggle {
     display: block;

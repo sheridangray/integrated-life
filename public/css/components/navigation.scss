@@ -72,7 +72,11 @@
     justify-content: flex-end;
 
     #mobile-menu-toggle {
-      display: none;
+      display: none; // Hide by default
+    }
+
+    .mobile-navigation {
+      display: none; // Hide by default
     }
 
     // IF MOBILE
