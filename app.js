@@ -7,7 +7,7 @@ const mongoose = require("mongoose");
 const app = express();
 const port = process.env.PORT || 3000;
 const clientRouter = require("./routes/client/clientRouter");
-const apiRouter = require("./routes/api/apiRouter");
+const apiRouter = require("./routes/apiRouter");
 
 // Handle uncaught exceptions
 
@@ -22,13 +22,7 @@ process.on("uncaughtException", (err) => {
 dotenv.config({ path: "./config.env" });
 
 // Connect to the database
-
-const DB = process.env.DATABASE.replace(
-  "<PASSWORD>",
-  process.env.DATABASE_PASSWORD
-);
-
-mongoose.connect(DB, {}).then(() => {
+mongoose.connect(process.env.DATABASE, {}).then(() => {
   console.log(`DB connection successful.`);
 });
 
