@@ -1,164 +1,48 @@
-@import 'colors.scss';
+// Define font families and generic font stack (replace with your preferred fonts)
+$font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+'Helvetica Neue', Arial, sans-serif;
+$font-family-light: $font-family;
+$font-family-heavy: $font-family;
 
-// Headlines
+// Define font weights
+$font-weight-normal: 400;
+$font-weight-light: 300;
+$font-weight-heavy: 700;
 
-@mixin headline-100 {
-    font-size: 2.25rem;
-    line-height: 2.5rem;
-    letter-spacing: -1px;
-    color: $primary-dark-text-color;
+// Define typography variables
+$font-size-base: 16px; // Adjust as needed
+$line-height-base: 1.5;
+$letter-spacing-base: 0.01em; // Adjust as needed
+
+// Define typography styles
+body {
+  font-family: $font-family;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
+  letter-spacing: $letter-spacing-base;
+  font-weight: $font-weight-normal;
+  color: $primary-dark-text-color; // Change to your preferred text color
 }
 
-@mixin headline-200 {
-    font-size: 1.5rem;
-    line-height: 1.75rem;
-    letter-spacing: -1px;
-    color: $primary-dark-text-color;
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-family-heavy;
+  font-weight: $font-weight-heavy;
 }
 
-@mixin headline-300 {
-    font-size: 1.25rem;
-    line-height: 1.5rem;
-    letter-spacing: -1px;
-    color: $primary-dark-text-color;
-}
-  
-.headline-100-light {
-    @include headline-100;
-    font-weight: 400;
+p {
+  font-family: $font-family;
+  font-weight: $font-weight-normal;
 }
 
-.headline-100-heavy {
-    @include headline-100;
-    font-weight: 700;
+.light-text {
+  font-weight: $font-weight-light;
+  color: $secondary-dark-text-color; // Light text color
 }
 
-.headline-200-light {
-    @include headline-200;
-    font-weight: 400;
+.heavy-text {
+  font-weight: $font-weight-heavy;
+  color: $primary-dark-text-color; // Heavy text color
 }
 
-.headline-200-heavy {
-    @include headline-200;
-    font-weight: 700;
-}
-
-.headline-300-light {
-    @include headline-300;
-    font-weight: 400;
-}
-
-.headline-300-heavy {
-    @include headline-300;
-    font-weight: 700;
-}
-
-// Paragraphs
-
-@mixin paragraph-100 {
-    font-size: 1rem;
-    line-height: 1.5rem;
-}
-
-@mixin paragraph-200 {
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-}
-
-@mixin paragraph-300 {
-    font-size: .75rem;
-    line-height: 1rem;
-}
-
-@mixin paragraph-400 {
-    font-size: .625rem;
-    line-height: .875rem;
-}
-
-.paragraph-100-light {
-    @include paragraph-100;
-    font-weight: 400;
-}
-
-.paragraph-100-heavy {
-    @include paragraph-100;
-    font-weight: 700;
-}
-
-.paragraph-200-light {
-    @include paragraph-200;
-    font-weight: 400;
-}
-
-.paragraph-200-heavy {
-    @include paragraph-200;
-    font-weight: 700;
-}
-
-.paragraph-300-light {
-    @include paragraph-300;
-    font-weight: 400;
-}
-
-.paragraph-300-heavy {
-    @include paragraph-300;
-    font-weight: 700;
-}
-
-.paragraph-400-light {
-    @include paragraph-400;
-    font-weight: 400;
-}
-
-.paragraph-400-heavy {
-    @include paragraph-400;
-    font-weight: 700;
-}
-
-// Buttons + Labels
-
-@mixin button_or_label {
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    text-transform: capitalize;
-}
-
-@mixin button-100 {
-    @include button_or_label;
-    font-size: 1rem;
-    line-height: 1rem;
-}
-
-@mixin button-200 {
-    @include button_or_label;
-    font-size: .75rem;
-    line-height: .75rem;
-}
-
-.label-100 {
-    @include button_or_label;
-    font-size: 1rem;
-    line-height: 1rem;
-}
-@mixin label-100 { @include label-100 }
-
-.label-200 {
-    @include button_or_label;
-    font-size: .875rem;
-    line-height: 1rem;
-}
-@mixin label-200 { @include label-200 }
-
-.label-300 {
-    @include button_or_label;
-    font-size: .75rem;
-    line-height: .75arem;
-}
-@mixin label-300 { @include label-300 }
-
-.label-400 {
-    @include button_or_label;
-    font-size: .625rem;
-    line-height: .75rem;
-}
-@mixin label-400 { @include label-400 }
+// You can define more styles as needed

@@ -1,78 +1,85 @@
 @import '../base/colors.scss';
 
-.top_navigation {
+.top-navigation {
   background-color: $neutral-color-0;
   padding: 8px 12px 8px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   z-index: 100;
   position: sticky;
   top: 0;
   border-bottom: 1px solid $neutral-color-300;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 
-  .content {
+  .primary-navigation {
     display: flex;
+    flex-direction: row;
     align-items: center;
 
-    /* Nest the logo styles */
-    .logo {
-      img {
-        padding-top: 8px;
-        height: 32px;
-        width: auto;
-      }
+    img {
+      padding-top: 8px;
+      height: 32px;
+      width: auto;
     }
-    
-    /* Nest the navigation links styles */
-    ul.navigation {
-      display: flex;
-      list-style: none;
-      align-items: center;
-      margin-top: 2px;
-      
-      li {
-        margin-right: 12px;
 
-        :last-child {
-          margin-right: 0;
-        }
-
-        a {
-          color: $primary-dark-text-color;
-          text-decoration: none;
-          padding: 5px;
-          
-          &:hover {
-            color: $primary-color-800;
-            text-decoration: none;
-          }
-          &:active {
-            color: $primary-color-900;
-            text-decoration: none;
-          }
-          &.active {
-            color: $primary-color-800;
-          }
-        }
-      }
-    }
     @media (max-width: 768px) {
-      // Show hamburger icon on mobile
-      ul.navigation {
-        display: none;
+      // ul {
+      //   display: none;
+      // }
+    }
+
+    ul li {
+      @media (max-width: 768px) {
+        margin-right: 4px;
+        font-size: .95em;
       }
     }
   }
   
-  .actions { 
+  .user-actions { 
+    list-style: none;
     display: flex;
     align-items: center;
-    list-style: none;
-    justify-content: flex-end;
 
-    #mobile-menu-toggle {
-      display: none; // Hide by default
+    .user-info {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      .user-photo {
+        border: 2px solid $primary-color-700;
+        padding: 2px;
+      }
+
+      .user-menu {
+        display: none;
+        position: fixed;
+        top: 72px;
+        // left: 12px;
+        right: 12px;
+        padding: 8px 12px 8px 12px;
+        background-color: $neutral-color-0;
+        z-index: 1000; /* Adjust z-index to ensure it overlays other content */
+        overflow-y: auto; /* Add scrollbars if needed when the content is tall */
+        width: 360px;
+
+        li {
+          padding-bottom: 16px;
+
+          &:first-child {
+            padding-top: 8px;
+          }
+
+          &:last-child {
+            padding-bottom: 8px;
+          }
+        }
+
+        // Use the "show" class to control visibility
+        &.show {
+          display: block !important; // Show when the "show" class is applied
+        }
+      }
     }
 
     .mobile-navigation {
@@ -85,6 +92,11 @@
       
       #mobile-menu-toggle {
         display: block;
+        margin-right: 12px;
+      }
+
+      .user-menu {
+        display: none;
       }
 
       .mobile-navigation {
@@ -97,26 +109,28 @@
         background-color: $neutral-color-0;
         z-index: 1000; /* Adjust z-index to ensure it overlays other content */
         overflow-y: auto; /* Add scrollbars if needed when the content is tall */
+        padding: 24px 20px;
 
         // Use the "show" class to control visibility
         &.show {
-          display: block !important; // Show when the "show" class is applied
+          display: flex;
+          flex-direction: column;
         }
 
         ul {
+          display: flex;
+          flex-direction: column;
           list-style: none;
         }
 
         li {
-          text-align: left; /* Left-align the list items */
-          padding: 0px 16px ;
-          padding-bottom: 24px;
           font-size: 1.5rem;
           letter-spacing: .08em;
+          width: 100%;
 
-          &:first-child {
-            margin-top: 16px;
-          }
+          // &:first-child {
+          //   margin-top: 16px;
+          // }
 
           a {
             color: $primary-dark-text-color;
@@ -140,6 +154,46 @@
       }
     }
   }
+}
+
+/* Nest the navigation links styles */
+ul {
+  display: flex;
+  list-style: none;
+  align-items: center;
+  margin-top: 2px;
+  
+  li {
+    margin-right: 12px;
+
+    :last-child {
+      margin-right: 0;
+    }
+
+    a {
+      color: $primary-dark-text-color;
+      text-decoration: none;
+      padding: 5px;
+      
+      &:hover {
+        color: $primary-color-800;
+        text-decoration: none;
+      }
+      &:active {
+        color: $primary-color-900;
+        text-decoration: none;
+      }
+      &.active {
+        color: $primary-color-800;
+      }
+    }
+  }
+}
+
+.user-photo {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
 }
 
 .left-navigation {
@@ -193,39 +247,6 @@
     }
   }
 
-  .left-navigation__user-profile {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    display: flex;
-    align-items: center;
-    background-color: $neutral-color-700;
-    color: $primary-light-text-color;
-    width: 250px;
-  
-    img {
-      width: 2.4rem;
-      height: 2.4rem;
-      border-radius: 50%;
-      padding: 16px 8px 16px 16px;
-    }
-  }
-  
-  .left-navigation-user__profile__details {
-    margin-left: 8px;
-  }
-  
-  .left-navigation-user__profile__name {
-    font-size: 14px;
-    margin: 0;
-  }
-  
-  .left-navigation-user__profile__email {
-    font-size: 12px;
-    margin: 0;
-    color: $secondary-light-text-color;
-  } 
-  
   .material-symbols-outlined {
     margin-right: 16px;
     color: $secondary-light-text-color

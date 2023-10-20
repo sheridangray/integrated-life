@@ -2,14 +2,12 @@
 @import 'base/colors.scss';
 @import 'base/typography.scss';
 @import 'base/elevations.scss';
+@import 'components/form.scss';
 @import 'components/navigation.scss';
+@import 'pages/login.scss';
 
 html {
     background-color: $neutral-color-100;
-    font-size: 16px;
-    font-family: 'SF Pro Text';
-    font-style: bold;
-
   }
   
 .content {

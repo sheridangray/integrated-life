@@ -5,7 +5,9 @@ const path = require("path");
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
+const cookieParser = require("cookie-parser");
 const port = process.env.PORT || 3000;
+const globalErrorHandler = require("./controllers/errorController");
 const clientRouter = require("./routes/client/clientRouter");
 const apiRouter = require("./routes/api/apiRouter");
 
@@ -47,6 +49,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Body and cookie parser, reading data from body into req.body
+app.use(express.json({ limit: "10kb" }));
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+app.use(cookieParser());
+
 // Initize Routes
 
 app.use("/api", apiRouter);
@@ -60,3 +67,5 @@ const server = app.listen(port, () =>
 
 server.keepAliveTimeout = 120 * 1000;
 server.headersTimeout = 120 * 1000;
+
+app.use(globalErrorHandler);

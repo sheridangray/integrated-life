@@ -1,0 +1,146 @@
+// Import your color and typography variables
+@import '../base/colors.scss';
+@import '../base/typography.scss';
+@import '../base/elevations.scss';
+
+/* Form Elements */
+
+form {
+  background-color: $neutral-color-0;
+  border: 1px solid neutral-color-300;
+  padding: 24px 32px;
+  border-radius: 8px;
+}
+
+/* Style the form header */
+.form-header {
+  // display: none;
+  margin-bottom: 16px;
+}
+
+/* Style the form elements */
+.form-group {
+  margin-bottom: 16px; /* Add some spacing between form groups */
+}
+
+/* Style the action row (buttons) */
+.action-row {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between; /* Distribute buttons equally */
+}
+
+
+/* Input Fields */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  width: calc(100% - 16px);
+  padding: 12px 8px;
+  // padding-left: 8px;
+  border: 1px solid $neutral-color-300; // Adjust to your preference
+  border-radius: 4px;
+  font-family: $font-family;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
+  color: $primary-dark-text-color;
+  background-color: $neutral-color-100; // Adjust to your preference
+  transition: border-color 0.3s, background-color 0.3s;
+  
+  &:focus {
+    outline: none;
+    border-color: $primary-color-700; // Adjust to your preference
+    background-color: #FFFFFF; // Adjust to your preference
+  }
+}
+
+/* Buttons */
+button[type="submit"],
+button[type="reset"],
+.button {
+  // // Apply your button styles from button.scss here
+  text-decoration: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 16px;
+  // height: 40px;
+  background: $primary-color-700; // Use your desired color variable
+  border-radius: 4px;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+  font-family: $font-family;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
+
+  &.primary {
+    background: $primary-color-700;
+    border: 1px solid $primary-color-700;
+    color: $primary-light-text-color;
+
+    &:hover {
+      background: $primary-color-800;
+    }
+  
+    &:active {
+      background: $primary-color-900;
+    }
+  }
+
+  &.secondary {    
+    background: $neutral-color-0;
+    border: 1px solid $secondary-color-700;
+    color: $secondary-color-700;
+
+    &:hover {
+      background: $secondary-color-100;
+    }
+  
+    &:active {
+      background: $secondary-color-700;
+      opacity: .1;
+    }
+  }
+}
+
+/* Select Boxes */
+select {
+  // width: 100%;
+  // padding: 10px;
+  // border: 1px solid $neutral-color-300; // Adjust to your preference
+  // border-radius: 4px;
+  // font-family: $font-family;
+  // font-size: $font-size-base;
+  // line-height: $line-height-base;
+  // color: $primary-dark-text-color;
+  // background-color: $neutral-color-100; // Adjust to your preference
+  // transition: border-color 0.3s, background-color 0.3s;
+  // 
+  // &:focus {
+  //   outline: none;
+  //   border-color: $primary-color-700; // Adjust to your preference
+  //   background-color: #FFFFFF; // Adjust to your preference
+  // }
+}
+
+/* Checkboxes and Radio Buttons */
+input[type="checkbox"],
+input[type="radio"] {
+  margin-right: 5px;
+}
+
+/* Form Labels */
+label {
+  font-family: $font-family;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
+  color: $primary-dark-text-color;
+}
+
+
+/* Additional Form Styles */
+/* Add any additional form element styles as needed */

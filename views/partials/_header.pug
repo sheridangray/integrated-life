@@ -1,18 +1,36 @@
 - const pages = [{ href: "/time", text: "Time" }, { href: "/food", text: "Food" }, { href: "/money", text: "Money" }, { href: "/relationships", text: "Relationships" }, { href: "/health", text: "Health" }]
 
-header.top_navigation
-  .content
-    a.logo(href="/")
-      img(src="/img/logo-full-colorful-light.svg", alt="Integrated Life Logo")
+header.top-navigation
+  nav.primary-navigation
+    .logo
+      a(href="/")
+        img(src="/img/logo-full-colorful-light.svg", alt="Integrated Life Logo")
 
-    ul.navigation
+    ul
       each page in pages
         li
           a(href=page.href, class=(currentPage === page.href) ? "active" : "")= page.text
         
-  .actions
-    span#mobile-menu-toggle.material-symbols-outlined menu
-    ul.mobile-navigation
-      each page in pages
+  .user-actions
+    if user
+      .user-info
+        img.user-photo(
+          src=`/img/users/${user.photo}`,
+          alt="Profile Avatar"
+        )
+        ul.mobile-navigation
+          each page in pages
+            li
+              a(href=page.href, class=(currentPage === page.href) ? "active" : "")= page.text
+          hr
+        ul.user-menu.elevation-100
+          li
+            a(href="/settings") Settings
+          li
+            a(href="/logout") Logout
+    else
+      ul
         li
-          a(href=page.href, class=(currentPage === page.href) ? "active" : "")= page.text
+          a(href="/login") Login
+
+    

@@ -1,0 +1,13 @@
+extends ../base
+
+block content
+  form#login-form.login-form.elevation-100(method="post")
+    .form-header
+      h2 Log In
+    .form-group
+      input#email.form__input(type='email', name='email' placeholder='Email', autocomplete="email" required)
+    .form-group
+      input#password.form__input(type='password', name='password' placeholder='Password', required, autocomplete="password" minlength='8')
+    .form-group.action-row
+      //- button.button.secondary(type="reset") Cancel
+      button.button.primary(type="submit") Submit

@@ -33,3 +33,9 @@ exports.getHealth = async (req, res) => {
     title: "Health",
   });
 };
+
+exports.getLogin = (req, res) => {
+  res.status(200).render("user/login", {
+    title: "Login",
+  });
+};
