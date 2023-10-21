@@ -264,9 +264,8 @@ label {
   width: auto;
 }
 @media (max-width: 768px) {
-  .top-navigation .primary-navigation ul li {
-    margin-right: 4px;
-    font-size: 0.95em;
+  .top-navigation .primary-navigation ul {
+    display: none;
   }
 }
 .top-navigation .user-actions {
@@ -294,6 +293,9 @@ label {
   overflow-y: auto; /* Add scrollbars if needed when the content is tall */
   width: 360px;
 }
+.top-navigation .user-actions .user-info .user-menu .mobile-navigation {
+  display: none;
+}
 .top-navigation .user-actions .user-info .user-menu li {
   padding-bottom: 16px;
 }
@@ -306,58 +308,15 @@ label {
 .top-navigation .user-actions .user-info .user-menu.show {
   display: block !important;
 }
-.top-navigation .user-actions .mobile-navigation {
-  display: none;
-}
 @media (max-width: 768px) {
-  .top-navigation .user-actions #mobile-menu-toggle {
-    display: block;
-    margin-right: 12px;
-  }
   .top-navigation .user-actions .user-menu {
     display: none;
   }
-  .top-navigation .user-actions .mobile-navigation {
-    display: none;
-    position: fixed;
-    top: 60px;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background-color: #FFFFFF;
-    z-index: 1000; /* Adjust z-index to ensure it overlays other content */
-    overflow-y: auto; /* Add scrollbars if needed when the content is tall */
-    padding: 24px 20px;
-  }
-  .top-navigation .user-actions .mobile-navigation.show {
+  .top-navigation .user-actions .user-menu .mobile-navigation.show {
     display: flex;
     flex-direction: column;
-  }
-  .top-navigation .user-actions .mobile-navigation ul {
-    display: flex;
-    flex-direction: column;
-    list-style: none;
-  }
-  .top-navigation .user-actions .mobile-navigation li {
-    font-size: 1.5rem;
-    letter-spacing: 0.08em;
     width: 100%;
-  }
-  .top-navigation .user-actions .mobile-navigation li a {
-    color: #1D2433;
-    text-decoration: none;
-    padding: 5px;
-  }
-  .top-navigation .user-actions .mobile-navigation li a:hover {
-    color: #1D5BD6;
-    text-decoration: none;
-  }
-  .top-navigation .user-actions .mobile-navigation li a:active {
-    color: #1E4EAE;
-    text-decoration: none;
-  }
-  .top-navigation .user-actions .mobile-navigation li a.active {
-    color: #1D5BD6;
+    align-items: flex-start;
   }
 }
 

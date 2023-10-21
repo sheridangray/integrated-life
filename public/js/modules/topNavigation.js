@@ -2,6 +2,7 @@
 
 const userPhoto = document.querySelector(".user-photo");
 const userMenu = document.querySelector(".user-menu");
+const mobileNavigationMenu = document.querySelector(".mobile-navigation");
 
 if (userPhoto) {
   let isMenuOpen = false; // Initial State
@@ -9,8 +10,10 @@ if (userPhoto) {
   userPhoto.addEventListener("click", function () {
     if (isMenuOpen) {
       userMenu.classList.remove("show");
+      mobileNavigationMenu.classList.remove("show");
     } else {
       userMenu.classList.add("show");
+      mobileNavigationMenu.classList.add("show");
     }
 
     // Toggle the state
@@ -24,29 +27,8 @@ if (userPhoto) {
   document.addEventListener("click", function () {
     if (isMenuOpen) {
       userMenu.classList.remove("show");
+      mobileNavigationMenu.classList.remove("show");
       isMenuOpen = false; // Update the state
     }
-  });
-}
-
-// Toggle the Mobile Navigation Menu
-
-const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
-const mobileNavigationMenu = document.querySelector(".mobile-navigation");
-
-if (mobileMenuToggle) {
-  let isMenuOpen = false; // Initial state
-
-  mobileMenuToggle.addEventListener("click", function () {
-    if (isMenuOpen) {
-      mobileMenuToggle.textContent = "menu";
-      mobileNavigationMenu.classList.remove("show");
-    } else {
-      mobileMenuToggle.textContent = "close";
-      mobileNavigationMenu.classList.add("show");
-    }
-
-    // Toggle the state
-    isMenuOpen = !isMenuOpen;
   });
 }
