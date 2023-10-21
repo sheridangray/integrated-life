@@ -15,7 +15,6 @@ if (loginForm)
 
 export const login = async (email, password) => {
   try {
-    console.log("Login function called");
     const res = await axios({
       method: "POST",
       url: "/api/v1/users/login",
@@ -24,7 +23,6 @@ export const login = async (email, password) => {
         password,
       },
     });
-    console.log(res);
     if ((res.data.status = "success")) window.location.href = "/";
   } catch (err) {
     // showAlert("error", err.response.data.message);
@@ -34,8 +32,6 @@ export const login = async (email, password) => {
 
 export const logout = async () => {
   try {
-    console.log("Logout function called");
-
     const res = await axios({
       method: "POST",
       url: "/api/v1/users/logout",
@@ -52,7 +48,6 @@ export const logout = async () => {
 
 export const checkAuthentication = async () => {
   try {
-    console.log("Check Authentication function called");
   } catch (err) {
     // showAlert("error", err.response.data.message);
     console.log(err);

@@ -4,7 +4,7 @@ header.top-navigation
   nav.primary-navigation
     .logo
       a(href="/")
-        img(src="/img/logo-full-colorful-light.svg", alt="Integrated Life Logo")
+        img(src="https://storage.googleapis.com/com-sheridangray.appspot.com/topNavigation/logo-full-colorful-light.svg", alt="Integrated Life Logo")
 
     ul
       each page in pages
@@ -15,7 +15,7 @@ header.top-navigation
     if user
       .user-info
         img.user-photo(
-          src=`/img/users/${user.photo}`,
+          src=`${user.photo}`,
           alt="Profile Avatar"
         )
 
