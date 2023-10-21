@@ -24,11 +24,11 @@ header.top-navigation
             each page in pages
               li
                 a(href=page.href, class=(currentPage === page.href) ? "active" : "")= page.text
-            hr
-          li
-            a(href="/settings") Settings
-          li
-            a(href="/logout") Logout
+          ul.site-navigation
+            li
+              a(href="/settings") Settings
+            li
+              a(href="/logout") Logout
     else
       ul
         li

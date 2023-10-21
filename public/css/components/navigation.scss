@@ -22,6 +22,34 @@
       width: auto;
     }
 
+    ul {
+      list-style: none;
+      display: flex;
+      flex-direction: row;
+
+      li {
+        padding-right: 12px;
+
+        a {
+          color: $primary-dark-text-color;
+          text-decoration: none;
+          padding: 5px;
+          
+          &:hover {
+            color: $primary-color-800;
+            text-decoration: none;
+          }
+          &:active {
+            color: $primary-color-900;
+            text-decoration: none;
+          }
+          &.active {
+            color: $primary-color-800;
+          }
+        }
+      }
+    }
+
     @media (max-width: 768px) {
       ul {
         display: none;
@@ -32,15 +60,14 @@
   .user-actions { 
     list-style: none;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    flex-direction: column;
 
     .user-info {
       display: flex;
-      flex-direction: row;
-      align-items: center;
 
       .user-photo {
-        border: 2px solid $primary-color-700;
+        border: 1px solid $primary-color-700;
         padding: 2px;
       }
 
@@ -48,27 +75,51 @@
         display: none;
         position: fixed;
         top: 72px;
-        // left: 12px;
+        left: 12px;
         right: 12px;
         padding: 8px 12px 8px 12px;
         background-color: $neutral-color-0;
         z-index: 1000; /* Adjust z-index to ensure it overlays other content */
         overflow-y: auto; /* Add scrollbars if needed when the content is tall */
-        width: 360px;
+        max-width: 360px;
 
         .mobile-navigation {
           display: none; // Hide by default
         }
 
-        li {
-          padding-bottom: 16px;
+        ul {
+          list-style: none;
+          display: flex;
+          flex-direction: column;
 
-          &:first-child {
-            padding-top: 8px;
-          }
+        
+          li {
+            padding-bottom: 16px;
 
-          &:last-child {
-            padding-bottom: 8px;
+            &:first-child {
+              padding-top: 8px;
+            }
+
+            &:last-child {
+              padding-bottom: 8px;
+            }
+
+            a {
+              color: $primary-dark-text-color;
+              text-decoration: none;
+              
+              &:hover {
+                color: $primary-color-800;
+                text-decoration: none;
+              }
+              &:active {
+                color: $primary-color-900;
+                text-decoration: none;
+              }
+              &.active {
+                color: $primary-color-800;
+              }
+            }
           }
         }
 
@@ -95,98 +146,23 @@
             align-items: flex-start;
           }
         }
+
+        .site-navigation {
+          // Use the "show" class to control visibility
+          &.show {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            align-items: flex-start;
+          }
+        }
       }
-
-
-
-      // .mobile-navigation {
-      //   position: fixed;
-      //   top: 60px;
-      //   right: 0;
-      //   bottom: 0;
-      //   left: 0;
-      //   background-color: $neutral-color-0;
-      //   z-index: 1000; /* Adjust z-index to ensure it overlays other content */
-      //   overflow-y: auto; /* Add scrollbars if needed when the content is tall */
-      //   padding: 24px 20px;
-
-      //   // Use the "show" class to control visibility
-      //   &.show {
-      //     display: flex;
-      //     flex-direction: column;
-      //   }
-
-      //   ul {
-      //     display: flex;
-      //     flex-direction: column;
-      //     list-style: none;
-      //   }
-
-      //   li {
-      //     font-size: 1.5rem;
-      //     letter-spacing: .08em;
-      //     width: 100%;
-
-      //     // &:first-child {
-      //     //   margin-top: 16px;
-      //     // }
-
-      //     a {
-      //       color: $primary-dark-text-color;
-      //       text-decoration: none;
-      //       padding: 5px;
-            
-      //       &:hover {
-      //         color: $primary-color-800;
-      //         text-decoration: none;
-      //       }
-      //       &:active {
-      //         color: $primary-color-900;
-      //         text-decoration: none;
-      //       }
-      //       &.active {
-      //         color: $primary-color-800;
-      //       }
-      //     }
-      //   }
-      // }
     }
   }
 }
 
 /* Nest the navigation links styles */
-ul {
-  display: flex;
-  list-style: none;
-  align-items: center;
-  margin-top: 2px;
-  
-  li {
-    margin-right: 12px;
 
-    :last-child {
-      margin-right: 0;
-    }
-
-    a {
-      color: $primary-dark-text-color;
-      text-decoration: none;
-      padding: 5px;
-      
-      &:hover {
-        color: $primary-color-800;
-        text-decoration: none;
-      }
-      &:active {
-        color: $primary-color-900;
-        text-decoration: none;
-      }
-      &.active {
-        color: $primary-color-800;
-      }
-    }
-  }
-}
 
 .user-photo {
   width: 2.4rem;
