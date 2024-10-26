@@ -22,6 +22,11 @@ router.get("/logout", authController.logout);
 
 router.get("/time", viewController.getTime);
 router.get("/food", viewController.getFood);
+router.get("/food/learn", viewController.getFoodLearn);
+router.get("/food/ingredients", viewController.getIngredients);
+router.get("/food/recipes", viewController.getRecipes);
+router.get("/food/meal_planner", viewController.getMealPlanner);
+router.get("/food/grocery-list", viewController.getGroceryList);
 router.get("/money", viewController.getMoney);
 router.get("/relationships", viewController.getRelationships);
 router.get("/health", viewController.getHealth);

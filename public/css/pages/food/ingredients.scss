@@ -1,0 +1,88 @@
+// Import your color and typography variables
+@import '../../base/colors.scss';
+@import '../../base/typography.scss';
+@import '../../base/elevations.scss';
+
+#header {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+}
+
+#content-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    #content-action {
+        display: flex;
+        justify-content: space-between;
+        flex-direction: row;
+    }
+
+    #content {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 16px;
+        height: calc(100vh - 300px); /* Adjust the height as needed */
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+
+            thead {
+                position: sticky;
+                top: 0;
+
+                th {
+                    background-color: $neutral-color-700;
+                    color: $primary-light-text-color;
+                    font-weight: bold;
+                    text-align: left;
+                    padding: 12px 8px;
+                }
+            }
+
+            tbody {
+                tr {
+                    &.row-even {
+                        background-color: $neutral-color-0;
+                    }
+
+                    &.row-odd {
+                        background-color: $neutral-color-100;
+                    }
+
+                    td {
+                        padding: 12px 8px;
+                    }
+                }
+            }
+        }
+
+        table thead, table tbody {
+            border-radius: 5px; // Adjust the radius as needed
+        }
+
+        #pagination {
+            background-color: $neutral-color-200;
+            padding: 12px 8px;
+
+            p {
+                color: $primary-dark-text-color;
+                font-weight: bold;
+                text-align: left;
+            }
+        }
+    }
+}
+
+#add-ingredient-modal {
+    display: none;
+}
+
+// Add border-radius to the ingredient table
+#ingredient-table-body {
+    border-radius: 5px !important; // Adjust the radius as needed
+}

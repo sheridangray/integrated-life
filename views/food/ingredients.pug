@@ -1,0 +1,60 @@
+extends ../base
+
+block content
+    .content
+        include _left-nav
+        .main
+            #header
+                h1= title
+                .wrap-text
+                    button(type="button", id="add-ingredient-button" class="primary elevation-100 has-border-radius" onclick="showModel()")
+                        span.material-symbols-outlined add 
+                        | Add Ingredient
+
+            #content-container
+                #content-action
+                    input(type="text", class="elevation-100 w-400" id="search-input", name="search", placeholder="Search for an ingredient")
+                    .wrap-text
+                        button(type="button", class="secondary small elevation-100 has-border-radius", id="filter-button")
+                            span.material-symbols-outlined filter_list
+                            | Filter
+                #content.elevation-100
+                    table
+                        thead
+                            tr
+                                th.w-600 Name
+                                th Description  
+                                th Grocery Aisle
+                        tbody#ingredient-table-body
+                            each ingredient, index in ingredients
+                                tr(class=index % 2 === 0 ? "row-even" : "row-odd")
+                                    td= ingredient.ingredientName
+                                    td= ingredient.description
+                                    td= ingredient.groceryStoreAisle
+                    #pagination
+                        - const recordStart = (page - 1) * limit + 1;
+                        - const recordEnd = recordStart + limit - 1;
+                        p= `Showing ${recordStart} - ${recordEnd} of ${estimatedTotal} records - yes, I realize this is broken.`
+
+                // Modal
+    .modal#add-ingredient-modal
+        .modal-content
+            h2 Add Ingredient
+            form(id="add-ingredient-form")
+                .form-group
+                    label(for="ingredient-name") Ingredient Name
+                    input(type="text", id="ingredient-name", name="ingredientName" class="full-width", required)
+
+                .form-group
+                    label(for="ingredient-description") Description
+                    input(type="text", id="ingredient-description", name="description", class="full-width" required)
+
+                .form-group
+                    label(for="grocery-aisle") Grocery Aisle
+                    select(id="grocery-aisle", name="groceryStoreAisle", class="full-width" required)
+                        each aisle in distinctAisles
+                            option(value=aisle)= aisle
+
+                .modal-buttons
+                    button(type="button", id="cancel-button" class="secondary full-width button-group-start") Cancel
+                    button(type="button" id="submit-button" class="primary full-width button-group-end") Add

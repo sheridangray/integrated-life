@@ -2,9 +2,12 @@
 @import 'base/colors.scss';
 @import 'base/typography.scss';
 @import 'base/elevations.scss';
+@import 'components/button.scss';
 @import 'components/form.scss';
+@import 'components/modal.scss';
 @import 'components/navigation.scss';
 @import 'pages/login.scss';
+@import 'pages/food/ingredients.scss';
 
 html {
     background-color: $neutral-color-100;

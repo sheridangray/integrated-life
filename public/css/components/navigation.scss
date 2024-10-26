@@ -10,6 +10,7 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  height: 44px;
 
   .primary-navigation {
     display: flex;
@@ -75,7 +76,6 @@
         display: none;
         position: fixed;
         top: 72px;
-        left: 12px;
         right: 12px;
         padding: 8px 12px 8px 12px;
         background-color: $neutral-color-0;
@@ -136,6 +136,7 @@
 
       .user-menu {
         display: none;
+        left: 12px;
 
         .mobile-navigation {
           // Use the "show" class to control visibility
@@ -161,9 +162,6 @@
   }
 }
 
-/* Nest the navigation links styles */
-
-
 .user-photo {
   width: 2.4rem;
   height: 2.4rem;
@@ -171,58 +169,94 @@
 }
 
 .left-navigation {
+  display: flex; /* Use flex display */
+  align-items: flex-start; /* Vertically center items */
+  flex-direction: column;
   width: 250px;
-  min-height: 100vh;
+  min-height: calc(100vh - 60px);
   padding: 16px 8px;
-  background-color: $neutral-color-700;
+  background-color: $neutral-color-300;
+  border-right: 1px solid $neutral-color-300;
   color: $primary-light-text-color;
-  
-  /* Make the left navigation sticky */
-  // position: sticky;
-  // left: 0;
-  // top: 0;
+  z-index: 99;
+  position: sticky;
 
-  .left-navigation__title {
-    color: $primary-light-text-color;
-    margin-bottom: 16px;
-    padding: 0px 8px;
+  h1 {
+    color: $primary-dark-text-color;
+    margin-left: 10px;
   }
   
-  .left-navigation__list {
+  ul {
     list-style-type: none;
     padding: 0;
     margin: 0;
-  }
-  
-  .left-navigation__list li {
-    
-    margin-bottom: 4px;
-    border-radius: 8px;
-    padding: 8px 10px;
-  
-    a {
-      display: flex;
-      align-items: center;
-      color: $secondary-light-text-color;
-      text-decoration: none;
-    }
-  
-    &:hover {
-      background-color: $neutral-color-800;
-      color: $primary-light-text-color
-    }
-  
-    &.active {
-      color: $primary-light-text-color;
-      font-weight:700;
-      background-color: $neutral-color-900;
-      border-radius: 8px;
-      padding: 8px 10px;
-    }
-  }
+    margin-top: 6px;
+    width: 100%;
 
-  .material-symbols-outlined {
-    margin-right: 16px;
-    color: $secondary-light-text-color
+    li {
+      display: flex; /* Use flex display for li elements */
+      align-items: center; /* Vertically center li items */
+      padding: 8px 0px;
+    }
+
+    a {
+      display: flex; /* Use flex display for li elements */
+      align-items: center; /* Vertically center li items */
+      text-decoration: none;
+      color: $primary-dark-text-color;
+
+      .material-symbols-outlined {
+        margin: 0px 16px 0px 12px;
+      }
+
+      &.active {
+        font-weight: 700;
+      }
+
+      &:hover {
+        color: $primary-color-800; /* Change text color on hover */
+        // .material-symbols-outlined {
+        //   color: $primary-color-800; /* Change icon color on hover */
+        // }
+        background-color: $primary-color-100;
+        border-radius: 5px;
+      }
+    }
   }
 }
+
+
+// .left-navigation {
+//   width: 250px;
+//   min-height: 100vh;
+//   padding: 20px 8px;
+//   background-color: $neutral-color-300;
+//   color: $primary-light-text-color;
+  
+//   ul {
+//     list-style-type: none;
+//     padding: 0;
+//     margin: 0;
+
+//     li {
+//       padding: 8px 10px;
+    
+//       a {
+//         text-decoration: none;
+//         color: $primary-dark-text-color;
+//       }
+    
+//       &.active {
+//         color: $primary-dark-text-color;
+//         font-weight:700;
+//         background-color: $neutral-color-900;
+//       }
+//     }
+
+//     .material-symbols-outlined {
+//       margin: 0px 8px 0px 8px;
+//     }
+//   }
+
+
+// }

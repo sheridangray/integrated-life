@@ -1,0 +1,125 @@
+// Import your color and typography variables
+@import '../base/colors.scss';
+@import '../base/typography.scss';
+@import '../base/elevations.scss';
+
+button {
+    /* Auto layout */
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;    
+    border-radius: 8px;
+
+    /* Inside auto layout */
+    flex: none;
+    order: 1;
+    flex-grow: 0;
+    
+    // /* Button/100 */
+    font-weight: $font-weight-heavy;
+    font-size: $font-size-base;
+    line-height: $line-height-base;
+    letter-spacing: 0.02em;
+
+    border: none;
+    padding: 8px 12px;
+
+    .material-symbols-outlined {
+        font-size: $font-size-base;
+    }
+
+    &.small {
+        font-size: calc(#{$font-size-base} * .75);
+        line-height: calc(#{$font-size-base} * .75);
+        padding: 8px 12px;
+
+        // Adjust the icon size when .small is applied
+        .material-symbols-outlined {
+            font-size: calc(#{$font-size-base} * .75);
+        }
+    }
+
+    &.large {
+        font-size: calc(#{$font-size-base} * 1.25);
+        line-height: calc(#{$line-height-base} * 1.25);
+
+        // Adjust the icon size when .large is applied
+        .material-symbols-outlined {
+            font-size: calc(#{$font-size-base} * 1.25);
+        }
+    }
+
+    // Primary button style
+    &.button-primary {
+        background-color: $primary-color-700; // Set your primary color
+        color: $neutral-color-0;
+        border: none;
+
+        &hover {
+            background-color: $primary-color-800;
+        }
+
+        &pressed {
+            background-color: $primary-color-900;
+        }
+    }
+
+    // Secondary button style
+    &.button-secondary {
+        background-color: $secondary-color-700; // Set your secondary color
+        color: $neutral-color-0;
+    }
+
+    // Success button style
+    &.button-success {
+        background-color: $success-color-700; // Set your success color
+        color: $neutral-color-0;
+    }
+
+    // Warning button style
+    &.button-warning {
+        background-color: $warning-color-700; // Set your warning color
+        color: $neutral-color-0;
+    }
+
+    // Danger button style
+    &.button-danger {
+        background-color: $danger-color-700; // Set your danger color
+        color: $neutral-color-0;
+    }
+
+    // Danger button style
+    &.button-white {
+        background-color: $neutral-color-0; 
+        color: $primary-dark-text-color;
+        border: 1px solid $neutral-color-300;
+    }
+}
+
+
+    // /* Elevation/400 */
+    // filter: drop-shadow(0px 8px 32px rgba(0, 0, 0, 0.16));
+    // /* Text+Icon/Primary White */
+    // color: #FFFFFF;
+
+
+    // /* Inside auto layout */
+    // flex: none;
+    // order: 1;
+    // flex-grow: 0;
+
+
+    // /* Placeholder */
+
+    // display: none;
+    // width: 16px;
+    // height: 16px;
+
+
+    // /* Inside auto layout */
+    // flex: none;
+    // order: 2;
+    // flex-grow: 0;
+

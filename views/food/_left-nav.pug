@@ -1,0 +1,23 @@
+.left-navigation
+    h1= category
+    ul
+        a(href="/food/learn")
+            li(class=currentPage === "/food/learn" ? "active" : "")
+                span.material-symbols-outlined.light-text menu_book
+                span Learn
+        a(href="/food/ingredients")
+            li(class=currentPage === "/food/ingredients" ? "active" : "")
+                span.material-symbols-outlined.light-text nutrition
+                span Ingredients
+        a(href="/food/recipes")
+            li(class=currentPage === "/food/recipes" ? "active" : "")
+                span.material-symbols-outlined.light-text local_dining
+                span Recipes
+        a(href="/food/meal_planner")
+            li(class=currentPage === "/food/meal_planner" ? "active" : "")
+                span.material-symbols-outlined.light-text date_range
+                span Meal Planner
+        a(href="/food/grocery-list")
+            li(class=currentPage === "/food/grocery_list" ? "active" : "")
+                span.material-symbols-outlined.light-text shopping_cart
+                span Grocery List
