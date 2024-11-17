@@ -139,16 +139,15 @@
     
     .login-button {
       text-decoration: none; /* Remove underline */
-      color: green; /* Match the text color of the user menu */
       background-color: transparent; /* Make the background transparent like list items */
       padding: 8px 16px; /* Same padding as user menu items */
       border: none; /* No border, keep it simple like list items */
       border-radius: 4px; /* Slight rounding for consistency with the theme */
-      font-weight: bold;
+      // font-weight: bold;
       transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
 
       a {
-        color: $primary-dark-text-color;
+        color: $primary-light-text-color;
         text-decoration: none;
         
         &:hover {
