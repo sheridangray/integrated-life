@@ -538,8 +538,9 @@ label {
 .top-navigation .user-actions {
   list-style: none;
   display: flex;
-  align-items: flex-start;
-  flex-direction: column;
+  align-items: center;
+  margin-left: auto;
+  /* Hover effect for Login button to match the user menu */
 }
 .top-navigation .user-actions .user-info {
   display: flex;
@@ -593,6 +594,47 @@ label {
 }
 .top-navigation .user-actions .user-info .user-menu.show {
   display: block !important;
+}
+.top-navigation .user-actions .login-button-container {
+  display: flex; /* Use flexbox to center the button inside the container */
+  align-items: center; /* Vertically align the login button */
+  margin-left: 20px; /* Add spacing between the primary navigation and login button */
+}
+.top-navigation .user-actions .login-button {
+  text-decoration: none; /* Remove underline */
+  color: green; /* Match the text color of the user menu */
+  background-color: transparent; /* Make the background transparent like list items */
+  padding: 8px 16px; /* Same padding as user menu items */
+  border: none; /* No border, keep it simple like list items */
+  border-radius: 4px; /* Slight rounding for consistency with the theme */
+  font-weight: bold;
+  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
+}
+.top-navigation .user-actions .login-button a {
+  color: #1D2433;
+  text-decoration: none;
+}
+.top-navigation .user-actions .login-button a:hover {
+  color: #1D5BD6;
+  text-decoration: none;
+}
+.top-navigation .user-actions .login-button a:active {
+  color: #1E4EAE;
+  text-decoration: none;
+}
+.top-navigation .user-actions .login-button a.active {
+  color: #1D5BD6;
+}
+.top-navigation .user-actions .login-button:hover {
+  background-color: #F0F5FF; /* Add a subtle background to differentiate */
+  color: #1D5BD6; /* Change color to match hover effect in user menu */
+  text-decoration: none;
+}
+.top-navigation .user-actions .login-button:active {
+  color: #1E4EAE; /* Active color for consistency */
+}
+.top-navigation .user-actions .login-button:visited {
+  color: #1E4EAE; /* Visited color for consistency */
 }
 @media (max-width: 768px) {
   .top-navigation .user-actions .user-menu {

@@ -61,8 +61,9 @@
   .user-actions { 
     list-style: none;
     display: flex;
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    margin-left: auto;
+    // flex-direction: column;
 
     .user-info {
       display: flex;
@@ -130,6 +131,55 @@
       }
     }
 
+    .login-button-container {
+      display: flex; /* Use flexbox to center the button inside the container */
+      align-items: center; /* Vertically align the login button */
+      margin-left: 20px; /* Add spacing between the primary navigation and login button */
+    }
+    
+    .login-button {
+      text-decoration: none; /* Remove underline */
+      color: green; /* Match the text color of the user menu */
+      background-color: transparent; /* Make the background transparent like list items */
+      padding: 8px 16px; /* Same padding as user menu items */
+      border: none; /* No border, keep it simple like list items */
+      border-radius: 4px; /* Slight rounding for consistency with the theme */
+      font-weight: bold;
+      transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
+
+      a {
+        color: $primary-dark-text-color;
+        text-decoration: none;
+        
+        &:hover {
+          color: $primary-color-800;
+          text-decoration: none;
+        }
+        &:active {
+          color: $primary-color-900;
+          text-decoration: none;
+        }
+        &.active {
+          color: $primary-color-800;
+        }
+      }
+    }
+    
+    /* Hover effect for Login button to match the user menu */
+    .login-button:hover {
+      background-color: $primary-color-100; /* Add a subtle background to differentiate */
+      color: $primary-color-800; /* Change color to match hover effect in user menu */
+      text-decoration: none;
+    }
+    
+    .login-button:active {
+      color: $primary-color-900; /* Active color for consistency */
+    }
+    
+    .login-button:visited {
+      color: $primary-color-900; /* Visited color for consistency */
+    }    
+
     // IF MOBILE
 
     @media (max-width: 768px) {
@@ -167,7 +217,6 @@
   height: 2.4rem;
   border-radius: 50%;
 }
-
 .left-navigation {
   display: flex; /* Use flex display */
   align-items: flex-start; /* Vertically center items */
