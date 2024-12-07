@@ -1418,6 +1418,11 @@
   dependencies:
     "bindings" "~1.2.1"
 
+"marked@^15.0.3":
+  "integrity" "sha512-Ai0cepvl2NHnTcO9jYDtcOEtVBNVYR31XnEA3BndO7f5As1wzpcOceSUM8FDkNLJNIODcLpDTWay/qQhqbuMvg=="
+  "resolved" "https://registry.npmjs.org/marked/-/marked-15.0.3.tgz"
+  "version" "15.0.3"
+
 "material-icons@^1.13.12":
   "integrity" "sha512-/2YoaB79IjUK2B2JB+vIXXYGtBfHb/XG66LvoKVM5ykHW7yfrV5SP6d7KLX6iijY6/G9GqwgtPQ/sbhFnOURVA=="
   "resolved" "https://registry.npmjs.org/material-icons/-/material-icons-1.13.12.tgz"
