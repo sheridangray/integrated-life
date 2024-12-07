@@ -35,7 +35,7 @@
     "yarn": "^1.22.22"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=18"
   },
   "devDependencies": {
     "@prettier/plugin-pug": "^3.0.0",
