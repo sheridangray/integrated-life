@@ -8,8 +8,7 @@ dotenv.config();
 const together = new Together({ apiKey: process.env.TOGETHER_API_KEY });
 
 const userPreferences = {
-  // Randomly select diet type: 70% meat, 30% vegetarian
-  diet: Math.random() < 0.7 ? "meat" : "vegetarian",
+  diet: "omnivore",
   numberOfMeals: 5,
   allergies: [],
   cuisine: [
@@ -41,6 +40,9 @@ const generateMealPlanAndSendEmail = async () => {
           Math.floor(Math.random() * userPreferences.cuisine.length)
         ];
 
+      // Randomly select diet type: 70% meat, 30% vegetarian
+      const randomDiet = Math.random() < 0.7 ? "meat" : "vegetarian";
+
       // Construct the prompt based on whether allergies exist
       const allergiesPart =
         userPreferences.allergies.length > 0
@@ -50,7 +52,7 @@ const generateMealPlanAndSendEmail = async () => {
           : "";
 
       const prompt = `
-				Suggest a ${userPreferences.diet} dinner for ${day}.
+				Suggest a ${randomDiet} dinner for ${day}.
 				The meal should be a ${randomCuisine} dish.
 				${allergiesPart}
 				Include preparation and cook time and aim for a total time of less than 45 minutes.
@@ -59,6 +61,7 @@ const generateMealPlanAndSendEmail = async () => {
 				Include nutritional information.
 				It should be for 4 people and would ideally have some leftovers for lunch the next day.
 			`;
+
       const response = await together.completions.create({
         prompt: prompt,
         model: "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
