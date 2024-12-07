@@ -1,80 +1,47 @@
 const Together = require("together-ai");
-const dotenv = require("dotenv");
-const sendEmail = require("../utils/email");
 
-// Load environment variables
-dotenv.config();
+const together = new Together({
+  apiKey: "cfcd67ba6ea7f771b747ca1e9ecd2feaec1e51174bc9c731f8cad7c3a220ec21",
+});
 
-const together = new Together({ apiKey: process.env.TOGETHER_API_KEY });
-
+// Placeholder for user preferences
 const userPreferences = {
-  // Randomly select diet type: 70% meat, 30% vegetarian
-  diet: Math.random() < 0.7 ? "meat" : "vegetarian",
-  numberOfMeals: 5,
-  allergies: [],
-  cuisine: [
-    "chinese",
-    "filipino",
-    "french",
-    "german",
-    "greek",
-    "indian",
-    "japanese",
-    "korean",
-    "mexican",
-    "russian",
-    "spanish",
-    "thai",
-    "vietnamese",
-  ],
+  diet: "vegetarian", // User-specific dietary preference
+  numberOfMeals: 5, // Number of dinner meals for the week
+  allergies: ["nuts"], // Allergies to consider while generating meals
+  cuisine: ["italian", "mexican"], // Preferred cuisines
 };
 
-const generateMealPlanAndSendEmail = async () => {
+// Controller method to generate weekly meal plan
+exports.generateWeeklyMealPlan = async (req, res, next) => {
   try {
     const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
     const mealPlan = [];
 
     for (const day of daysOfWeek) {
-      // Randomly select cuisine type: No weight provided.
-      const randomCuisine =
-        userPreferences.cuisine[
-          Math.floor(Math.random() * userPreferences.cuisine.length)
-        ];
+      const prompt = `Suggest a vegetarian dinner for ${day} without nuts. The meal should preferably be italian, mexican. Include preparation time and ingredients.`;
 
-      // Construct the prompt based on whether allergies exist
-      const allergiesPart =
-        userPreferences.allergies.length > 0
-          ? `It should not include the following allergens ${userPreferences.allergies.join(
-              ", "
-            )}`
-          : "";
-
-      const prompt = `
-				Suggest a ${userPreferences.diet} dinner for ${day}.
-				The meal should be a ${randomCuisine} dish.
-				${allergiesPart}
-				Include preparation and cook time and aim for a total time of less than 45 minutes.
-				Include a list of ingredients.
-				Include step-by-step cooking instructions.
-				Include nutritional information.
-				It should be for 4 people and would ideally have some leftovers for lunch the next day.
-			`;
-      const response = await together.completions.create({
-        prompt: prompt,
+      const response = await together.chat.completions.create({
+        messages: [{ role: "user", content: prompt }],
         model: "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
-        max_tokens: 400,
+        max_tokens: null,
         temperature: 0.7,
         top_p: 0.7,
         top_k: 50,
         repetition_penalty: 1,
         stop: ["<|eot_id|>", "<|eom_id|>"],
-        stream: false,
+        stream: false, // Set to true if you want to stream tokens
       });
 
-      if (response && response.choices && response.choices[0]?.text) {
+      if (
+        response &&
+        response.choices &&
+        response.choices[0]?.message?.content
+      ) {
+        const content = response.choices[0]?.message?.content;
         mealPlan.push({
           day: day,
-          recipe: response.choices[0].text,
+          recipe: content, // You might need to parse content if it includes the recipe, prep time, etc.
         });
       } else {
         mealPlan.push({
@@ -84,22 +51,16 @@ const generateMealPlanAndSendEmail = async () => {
       }
     }
 
-    // Send email with meal plan
-    const emailBody = mealPlan
-      .map((meal) => `<b>${meal.day}:</b> <br> ${meal.recipe}<br><br>`)
-      .join("");
-
-    await sendEmail({
-      email: process.env.USER_EMAIL,
-      subject: "Your Weekly Meal Plan",
-      html: emailBody,
+    // Return the weekly meal plan
+    res.status(200).json({
+      status: "success",
+      data: mealPlan,
     });
-
-    console.log("Weekly meal plan sent successfully!");
   } catch (error) {
     console.error("Error generating meal plan:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to generate meal plan",
+    });
   }
 };
-
-// Execute the function
-generateMealPlanAndSendEmail();

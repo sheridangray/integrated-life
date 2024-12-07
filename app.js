@@ -8,11 +8,13 @@ const app = express();
 const cookieParser = require("cookie-parser");
 const port = process.env.PORT || 3000;
 const globalErrorHandler = require("./controllers/errorController");
+const clientRouter = require("./routes/client/clientRouter");
+const apiRouter = require("./routes/api/apiRouter");
 
 // Handle uncaught exceptions
 
 process.on("uncaughtException", (err) => {
-  console.log("Uncaught Exception. Shutting down.");
+  console.log("Uncaught Exception! Shutting down...");
   console.log(err);
   process.exit(1);
 });
@@ -20,11 +22,6 @@ process.on("uncaughtException", (err) => {
 // Load the configuration file
 
 dotenv.config({ path: "./config.env" });
-
-// Load the routes
-
-const clientRouter = require("./routes/client/clientRouter");
-const apiRouter = require("./routes/api/apiRouter");
 
 // Connect to the database
 const DB = process.env.DATABASE.replace(

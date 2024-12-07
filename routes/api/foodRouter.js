@@ -2,8 +2,6 @@ const express = require("express");
 const ingredientController = require("../../controllers/ingredientController");
 const mealPlanController = require("../../controllers/mealPlanController");
 
-// const mealPlanController = require("../../controllers/mealPlanController");
-
 const router = express.Router();
 
 // Endpoints for Ingredients
