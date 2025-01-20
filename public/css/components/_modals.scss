@@ -1,0 +1,84 @@
+@use 'sass:map';
+@use '../abstracts/variables' as vars;
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: map.get(vars.$z-index, 'modal');
+  opacity: 0;
+  visibility: hidden;
+  transition: vars.$transition-base;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  &-dialog {
+    width: 100%;
+    max-width: 500px;
+    margin: vars.$spacing-unit * 2;
+  }
+  
+  &-content {
+    background-color: #fff;
+    border-radius: vars.$border-radius;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  &-header {
+    padding: vars.$spacing-unit * 2;
+    border-bottom: 1px solid vars.$border-color;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+    h5 {
+      margin: 0;
+      font-family: vars.$font-family-base;
+      color: vars.$color-secondary;
+    }
+  }
+  
+  &-body {
+    padding: vars.$spacing-unit * 3;
+  }
+  
+  &-footer {
+    padding: vars.$spacing-unit * 2;
+    border-top: 1px solid vars.$border-color;
+    display: flex;
+    justify-content: flex-end;
+    gap: vars.$spacing-unit;
+  }
+
+  // Size variations
+  &-sm .modal-dialog {
+    max-width: 300px;
+  }
+
+  &-lg .modal-dialog {
+    max-width: 800px;
+  }
+
+  // Close button
+  .close {
+    background: none;
+    border: none;
+    font-size: vars.$font-size-base * 1.5;
+    color: vars.$color-secondary;
+    cursor: pointer;
+    transition: vars.$transition-base;
+
+    &:hover {
+      color: vars.$color-primary;
+    }
+  }
+}

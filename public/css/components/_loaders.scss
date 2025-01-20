@@ -1,0 +1,37 @@
+@use '../abstracts/variables' as vars;
+
+.loader {
+  border: 2px solid vars.$border-color;
+  border-top: 2px solid vars.$color-primary;
+  border-radius: 50%;
+  width: vars.$spacing-unit * 4;
+  height: vars.$spacing-unit * 4;
+  animation: spin 1s linear infinite;
+
+  &-sm {
+    width: vars.$spacing-unit * 2;
+    height: vars.$spacing-unit * 2;
+  }
+
+  &-lg {
+    width: vars.$spacing-unit * 6;
+    height: vars.$spacing-unit * 6;
+  }
+
+  &-secondary {
+    border-top-color: vars.$color-secondary;
+  }
+
+  &-success {
+    border-top-color: vars.$color-success;
+  }
+
+  &-danger {
+    border-top-color: vars.$color-danger;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

@@ -1,0 +1,23 @@
+<%- contentFor('body') %>
+
+<div class="container">
+  <div class="page-header">
+    <h1>Ingredients</h1>
+    <div class="actions">
+      <button class="button-primary" id="add-ingredient">
+        <span class="material-symbols-outlined">add</span>
+        New Ingredient
+      </button>
+    </div>
+  </div>
+
+  <div class="ingredients-manager">
+    <div class="search-bar">
+      <input type="text" id="ingredient-search" class="search-input" placeholder="Search ingredients...">
+    </div>
+
+    <div class="ingredients-grid" id="ingredients-list">
+      <!-- Ingredients will be loaded dynamically -->
+    </div>
+  </div>
+</div> 

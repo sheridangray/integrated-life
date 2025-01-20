@@ -1,0 +1,97 @@
+@use 'sass:map';
+@use '../abstracts/variables' as vars;
+@use '../abstracts/mixins' as mix;
+
+.footer {
+  background-color: var(--color-background-light);
+  padding: var(--spacing-xl) 0;
+  margin-top: auto;
+  border-top: 1px solid var(--color-border);
+  
+  // Match the layout padding of the main content
+  padding-left: 240px; // Match left-nav width
+  
+  // Remove padding when nav is hidden
+  .no-nav & {
+    padding-left: 0;
+  }
+  
+  // Responsive adjustments
+  @include mix.respond-to('medium-down') {
+    padding-left: 0;
+  }
+
+  &__content {
+    max-width: var(--container-width-lg);
+    margin: 0 auto;
+    padding: 0 var(--spacing-xl);
+    display: grid;
+    gap: var(--spacing-xl);
+    
+    @include mix.respond-to('medium') {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  &__section {
+    h4 {
+      color: vars.$color-secondary;
+      font-size: vars.$font-size-base * 1.1;
+      font-weight: 600;
+      margin-bottom: vars.$spacing-unit * 1.5;
+    }
+    
+    p {
+      color: vars.$color-secondary;
+      line-height: 1.6;
+      margin: 0;
+    }
+    
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      
+      li {
+        margin-bottom: vars.$spacing-unit;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+      
+      a {
+        color: vars.$color-secondary;
+        text-decoration: none;
+        transition: color vars.$transition-base;
+        
+        &:hover {
+          color: vars.$color-primary;
+        }
+      }
+    }
+  }
+  
+  &__bottom {
+    padding-top: vars.$spacing-unit * 2;
+    border-top: 1px solid vars.$border-color;
+    text-align: center;
+    
+    p {
+      color: vars.$color-secondary;
+      margin: 0;
+      font-size: vars.$font-size-base * 0.9;
+    }
+  }
+}
+
+// Make sure the footer stays at the bottom
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+}

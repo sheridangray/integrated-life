@@ -1,0 +1,148 @@
+@use '../abstracts/variables' as vars;
+
+.form {
+  &-group {
+    margin-bottom: vars.$spacing-unit * 2;
+  }
+  
+  &-label {
+    display: block;
+    margin-bottom: vars.$spacing-unit;
+    font-family: vars.$font-family-base;
+    color: vars.$color-secondary;
+  }
+  
+  &-control {
+    width: 100%;
+    padding: vars.$spacing-unit vars.$spacing-unit * 1.5;
+    font-family: vars.$font-family-base;
+    font-size: vars.$font-size-base;
+    line-height: vars.$line-height-base;
+    border: 1px solid vars.$border-color;
+    border-radius: vars.$border-radius;
+    transition: vars.$transition-base;
+    
+    &:focus {
+      outline: none;
+      // border-color: vars.$color-primary;
+      // box-shadow: 0 0 0 2px rgba(vars.$color-primary, 0.25);
+    }
+    
+    &.is-invalid {
+      border-color: vars.$color-danger;
+      
+      &:focus {
+        box-shadow: 0 0 0 2px rgba(vars.$color-danger, 0.25);
+      }
+    }
+    
+    &.is-valid {
+      border-color: vars.$color-success;
+      
+      &:focus {
+        box-shadow: 0 0 0 2px rgba(vars.$color-success, 0.25);
+      }
+    }
+
+    &:disabled {
+      background-color: vars.$border-color;
+      cursor: not-allowed;
+    }
+  }
+
+  // Select styles
+  select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right vars.$spacing-unit center;
+    padding-right: vars.$spacing-unit * 4;
+  }
+
+  // Checkbox and radio styles
+  &-check {
+    display: flex;
+    align-items: center;
+    margin-bottom: vars.$spacing-unit;
+
+    input[type="checkbox"],
+    input[type="radio"] {
+      margin-right: vars.$spacing-unit;
+    }
+
+    label {
+      color: vars.$color-secondary;
+      font-size: vars.$font-size-base;
+    }
+  }
+
+  // Help text
+  &-text {
+    margin-top: vars.$spacing-unit;
+    font-size: vars.$font-size-base * 0.875;
+    color: vars.$color-secondary;
+  }
+
+  // Validation messages
+  &-invalid-feedback {
+    display: none;
+    margin-top: vars.$spacing-unit;
+    font-size: vars.$font-size-base * 0.875;
+    color: vars.$color-danger;
+
+    .is-invalid + & {
+      display: block;
+    }
+  }
+
+  // Input groups
+  &-input-group {
+    display: flex;
+    align-items: stretch;
+
+    .form-control {
+      flex: 1;
+      
+      &:not(:first-child) {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+      
+      &:not(:last-child) {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+    }
+
+    &-text {
+      display: flex;
+      align-items: center;
+      padding: vars.$spacing-unit vars.$spacing-unit * 1.5;
+      font-size: vars.$font-size-base;
+      color: vars.$color-secondary;
+      background-color: vars.$border-color;
+      border: 1px solid vars.$border-color;
+      
+      &:first-child {
+        border-top-left-radius: vars.$border-radius;
+        border-bottom-left-radius: vars.$border-radius;
+      }
+      
+      &:last-child {
+        border-top-right-radius: vars.$border-radius;
+        border-bottom-right-radius: vars.$border-radius;
+      }
+    }
+  }
+}
+
+// Form sizes
+.form-control-sm {
+  padding: vars.$spacing-unit * 0.5 vars.$spacing-unit;
+  font-size: vars.$font-size-base * 0.875;
+}
+
+.form-control-lg {
+  padding: vars.$spacing-unit * 1.5 vars.$spacing-unit * 2;
+  font-size: vars.$font-size-base * 1.25;
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <title><%= title %> | Integrated Life</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="/css/dist/style.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+
+</head>
+<body class="<%= currentPage.split('/')[1] || 'home' %>-page">
+    <%- include('../partials/_header') %>
+    
+    <div class="layout <%= typeof showLeftNav !== 'undefined' && !showLeftNav ? 'no-nav' : '' %>">
+        <% if (showLeftNav) { %>
+            <%- include('../partials/_left-nav') %>
+        <% } %>
+        
+        <main class="main-content <%= locals.mainContentPadded ? 'main-content--padded' : '' %>">
+            <!-- <div class="container <%= locals.containerConstrained ? 'container--constrained' : '' %>"> -->
+                <% if (locals.messages && messages.error) { %>
+                    <div class="alert alert--error" role="alert">
+                        <%= messages.error %>
+                    </div>
+                <% } %>
+                
+                <% if (locals.messages && messages.success) { %>
+                    <div class="alert alert--success" role="alert">
+                        <%= messages.success %>
+                    </div>
+                <% } %>
+
+                <%- body %>
+            <!-- </div> -->
+        </main>
+    </div>
+
+    <%- include('../partials/_footer') %>
+    
+    <script src="/js/dist/bundle.js"></script>
+</body>
+</html>

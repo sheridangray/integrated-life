@@ -1,0 +1,201 @@
+@use 'sass:map';
+@use '../abstracts/variables' as vars;
+@use '../abstracts/mixins' as mix;
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: vars.$header-height;
+  background-color: #fff;
+  border-bottom: 1px solid vars.$border-color;
+  padding: 0 vars.$container-padding;
+  display: flex;
+  align-items: center;
+  z-index: map.get(vars.$z-index, 'header');
+  
+  &__logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: vars.$color-primary;
+    margin-right: vars.$spacing-unit * 4;
+    
+    img {
+      height: 32px;
+      margin-right: vars.$spacing-unit;
+    }
+  }
+  
+  &__nav {
+    display: none;
+    flex: 1;
+    
+    @include mix.respond-to('medium') {
+      display: flex;
+      align-items: center;
+      gap: vars.$spacing-unit * 3;
+    }
+    
+    a {
+      color: vars.$color-secondary;
+      text-decoration: none;
+      font-weight: 500;
+      transition: vars.$transition-base;
+      padding: vars.$spacing-unit vars.$spacing-unit * 1.5;
+      border-radius: vars.$border-radius;
+      
+      &:hover,
+      &.active {
+        color: vars.$color-primary;
+        background-color: rgba(vars.$color-primary, 0.1);
+      }
+    }
+  }
+  
+  &__actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-unit * 2;
+  }
+  
+  &__mobile-toggle {
+    display: block;
+    padding: vars.$spacing-unit;
+    border: none;
+    background: none;
+    cursor: pointer;
+    
+    @include mix.respond-to('medium') {
+      display: none;
+    }
+    
+    span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background-color: vars.$color-secondary;
+      transition: vars.$transition-base;
+      
+      &:not(:first-child) {
+        margin-top: 5px;
+      }
+    }
+    
+    &.active {
+      span {
+        &:first-child {
+          transform: rotate(45deg) translate(5px, 5px);
+        }
+        
+        &:nth-child(2) {
+          opacity: 0;
+        }
+        
+        &:last-child {
+          transform: rotate(-45deg) translate(5px, -5px);
+        }
+      }
+    }
+  }
+}
+
+// Mobile menu
+.mobile-menu {
+  position: fixed;
+  top: vars.$header-height;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - vars.$header-height);
+  background-color: #fff;
+  padding: vars.$spacing-unit * 2;
+  transform: translateX(-100%);
+  transition: vars.$transition-base;
+  z-index: map.get(vars.$z-index, 'header') - 1;
+  
+  &.active {
+    transform: translateX(0);
+  }
+  
+  @include mix.respond-to('medium') {
+    display: none;
+  }
+  
+  &__nav {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-unit;
+    
+    a {
+      display: flex;
+      align-items: center;
+      padding: vars.$spacing-unit vars.$spacing-unit * 1.5;
+      color: vars.$color-secondary;
+      text-decoration: none;
+      font-weight: 500;
+      border-radius: vars.$border-radius;
+      transition: vars.$transition-base;
+      
+      i {
+        margin-right: vars.$spacing-unit;
+        font-size: 1.25rem;
+      }
+      
+      &:hover,
+      &.active {
+        color: vars.$color-primary;
+        background-color: rgba(vars.$color-primary, 0.1);
+      }
+    }
+  }
+}
+
+.user-photo {
+  width: 48px; /* Adjust the size as needed */
+  height: 48px; /* Ensure the height matches the width for a perfect circle */
+  border-radius: 50%; /* Makes the image circular */
+  padding: 1px; /* Adds a little padding around the image */
+  border: 2px solid vars.$color-primary; /* Thin border with primary color */
+  box-sizing: border-box; /* Ensures padding and border are included in the element's total size */
+  cursor: pointer;
+}
+
+.header__user-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 74px;
+  right: 0;
+  background-color: white;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 200px;
+}
+
+.dropdown-menu a,
+.dropdown-menu button {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.dropdown-menu a:hover,
+.dropdown-menu button:hover {
+  background-color: #f1f1f1;
+}

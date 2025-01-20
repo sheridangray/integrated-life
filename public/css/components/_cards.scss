@@ -1,0 +1,48 @@
+@use '../abstracts/variables' as vars;
+
+.card {
+  border-radius: vars.$border-radius;
+  border: 1px solid vars.$border-color;
+  transition: vars.$transition-base;
+  background-color: #fff;
+  
+  &-header {
+    padding: vars.$spacing-unit * 2;
+    border-bottom: 1px solid vars.$border-color;
+    font-family: vars.$font-family-base;
+  }
+  
+  &-body {
+    padding: vars.$spacing-unit * 2;
+  }
+  
+  &-footer {
+    padding: vars.$spacing-unit * 2;
+    border-top: 1px solid vars.$border-color;
+  }
+
+  // Card variations
+  &-primary {
+    border-color: vars.$color-primary;
+    
+    .card-header {
+      background-color: vars.$color-primary;
+      color: #fff;
+    }
+  }
+  
+  &-secondary {
+    border-color: vars.$color-secondary;
+    
+    .card-header {
+      background-color: vars.$color-secondary;
+      color: #fff;
+    }
+  }
+
+  // Card groups
+  &-group {
+    display: grid;
+    gap: vars.$grid-gutter;
+  }
+}

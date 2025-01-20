@@ -1,0 +1,227 @@
+@use '../abstracts/variables' as vars;
+@use 'sass:color';
+
+.life-grid {
+  padding: 0;
+  margin: 0 auto;
+  background: vars.$color-white;
+  border-radius: vars.$border-radius-lg;
+  box-shadow: vars.$shadow-sm;
+
+  &__header {
+    position: sticky;
+    top: 0;
+    background: vars.$color-background;
+    padding: vars.$spacing-lg vars.$spacing-xl;
+    margin-bottom: 0;
+    border-bottom: 1px solid vars.$color-border;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+
+    h1 {
+      box-sizing: border-box;
+      color: vars.$color-grey-600; // rgb(108, 117, 125)
+      display: block;
+      flex-grow: 1;
+      font-family: vars.$font-family-base;
+      font-size: 32px;
+      font-weight: 700;
+      height: 48px;
+      line-height: 48px;
+      margin: 0;
+      padding: 0;
+      text-rendering: optimizespeed;
+      unicode-bidi: isolate;
+      width: 100%;
+    }
+  }
+
+  &__legend {
+    display: flex;
+    gap: vars.$spacing-md;
+    justify-content: flex-end;
+    padding: 0;
+    background: transparent;
+  }
+
+  &__legend-item {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-xs;
+    color: vars.$color-text-light;
+    font-size: vars.$font-size-sm;
+
+    &::before {
+      content: '';
+      display: block;
+      width: 10px;
+      height: 10px;
+      border: 1px solid vars.$color-border;
+      background-color: vars.$color-white;
+      border-radius: vars.$border-radius-sm;
+    }
+
+    &--past::before {
+      background-color: vars.$color-white;
+      border: 1px solid vars.$color-grey-900;
+    }
+
+    &--current::before {
+      background-color: vars.$color-success;
+      border-color: vars.$color-success;
+    }
+
+    &--future::before {
+      background-color: vars.$color-white;
+      border: 1px solid vars.$color-border;
+    }
+
+    &--early::before {
+      border-color: vars.$color-primary;
+    }
+
+    &--elementary::before {
+      border-color: vars.$color-success;
+    }
+
+    &--middle::before {
+      border-color: vars.$color-info;
+    }
+
+    &--high::before {
+      border-color: vars.$color-warning;
+    }
+
+    &--college::before {
+      border-color: vars.$color-danger;
+    }
+
+    &--youngAdult::before {
+      border-color: vars.$color-secondary;
+    }
+
+    &--adult::before {
+      border-color: color.adjust(vars.$color-primary, $lightness: 20%);
+    }
+
+    &--aging::before {
+      border-color: color.adjust(vars.$color-success, $lightness: 20%);
+    }
+
+    &--immobile::before {
+      border-color: color.adjust(vars.$color-warning, $lightness: 20%);
+    }
+  }
+
+  &__container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.7px;
+    padding: vars.$spacing-xl;
+    background: vars.$color-white;
+    border-radius: vars.$border-radius-lg;
+  }
+
+  &__year {
+    display: flex;
+    gap: 1.7px;
+  }
+
+  &__week {
+    width: 10px;
+    height: 10px;
+    background-color: vars.$color-white;
+    border: 1px solid vars.$color-grey-600;
+    border-radius: vars.$border-radius-sm;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: scale(1.2);
+      box-shadow: vars.$shadow-sm;
+      z-index: 1;
+    }
+
+    &--past {
+      &.life-grid__week--early {
+        background-color: color.adjust(vars.$color-danger, $lightness: 35%);
+        border-color: color.adjust(vars.$color-danger, $lightness: 35%);
+      }
+
+      &.life-grid__week--elementary {
+        background-color: color.adjust(vars.$color-danger, $lightness: 30%);
+        border-color: color.adjust(vars.$color-danger, $lightness: 30%);
+      }
+
+      &.life-grid__week--middle {
+        background-color: color.adjust(vars.$color-danger, $lightness: 25%);
+        border-color: color.adjust(vars.$color-danger, $lightness: 25%);
+      }
+
+      &.life-grid__week--high {
+        background-color: color.adjust(vars.$color-danger, $lightness: 20%);
+        border-color: color.adjust(vars.$color-danger, $lightness: 20%);
+      }
+
+      &.life-grid__week--college {
+        background-color: color.adjust(vars.$color-danger, $lightness: 15%);
+        border-color: color.adjust(vars.$color-danger, $lightness: 15%);
+      }
+
+      &.life-grid__week--youngAdult {
+        background-color: color.adjust(vars.$color-danger, $lightness: 10%);
+        border-color: color.adjust(vars.$color-danger, $lightness: 10%);
+      }
+
+      &.life-grid__week--adult {
+        background-color: color.adjust(vars.$color-danger, $lightness: 5%);
+        border-color: color.adjust(vars.$color-danger, $lightness: 5%);
+      }
+
+      &.life-grid__week--aging {
+        background-color: vars.$color-danger;
+        border-color: vars.$color-danger;
+      }
+
+      &.life-grid__week--immobile {
+        background-color: color.adjust(vars.$color-danger, $lightness: -5%);
+        border-color: color.adjust(vars.$color-danger, $lightness: -5%);
+      }
+    }
+
+    &--early,
+    &--elementary,
+    &--middle,
+    &--high,
+    &--college,
+    &--youngAdult,
+    &--adult,
+    &--aging,
+    &--immobile {
+      border-color: vars.$color-grey-300;
+    }
+
+    &--current {
+      background-color: vars.$color-success !important;
+      border-color: vars.$color-success !important;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: vars.$breakpoint-md) {
+  .life-grid {
+    padding: vars.$spacing-md;
+    margin: vars.$spacing-md;
+
+    &__week {
+      width: 7px;
+      height: 7px;
+    }
+
+    &__header h1 {
+      font-size: vars.$font-size-2xl;
+    }
+  }
+} 

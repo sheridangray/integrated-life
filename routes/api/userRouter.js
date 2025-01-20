@@ -1,13 +1,11 @@
 const express = require("express");
-const userController = require("../../controllers/userController");
-const authController = require("../../controllers/authController");
+const userController = require("../../controllers/client/userController");
+const authController = require("../../controllers/api/authController");
 
 const router = express.Router();
 
-router.post("/signup", authController.signup);
-router.post("/login", authController.login);
-router.post("/forgotPassword", authController.forgotPassword);
-router.patch("/resetPassword/:token", authController.resetPassword);
+router.post("/google-login", authController.googleLogin);
+router.post("/logout", authController.logout);
 
 // Protect all routes after this middleware
 router.use(authController.protect);

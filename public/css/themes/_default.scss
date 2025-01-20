@@ -1,0 +1,30 @@
+@use '../abstracts/variables' as vars;
+
+:root {
+  // Base colors
+  --color-primary: #{vars.$color-primary};
+  --color-secondary: #{vars.$color-secondary};
+  --color-success: #{vars.$color-success};
+  --color-danger: #{vars.$color-danger};
+  --color-warning: #{vars.$color-warning};
+  --color-info: #{vars.$color-info};
+  
+  // Background colors
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #e9ecef;
+  
+  // Text colors
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --text-muted: #868e96;
+  
+  // Border colors
+  --border-color: #{vars.$border-color};
+  --border-color-light: #f1f3f5;
+  
+  // Shadow
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+} 

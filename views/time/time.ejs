@@ -1,0 +1,207 @@
+<%- contentFor('body') %>
+
+<div class="time-layout">
+  <!-- Fixed left side -->
+  <div class="time-layout__grid">
+    <div class="life-grid">
+      <div class="life-grid__header">
+        <h1>Your Life in Weeks</h1>
+        <div class="life-grid__legend">
+          <span class="life-grid__legend-item life-grid__legend-item--past">Past</span>
+          <span class="life-grid__legend-item life-grid__legend-item--current">Current</span>
+          <span class="life-grid__legend-item life-grid__legend-item--future">Future</span>
+        </div>
+      </div>
+      <div class="life-grid__container">
+        <% for(let year = 0; year < 90; year++) { %>
+          <div class="life-grid__year">
+            <% for(let week = 0; week < 52; week++) { %>
+              <div class="life-grid__week" data-year="<%= year %>" data-week="<%= week %>"></div>
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scrollable right side -->
+  <div class="time-layout__controls">
+    <div class="time-controls">
+      <div class="time-controls__section">
+        <h2>Life Phases</h2>
+        
+        <div class="life-phase">
+          <div class="life-phase__row">
+            <span class="life-phase__title">
+              <span class="life-phase__color-indicator life-phase__color-indicator--early"></span>
+              Early Years
+            </span>
+            <div class="life-phase__inputs">
+              <div class="form-group">
+                <label>Start</label>
+                <input type="number" class="form-control phase-input" data-phase="early" data-type="start" value="0" min="0" max="90">
+              </div>
+              <div class="form-group">
+                <label>End</label>
+                <input type="number" class="form-control phase-input" data-phase="early" data-type="end" value="5" min="0" max="90">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="life-phase">
+          <div class="life-phase__row">
+            <span class="life-phase__title">
+              <span class="life-phase__color-indicator life-phase__color-indicator--elementary"></span>
+              Elementary School
+            </span>
+            <div class="life-phase__inputs">
+              <div class="form-group">
+                <label>Start</label>
+                <input type="number" class="form-control phase-input" data-phase="elementary" data-type="start" value="5" min="0" max="90">
+              </div>
+              <div class="form-group">
+                <label>End</label>
+                <input type="number" class="form-control phase-input" data-phase="elementary" data-type="end" value="11" min="0" max="90">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="life-phase">
+          <div class="life-phase__row">
+            <span class="life-phase__title">
+              <span class="life-phase__color-indicator life-phase__color-indicator--middle"></span>
+              Middle School
+            </span>
+            <div class="life-phase__inputs">
+              <div class="form-group">
+                <label>Start</label>
+                <input type="number" class="form-control phase-input" data-phase="middle" data-type="start" value="11" min="0" max="90">
+              </div>
+              <div class="form-group">
+                <label>End</label>
+                <input type="number" class="form-control phase-input" data-phase="middle" data-type="end" value="14" min="0" max="90">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="life-phase">
+          <div class="life-phase__row">
+            <span class="life-phase__title">
+              <span class="life-phase__color-indicator life-phase__color-indicator--high"></span>
+              High School
+            </span>
+            <div class="life-phase__inputs">
+              <div class="form-group">
+                <label>Start</label>
+                <input type="number" class="form-control phase-input" data-phase="high" data-type="start" value="14" min="0" max="90">
+              </div>
+              <div class="form-group">
+                <label>End</label>
+                <input type="number" class="form-control phase-input" data-phase="high" data-type="end" value="18" min="0" max="90">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="life-phase">
+          <div class="life-phase__row">
+            <span class="life-phase__title">
+              <span class="life-phase__color-indicator life-phase__color-indicator--college"></span>
+              College
+            </span>
+            <div class="life-phase__inputs">
+              <div class="form-group">
+                <label>Start</label>
+                <input type="number" class="form-control phase-input" data-phase="college" data-type="start" value="18" min="0" max="90">
+              </div>
+              <div class="form-group">
+                <label>End</label>
+                <input type="number" class="form-control phase-input" data-phase="college" data-type="end" value="22" min="0" max="90">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="life-phase">
+          <div class="life-phase__row">
+            <span class="life-phase__title">
+              <span class="life-phase__color-indicator life-phase__color-indicator--youngAdult"></span>
+              Young Adult
+            </span>
+            <div class="life-phase__inputs">
+              <div class="form-group">
+                <label>Start</label>
+                <input type="number" class="form-control phase-input" data-phase="youngAdult" data-type="start" value="22" min="0" max="90">
+              </div>
+              <div class="form-group">
+                <label>End</label>
+                <input type="number" class="form-control phase-input" data-phase="youngAdult" data-type="end" value="30" min="0" max="90">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="life-phase">
+          <div class="life-phase__row">
+            <span class="life-phase__title">
+              <span class="life-phase__color-indicator life-phase__color-indicator--adult"></span>
+              Adult
+            </span>
+            <div class="life-phase__inputs">
+              <div class="form-group">
+                <label>Start</label>
+                <input type="number" class="form-control phase-input" data-phase="adult" data-type="start" value="30" min="0" max="90">
+              </div>
+              <div class="form-group">
+                <label>End</label>
+                <input type="number" class="form-control phase-input" data-phase="adult" data-type="end" value="50" min="0" max="90">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="life-phase">
+          <div class="life-phase__row">
+            <span class="life-phase__title">
+              <span class="life-phase__color-indicator life-phase__color-indicator--aging"></span>
+              Aging Adult
+            </span>
+            <div class="life-phase__inputs">
+              <div class="form-group">
+                <label>Start</label>
+                <input type="number" class="form-control phase-input" data-phase="aging" data-type="start" value="50" min="0" max="90">
+              </div>
+              <div class="form-group">
+                <label>End</label>
+                <input type="number" class="form-control phase-input" data-phase="aging" data-type="end" value="75" min="0" max="90">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="life-phase">
+          <div class="life-phase__row">
+            <span class="life-phase__title">
+              <span class="life-phase__color-indicator life-phase__color-indicator--immobile"></span>
+              Immobile Adult
+            </span>
+            <div class="life-phase__inputs">
+              <div class="form-group">
+                <label>Start</label>
+                <input type="number" class="form-control phase-input" data-phase="immobile" data-type="start" value="75" min="0" max="90">
+              </div>
+              <div class="form-group">
+                <label>End</label>
+                <input type="number" class="form-control phase-input" data-phase="immobile" data-type="end" value="90" min="0" max="90">
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

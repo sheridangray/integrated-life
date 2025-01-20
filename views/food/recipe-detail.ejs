@@ -1,0 +1,61 @@
+<%- contentFor('body') %>
+
+<div class="recipe-detail">
+  <% if (recipe.images?.featured?.url) { %>
+    <div class="recipe-hero">
+      <img src="<%= recipe.images.featured.url %>" alt="<%= recipe.images.featured.altText %>">
+    </div>
+  <% } %>
+
+  <div class="recipe-content">
+    <div class="recipe-header">
+      <h1><%= recipe.name %></h1>
+      <div class="cuisine"><%= recipe.cuisine %></div>
+      <div class="recipe-detail__description">
+        <%= recipe.shortDescription %>
+      </div>
+    </div>
+
+    <div class="recipe-sections">
+      <div class="recipe-section recipe-section--time">
+        <h2>Time</h2>
+        <ul class="time-list">
+          <li>Prep Time: <%= recipe.prepTime %> min</li>
+          <li>Cook Time: <%= recipe.cookTime %> min</li>
+          <li>Total Time: <%= recipe.totalTime %> min</li>
+        </ul>
+        
+        <h2>Nutrition</h2>
+        <ul class="nutrition-list">
+          <li>Serving Size: <%= recipe.nutrition.servingSize %> <%= recipe.nutrition.servingUnit %></li>
+          <li>Servings: <%= recipe.nutrition.servings %></li>
+        </ul>
+      </div>
+
+      <div class="recipe-section recipe-section--ingredients">
+        <h2>Ingredients</h2>
+        <ul class="ingredients-list">
+          <% recipe.ingredients.forEach(ingredient => { %>
+            <li>
+              <span class="ingredient-amount">
+                <%= decimalToFraction(ingredient.quantity) %> <%= ingredient.unit %>
+              </span>
+              <span class="ingredient-name"><%= ingredient.item %></span>
+            </li>
+          <% }); %>
+        </ul>
+      </div>
+
+      <div class="recipe-section recipe-section--instructions">
+        <h2>Instructions</h2>
+        <ol class="instructions-list">
+          <% recipe.instructions.forEach(instruction => { %>
+            <li>
+              <span class="instruction-text"><%= instruction.instruction %></span>
+            </li>
+          <% }); %>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>

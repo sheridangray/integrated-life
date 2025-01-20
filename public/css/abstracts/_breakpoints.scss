@@ -1,0 +1,13 @@
+@use 'variables' as vars;  // Import variables first
+
+$breakpoints: (
+  'small': vars.$breakpoint-sm,
+  'medium': vars.$breakpoint-md,
+  'large': vars.$breakpoint-lg,
+  'xlarge': vars.$breakpoint-xl
+);
+
+// Usage example:
+// @include respond-to('medium') {
+//   // styles for medium and up
+// } 

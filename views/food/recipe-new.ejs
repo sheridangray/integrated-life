@@ -1,0 +1,74 @@
+<%- contentFor('body') %>
+
+<div class="recipe-form-container">
+  <div class="recipe-form">
+    <div class="recipe-form__header">
+      <h1>Create New Recipe</h1>
+      <p class="recipe-form__subtitle">Share your culinary creation with the world</p>
+    </div>
+
+    <form action="/food/recipes" method="POST" enctype="multipart/form-data" class="recipe-form__body" id="recipeForm">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      
+      <div class="form-group">
+        <label for="name">Recipe Name*</label>
+        <input 
+          type="text" 
+          id="name" 
+          name="name" 
+          required
+          placeholder="Enter your recipe name"
+          class="form-control"
+        >
+      </div>
+      
+      <div class="form-group">
+        <label for="featureImage">Featured Image</label>
+        <div class="file-upload">
+          <input 
+            type="file" 
+            id="featureImage" 
+            name="featureImage" 
+            accept="image/*"
+            class="file-upload__input"
+          >
+          <label for="featureImage" class="file-upload__label">
+            <i class="material-icons">cloud_upload</i>
+            <span>Choose a photo or drag it here</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit" id="submitButton">
+          <i class="material-icons">restaurant</i>
+          <span class="button-text">Create Recipe</span>
+          <span class="button-spinner hidden">
+            <i class="material-icons rotating">sync</i>
+          </span>
+        </button>
+        <a class="btn btn-secondary" href="/food/recipes">
+          <i class="material-icons">close</i>
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.getElementById('recipeForm').addEventListener('submit', function(e) {
+    // Add CSRF token to headers as well
+    const token = document.querySelector('input[name="_csrf"]').value;
+    const headers = new Headers({
+      'CSRF-Token': token,
+      'X-CSRF-Token': token
+    });
+    
+    // Log form data for debugging
+    console.log('Form submission:', {
+      csrf: token,
+      formData: new FormData(this)
+    });
+  });
+  </script>

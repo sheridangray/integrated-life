@@ -1,0 +1,173 @@
+@use '../abstracts/variables' as vars;
+@use 'sass:color';
+
+.time-layout {
+  display: flex;
+  gap: vars.$spacing-xl;
+  height: calc(100vh - vars.$header-height);
+  overflow: hidden;
+
+  &__grid {
+    position: sticky;
+    top: vars.$header-height;
+    height: 100%;
+    overflow-y: auto;
+    flex: 0 0 auto; // Don't grow or shrink
+    max-width: 800px; // Adjust as needed
+  }
+
+  &__controls {
+    flex: 1;
+    padding: vars.$spacing-xl;
+    overflow-y: auto;
+    background: vars.$color-white;
+    border-radius: vars.$border-radius-lg;
+    box-shadow: vars.$shadow-sm;
+  }
+}
+
+.time-controls {
+  &__section {
+    margin-bottom: vars.$spacing-2xl;
+
+    h2 {
+      font-size: vars.$font-size-xl;
+      color: vars.$color-text;
+      margin-bottom: vars.$spacing-lg;
+    }
+  }
+
+  .form-group {
+    margin-bottom: vars.$spacing-lg;
+  }
+
+  label {
+    display: block;
+    margin-bottom: vars.$spacing-xs;
+    color: vars.$color-text;
+    font-weight: 500;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: vars.$spacing-sm;
+    border: 1px solid vars.$color-border;
+    border-radius: vars.$border-radius;
+    font-size: vars.$font-size-base;
+    color: vars.$color-text;
+    background: vars.$color-white;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: vars.$color-primary;
+    }
+  }
+}
+
+// ... existing styles ...
+
+.life-phase {
+  margin-bottom: vars.$spacing-md;
+  padding-bottom: vars.$spacing-md;
+  border-bottom: 1px solid vars.$color-border;
+
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-lg;
+  }
+
+  &__title {
+    flex: 0 0 200px;
+    font-weight: 500;
+    color: vars.$color-text;
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-sm;
+  }
+
+  &__color-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: vars.$border-radius-sm;
+    border: 1px solid vars.$color-grey-600;
+
+    // Past state colors for indicators
+    &--early {
+      background-color: color.adjust(vars.$color-danger, $lightness: 35%);
+      border-color: color.adjust(vars.$color-danger, $lightness: 35%);
+    }
+
+    &--elementary {
+      background-color: color.adjust(vars.$color-danger, $lightness: 30%);
+      border-color: color.adjust(vars.$color-danger, $lightness: 30%);
+    }
+
+    &--middle {
+      background-color: color.adjust(vars.$color-danger, $lightness: 25%);
+      border-color: color.adjust(vars.$color-danger, $lightness: 25%);
+    }
+
+    &--high {
+      background-color: color.adjust(vars.$color-danger, $lightness: 20%);
+      border-color: color.adjust(vars.$color-danger, $lightness: 20%);
+    }
+
+    &--college {
+      background-color: color.adjust(vars.$color-danger, $lightness: 15%);
+      border-color: color.adjust(vars.$color-danger, $lightness: 15%);
+    }
+
+    &--youngAdult {
+      background-color: color.adjust(vars.$color-danger, $lightness: 10%);
+      border-color: color.adjust(vars.$color-danger, $lightness: 10%);
+    }
+
+    &--adult {
+      background-color: color.adjust(vars.$color-danger, $lightness: 5%);
+      border-color: color.adjust(vars.$color-danger, $lightness: 5%);
+    }
+
+    &--aging {
+      background-color: vars.$color-danger;
+      border-color: vars.$color-danger;
+    }
+
+    &--immobile {
+      background-color: color.adjust(vars.$color-danger, $lightness: -5%);
+      border-color: color.adjust(vars.$color-danger, $lightness: -5%);
+    }
+  }
+
+  &__inputs {
+    display: flex;
+    gap: vars.$spacing-xl;
+    align-items: center;
+
+    .form-group {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: vars.$spacing-sm;
+      
+      label {
+        font-size: vars.$font-size-sm;
+        color: vars.$color-text-light;
+        margin: 0;
+        min-width: 45px;
+      }
+
+      input {
+        width: 70px;
+        padding: vars.$spacing-xs vars.$spacing-sm;
+      }
+    }
+  }
+}

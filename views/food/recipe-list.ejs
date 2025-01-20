@@ -1,0 +1,60 @@
+<%- contentFor('body') %>
+
+<% if (!recipes || recipes.length === 0) { %>
+  <div class="empty-state">
+    <div class="empty-state__icon">
+      <i class="material-icons">menu_book</i>
+    </div>
+    <h2 class="empty-state__title">No recipes yet</h2>
+    <p class="empty-state__description">Create your first recipe to get started with your culinary journey!</p>
+    <a href="/food/recipes/new" class="btn btn-primary">
+      <i class="material-icons">add</i>
+      Add New Recipe
+    </a>
+  </div>
+<% } else { %>
+  <div class="recipe-list-container">
+    <div class="page-header">
+      <h1>Recipes</h1>
+      <div class="search-bar">
+        <div class="search-bar__input">
+          <i class="material-icons">search</i>
+          <input type="text" placeholder="Search recipes..." class="form-control">
+        </div>
+      </div>
+      <a href="/food/recipes/new" class="btn btn-primary">
+        <i class="material-icons">add</i>
+        New Recipe
+      </a>
+    </div>
+
+    <div class="recipe-grid" id="recipe-list">
+      <% recipes.forEach(recipe => { %>
+        <a href="/food/recipes/<%= recipe.slug %>" class="recipe-card">
+          <% if (recipe.images?.featured?.url) { %>
+            <div class="recipe-card__image">
+              <img src="<%= recipe.images.featured.url %>" alt="<%= recipe.name %>">
+            </div>
+          <% } %>
+          <div class="recipe-card__content">
+            <h3 class="recipe-card__title"><%= recipe.name %></h3>
+            <p class="recipe-card__description"><%= recipe.shortDescription %></p>
+            <div class="recipe-meta">
+              <span class="recipe-meta__item">
+                <i class="material-icons">schedule</i>
+                <%= recipe.totalTime %> min
+              </span>
+              <% if (recipe.cuisine) { %>
+                <span class="recipe-meta__item">
+                  <i class="material-icons">restaurant</i>
+                  <%= recipe.cuisine %>
+                </span>
+              <% } %>
+            </div>
+            <span class="btn btn-secondary">View Recipe</span>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+<% } %>

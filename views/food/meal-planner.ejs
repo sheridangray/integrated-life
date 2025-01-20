@@ -1,0 +1,40 @@
+<%- contentFor('body') %>
+
+<div class="container">
+  <div class="page-header">
+    <h1>Meal Planner</h1>
+    <div class="actions">
+      <button class="button-primary" id="generate-plan">
+        <span class="material-symbols-outlined">auto_awesome</span>
+        Generate Plan
+      </button>
+    </div>
+  </div>
+
+  <div class="meal-planner">
+    <div class="week-navigator">
+      <button class="button-icon" id="prev-week">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <h2 id="week-display">This Week</h2>
+      <button class="button-icon" id="next-week">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+    </div>
+
+    <div class="meal-grid" id="meal-plan">
+      <!-- Meal plan will be loaded dynamically -->
+    </div>
+
+    <div class="meal-plan-actions">
+      <button class="button-secondary" id="export-plan">
+        <span class="material-symbols-outlined">download</span>
+        Export Plan
+      </button>
+      <button class="button-secondary" id="create-grocery-list">
+        <span class="material-symbols-outlined">shopping_cart</span>
+        Create Grocery List
+      </button>
+    </div>
+  </div>
+</div> 

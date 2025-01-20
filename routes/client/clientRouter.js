@@ -1,34 +1,35 @@
 const express = require("express");
-const viewController = require("../../controllers/viewsController");
-const authController = require("../../controllers/authController");
-
 const router = express.Router();
 
-// Check of user is logged in for all pages.
+console.log("Instantiating Client Router");
 
-router.use(authController.isLoggedIn);
+// Import controllers
+const homeController = require("../../controllers/client/homeController");
+const authController = require("../../controllers/api/authController");
 
-// Unprotected Page Routes
+// Import route modules
+const userRoutes = require("./userRoutes");
+const timeRoutes = require("./timeRoutes");
+const foodRoutes = require("./foodRoutes");
+const moneyRoutes = require("./moneyRoutes");
+const relationshipsRoutes = require("./relationshipsRoutes");
+const healthRoutes = require("./healthRoutes");
+const sleepRoutes = require("./sleepRoutes");
 
-router.get("/", viewController.getHome);
-router.get("/login", viewController.getLogin);
-router.get("/logout", authController.logout);
+// Public routes
+
+router.get("/login", authController.googleLogin);
 
 // Protect all routes after this middleware
+router.use(authController.protect);
 
-// router.use(authController.protect);
-
-// Protected Page Routes
-
-router.get("/time", viewController.getTime);
-router.get("/food", viewController.getFood);
-router.get("/food/learn", viewController.getFoodLearn);
-router.get("/food/ingredients", viewController.getIngredients);
-router.get("/food/recipes", viewController.getRecipes);
-router.get("/food/meal_planner", viewController.getMealPlanner);
-router.get("/food/grocery-list", viewController.getGroceryList);
-router.get("/money", viewController.getMoney);
-router.get("/relationships", viewController.getRelationships);
-router.get("/health", viewController.getHealth);
+router.get("/", homeController.getHomePage);
+router.use("/profile", userRoutes);
+router.use("/time", timeRoutes);
+router.use("/food", foodRoutes);
+router.use("/money", moneyRoutes);
+router.use("/relationships", relationshipsRoutes);
+router.use("/health", healthRoutes);
+router.use("/sleep", sleepRoutes);
 
 module.exports = router;

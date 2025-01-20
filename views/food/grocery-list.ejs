@@ -1,0 +1,24 @@
+<%- contentFor('body') %>
+
+<div class="container">
+  <div class="page-header">
+    <h1>Grocery List</h1>
+    <div class="actions">
+      <button class="button-primary" id="add-item">
+        <span class="material-symbols-outlined">add</span>
+        Add Item
+      </button>
+    </div>
+  </div>
+
+  <div class="grocery-list">
+    <div class="list-controls">
+      <input type="text" id="grocery-search" class="search-input" placeholder="Search items...">
+      <button class="button-secondary" id="clear-completed">Clear Completed</button>
+    </div>
+
+    <div id="grocery-items" class="grocery-items">
+      <!-- Items will be loaded dynamically -->
+    </div>
+  </div>
+</div> 

@@ -3,6 +3,7 @@ dotenv.config({ path: "./config.env" });
 const axios = require("axios");
 const nodemailer = require("nodemailer");
 const { marked } = require("marked");
+const { sendEmail } = require("../services/emailService");
 
 const API_URL =
   process.env.API_BASE_URL ||
@@ -10,14 +11,14 @@ const API_URL =
 
 const sendWeeklyMealPlanEmail = async () => {
   try {
-    console.log("Starting meal plan generation process...");
+    console.log("Starting meal plan generavtion process...");
 
     console.log("Fetching meal plan from API...");
     const response = await axios.get(`${API_URL}`);
     const mealPlanMarkdown = response.data.data;
     console.log("Meal plan fetched successfully.");
 
-    console.log(mealPlanMarkdown);
+    // console.log(mealPlanMarkdown);
 
     console.log("Compiling email content...");
     const emailContent = `
@@ -27,23 +28,8 @@ const sendWeeklyMealPlanEmail = async () => {
         </body>
       </html>
     `;
-    console.log("Setting up email transporter...");
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
 
-    console.log("Sending email...");
-    await transporter.sendMail({
-      from: `"Gray Family Assistant" <${process.env.EMAIL_USER}>`, // Specify sender name and email
-      to: process.env.EMAIL_TO,
-      subject: "Your Weekly Meal Plan",
-      html: emailContent,
-    });
-
+    sendEmail(process.env.EMAIL_TO, "Your Weekly Meal Plan", emailContent);
     console.log("Weekly meal plan email sent successfully.");
   } catch (error) {
     console.error("Error generating or sending email:", error);

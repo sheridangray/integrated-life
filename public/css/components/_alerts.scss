@@ -1,0 +1,42 @@
+@use '../abstracts/variables' as vars;
+
+.alert {
+  padding: vars.$spacing-unit * 2;
+  border-radius: vars.$border-radius;
+  margin-bottom: vars.$spacing-unit * 2;
+  
+  &-success {
+    background-color: vars.$color-success;
+    color: #fff;
+  }
+  
+  &-danger {
+    background-color: vars.$color-danger;
+    color: #fff;
+  }
+  
+  &-warning {
+    background-color: vars.$color-warning;
+    color: #000;
+  }
+  
+  &-info {
+    background-color: vars.$color-info;
+    color: #fff;
+  }
+
+  &-secondary {
+    background-color: vars.$color-secondary;
+    color: #fff;
+  }
+}
+
+// Optional: Add transition for interactive alerts
+.alert-dismissible {
+  transition: vars.$transition-base;
+  
+  .close {
+    padding: vars.$spacing-unit;
+    margin: -(vars.$spacing-unit);
+  }
+}

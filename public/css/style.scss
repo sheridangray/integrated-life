@@ -1,30 +1,41 @@
-@import 'base/base.scss';
-@import 'base/colors.scss';
-@import 'base/typography.scss';
-@import 'base/elevations.scss';
-@import 'components/button.scss';
-@import 'components/form.scss';
-@import 'components/modal.scss';
-@import 'components/navigation.scss';
-@import 'pages/login.scss';
-@import 'pages/food/ingredients.scss';
+// 1. Configuration and helpers
+@use 'abstracts/variables';   // Variables for colors, spacing, etc.
+@use 'abstracts/functions';   // SCSS functions
+@use 'abstracts/mixins';      // Reusable mixins
+@use 'abstracts/breakpoints'; // Media query breakpoints
 
-html {
-    background-color: $neutral-color-100;
-  }
-  
-.content {
-    display: flex;
-}
+// 2. Base stuff
+@use 'base/reset';      // CSS reset/normalize
+@use 'base/typography'; // Typography rules
+@use 'base/animations'; // Animations
+@use 'base/utilities'; // Utility classes
 
-.main {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    gap: 16px;
-}
+// 3. Layout-related sections
+@use 'layout/header';
+@use 'layout/grid';
+@use 'layout/footer';
+@use 'layout/forms';
+@use 'layout/navigation';
+@use 'layout/left-nav';
 
-a {
-    text-decoration: none;
-}
+// 4. Components
+@use 'components/buttons';
+@use 'components/alerts';
+@use 'components/cards';
+@use 'components/modals';
+@use 'components/loaders';
+@use 'components/recipe';
+@use 'components/time';
+@use 'components/life-grid';
+
+// 5. Page-specific styles
+// @use 'pages/home';
+// @use 'pages/food';
+// @use 'pages/time';
+// @use 'pages/money';
+// @use 'pages/health';
+// @use 'pages/sleep';
+// @use 'pages/relationships';
+
+// 6. Themes
+@use 'themes/default';

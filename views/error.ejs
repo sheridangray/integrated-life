@@ -1,0 +1,13 @@
+<div class="container error-page">
+  <div class="row">
+    <div class="col-md-6 offset-md-3 text-center">
+      <h1><%= error.statusCode %> Error</h1>
+      <h2><%= error.status %></h2>
+      <p><%= error.message %></p>
+      <% if (process.env.NODE_ENV === 'development') { %>
+        <p><%= error.stack %></p>
+      <% } %>
+      <a href="/" class="btn btn-primary">Return Home</a>
+    </div>
+  </div>
+</div> 

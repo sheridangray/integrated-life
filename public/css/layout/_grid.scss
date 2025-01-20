@@ -1,0 +1,72 @@
+@use '../abstracts/variables' as vars;
+@use '../abstracts/mixins' as mix;
+
+.container {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  padding: 0;
+  
+  // Add max-width only when container needs to be constrained
+  &--constrained {
+    max-width: var(--container-width-lg);
+  }
+}
+
+.grid {
+  display: grid;
+  gap: vars.$grid-gutter;
+  
+  // Grid columns
+  @for $i from 1 through 12 {
+    &-cols-#{$i} {
+      grid-template-columns: repeat($i, 1fr);
+    }
+  }
+  
+  // Responsive grid columns
+  @include mix.respond-to('medium') {
+    @for $i from 1 through 12 {
+      &-md-cols-#{$i} {
+        grid-template-columns: repeat($i, 1fr);
+      }
+    }
+  }
+  
+  @include mix.respond-to('large') {
+    @for $i from 1 through 12 {
+      &-lg-cols-#{$i} {
+        grid-template-columns: repeat($i, 1fr);
+      }
+    }
+  }
+  
+  // Grid gaps
+  &-gap {
+    &-0 { gap: 0; }
+    &-1 { gap: vars.$spacing-unit; }
+    &-2 { gap: vars.$spacing-unit * 2; }
+    &-3 { gap: vars.$spacing-unit * 3; }
+    &-4 { gap: vars.$spacing-unit * 4; }
+  }
+  
+  // Grid alignment
+  &-center {
+    place-items: center;
+  }
+  
+  &-stretch {
+    place-items: stretch;
+  }
+}
+
+// Grid items
+.grid-item {
+  &-center {
+    place-self: center;
+  }
+  
+  &-stretch {
+    place-self: stretch;
+  }
+}

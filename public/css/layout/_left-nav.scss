@@ -1,0 +1,83 @@
+@use 'sass:map';
+
+@use '../abstracts/variables' as vars;
+
+
+.left-nav {
+    width: vars.$nav-width;
+    background-color: #fff;
+    border-right: 1px solid vars.$border-color;
+    padding: vars.$spacing-unit * 2;
+    height: calc(100vh - vars.$header-height);
+    position: fixed;
+    top: vars.$header-height;
+    left: 0;
+    overflow-y: auto;
+    z-index: map.get(vars.$z-index, 'nav');
+    
+    &__section {
+      margin-bottom: vars.$spacing-unit * 3;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+    
+    &__title {
+      font-size: vars.$font-size-base * 1.5;
+      font-weight: 600;
+      color: vars.$color-secondary;
+      margin-bottom: vars.$spacing-unit * 2;
+      padding-left: vars.$spacing-unit;
+    }
+    
+    &__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    &__item {
+      margin-bottom: vars.$spacing-unit;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      a {
+        display: flex;
+        align-items: center;
+        padding: vars.$spacing-unit vars.$spacing-unit * 1.5;
+        color: vars.$color-secondary;
+        text-decoration: none;
+        border-radius: vars.$border-radius;
+        transition: vars.$transition-base;
+        font-weight: 500;
+        
+        i {
+          margin-right: vars.$spacing-unit * 1.5;
+          font-size: 1.25rem;
+          color: vars.$color-secondary;
+          transition: vars.$transition-base;
+        }
+        
+        &:hover {
+            color: vars.$color-primary;
+            background-color: rgba(vars.$color-primary, 0.1);
+          
+          i {
+            color: vars.$color-primary;
+          }
+        }
+        
+        &.active {
+          background-color: vars.$color-primary;
+          color: #fff;
+          
+          i {
+            color: #fff;
+          }
+        }
+      }
+    }
+  }

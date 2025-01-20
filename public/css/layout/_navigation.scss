@@ -1,0 +1,42 @@
+@use 'sass:map';
+@use 'sass:color';
+@use '../abstracts/variables' as vars;
+@use '../abstracts/mixins' as mix;
+
+// Adjust main content to account for left nav
+.layout {
+  display: flex;
+  padding-left: 250px;
+  padding-top: vars.$header-height;
+  min-height: 100vh;
+  
+  &.no-nav {
+    padding-left: 0;
+  }
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 0;
+
+  &.main-content--padded {
+    padding: vars.$spacing-unit vars.$spacing-unit * 2;
+  }
+} 
+
+// Responsive adjustments
+@include mix.respond-to('medium-down') {
+  .left-nav {
+    transform: translateX(-100%);
+    transition: transform vars.$transition-base;
+    z-index: map.get(vars.$z-index, 'nav');
+    
+    &.active {
+      transform: translateX(0);
+    }
+  }
+  
+  .layout {
+    padding-left: 0;
+  }
+}

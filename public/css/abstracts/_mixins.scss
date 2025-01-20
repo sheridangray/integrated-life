@@ -1,0 +1,71 @@
+@use 'sass:map';
+@use 'sass:string';
+@use 'sass:color';
+@use 'variables' as vars;
+
+// Helper function to check if a string ends with a specific substring
+@function ends_with($string, $ending) {
+  $ending-length: string.length($ending);
+  @if $ending-length > string.length($string) {
+    @return false;
+  }
+  $substring: string.slice($string, string.length($string) - $ending-length + 1, string.length($string));
+  @return $substring == $ending;
+}
+
+// Responsive breakpoint mixin
+@mixin respond-to($breakpoint) {
+  // Check if the breakpoint ends with '-down'
+  @if ends_with($breakpoint, '-down') {
+    // Extract the breakpoint name by removing '-down'
+    $size: string.slice($breakpoint, 1, string.length($breakpoint) - string.length('-down'));
+    
+    // Check if the extracted size exists in the $breakpoints map
+    @if map.has-key(vars.$breakpoints, $size) {
+      @media screen and (max-width: map.get(vars.$breakpoints, $size)) {
+        @content;
+      }
+    } @else {
+      @warn "Unfortunately, no value could be retrieved from `#{$breakpoint}`. "
+          + "Available breakpoints are: #{map.keys(vars.$breakpoints)}.";
+    }
+  } @else {
+    // Check if the breakpoint exists in the $breakpoints map
+    @if map.has-key(vars.$breakpoints, $breakpoint) {
+      @media screen and (min-width: map.get(vars.$breakpoints, $breakpoint)) {
+        @content;
+      }
+    } @else {
+      @warn "Unfortunately, no value could be retrieved from `#{$breakpoint}`. "
+          + "Available breakpoints are: #{map.keys(vars.$breakpoints)}.";
+    }
+  }
+}
+
+// Flexbox Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Typography Mixins
+@mixin heading($size) {
+  font-size: $size;
+  line-height: 1.2;
+  margin-bottom: vars.$spacing-unit * 2;
+}
+
+// Interactive Element States
+@mixin interactive {
+  cursor: pointer;
+  transition: vars.$transition-base;
+}
+
+// Card Styles
+@mixin card {
+  background: white;
+  border-radius: $border-radius;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: $spacing-unit * 2;
+} 

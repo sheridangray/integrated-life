@@ -1,0 +1,55 @@
+<nav class="left-nav">
+  <% 
+  const navItems = {
+    time: [
+      { path: '/time/life-in-weeks', icon: 'apps', label: 'Life in Weeks' },
+      { path: '/time/habits', icon: 'repeat', label: 'Habits' },
+      { path: '/time/goals', icon: 'flag', label: 'Goals' },
+    ],
+    food: [
+      { path: '/food/learn', icon: 'school', label: 'Learn to Cook' },
+      { path: '/food/ingredients', icon: 'egg_alt', label: 'Ingredients' },
+      { path: '/food/recipes', icon: 'menu_book', label: 'Recipes' },
+      { path: '/food/meal-planner', icon: 'restaurant', label: 'Meal Planner' },
+      { path: '/food/grocery-list', icon: 'shopping_cart', label: 'Grocery List' }
+    ],
+    money: [
+      { path: '/money/overview', icon: 'account_balance', label: 'Balance Sheet' },
+      { path: '/money/transactions', icon: 'swap_horiz', label: 'Income Statement' },
+      { path: '/money/budgets', icon: 'payments', label: 'Cash Flow' }
+    ],
+    health: [
+      { path: '/health/mental', icon: 'psychology', label: 'Mental' },
+      { path: '/health/physical', icon: 'fitness_center', label: 'Physical' }
+    ],
+    sleep: [
+      { path: '/sleep/tracker', icon: 'bedtime', label: 'Sleep Tracker' },
+    ],
+    relationships: [
+      { path: '/relationships/contacts', icon: 'people', label: 'Immediate Family' },
+      { path: '/relationships/events', icon: 'event', label: 'Extended Family' },
+      { path: '/relationships/notes', icon: 'note', label: 'Close Friends' },
+      { path: '/relationships/notes', icon: 'note', label: 'Tertiary Friends' }
+    ]
+  };
+
+  const section = currentPage.split('/')[1]; // Gets 'time', 'food', etc.
+  const items = navItems[section] || [];
+  %>
+
+  <% if (items.length > 0) { %>
+    <div class="left-nav__section">
+      <h2 class="left-nav__title"><%= section.charAt(0).toUpperCase() + section.slice(1) %></h2>
+      <ul class="left-nav__list">
+        <% items.forEach(item => { %>
+          <li class="left-nav__item">
+            <a href="<%= item.path %>" class="<%= currentPage === item.path ? 'active' : '' %>">
+              <i class="material-icons"><%= item.icon %></i>
+              <%= item.label %>
+            </a>
+          </li>
+        <% }); %>
+      </ul>
+    </div>
+  <% } %>
+</nav> 

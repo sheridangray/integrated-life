@@ -1,0 +1,28 @@
+@use 'sass:map';
+@use 'sass:math';
+@use 'variables' as vars;
+
+// Convert px to rem
+@function rem($pixels, $context: 16) {
+  @return math.div($pixels, $context) * 1rem;
+}
+
+// Get z-index value
+@function z($layer) {
+  @if map.has-key(vars.$z-index, $layer) {
+    @return map.get(vars.$z-index, $layer);
+  } @else {
+    @warn "No z-index found for `#{$layer}`";
+    @return null;
+  }
+}
+
+// Get spacing value
+@function spacing($multiplier: 1) {
+  @return vars.$spacing-unit * $multiplier;
+}
+
+// Get color with opacity
+@function color-alpha($color, $opacity) {
+  @return rgba($color, $opacity);
+} 

@@ -1,0 +1,74 @@
+<header class="header">
+  <a href="/" class="header__logo">
+    <img src="/img/logo-full-colorful-light.svg" alt="Integrated Life">
+  </a>
+  
+  <nav class="header__nav">
+    <a href="/time" class="<%= currentPage.startsWith('/time') ? 'active' : '' %>">Time</a>
+    <a href="/food" class="<%= currentPage.startsWith('/food') ? 'active' : '' %>">Food</a>
+    <a href="/money" class="<%= currentPage.startsWith('/money') ? 'active' : '' %>">Money</a>
+    <a href="/health" class="<%= currentPage.startsWith('/health') ? 'active' : '' %>">Health</a>
+    <a href="/sleep" class="<%= currentPage.startsWith('/sleep') ? 'active' : '' %>">Sleep</a>
+    <a href="/relationships" class="<%= currentPage.startsWith('/relationships') ? 'active' : '' %>">Relationships</a>
+  </nav>
+  
+  <div class="header__actions">
+    <% if (user) { %>
+      <div class="header__user-menu">
+        <img src="<%= user.photo %>" alt="User Photo" class="user-photo" id="userMenuButton">
+        <div class="dropdown-menu" id="userDropdown">
+          <a href="/profile">Profile</a>
+          <form action="/api/v1/users/logout" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit">Logout</button>
+          </form>
+        </div>
+      </div>
+    <% } else { %>
+      <% console.log('No user logged in'); %>
+      <!-- Google Sign-In Button -->
+      <script src="https://accounts.google.com/gsi/client" async defer></script>
+      <div id="g_id_onload"
+           data-client_id="<%= process.env.GOOGLE_CLIENT_ID %>"
+           data-callback="handleCredentialResponse">
+      </div>
+      <div class="g_id_signin" data-type="standard"></div>
+    <% } %>
+  </div>
+  
+  <button class="header__mobile-toggle" aria-label="Toggle menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</header>
+
+<div class="mobile-menu">
+  <nav class="mobile-menu__nav">
+    <a href="/time" class="<%= currentPage === '/time' ? 'active' : '' %>">
+      <i class="material-icons">schedule</i>
+      Time
+    </a>
+    <a href="/food" class="<%= currentPage === '/food' ? 'active' : '' %>">
+      <i class="material-icons">restaurant</i>
+      Food
+    </a>
+    <a href="/money" class="<%= currentPage === '/money' ? 'active' : '' %>">
+      <i class="material-icons">attach_money</i>
+      Money
+    </a>
+    <a href="/health" class="<%= currentPage === '/health' ? 'active' : '' %>">
+      <i class="material-icons">favorite</i>
+      Health
+    </a>
+    <a href="/sleep" class="<%= currentPage === '/sleep' ? 'active' : '' %>">
+      <i class="material-icons">bedtime</i>
+      Sleep
+    </a>
+    <a href="/relationships" class="<%= currentPage === '/relationships' ? 'active' : '' %>">
+      <i class="material-icons">people</i>
+      Relationships
+    </a>
+  </nav>
+</div>
+

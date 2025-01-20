@@ -1,0 +1,220 @@
+// Colors - Base
+$color-primary: #2F6FED;
+$color-secondary: #6c757d;
+$color-success: #28a745;
+$color-danger: #dc3545;
+$color-warning: #ffc107;
+$color-info: #17a2b8;
+
+// Colors - Monochrome
+$color-white: #ffffff;
+$color-grey-50: #f8f9fa;
+$color-grey-100: #f1f3f5;
+$color-grey-200: #e9ecef;
+$color-grey-300: #dee2e6;
+$color-grey-400: #ced4da;
+$color-grey-500: #adb5bd;
+$color-grey-600: #6c757d;
+$color-grey-700: #495057;
+$color-grey-800: #343a40;
+$color-grey-900: #212529;
+$color-black: #000000;
+
+// Colors - Text
+$color-text: $color-grey-900;
+$color-text-light: $color-grey-600;
+$color-text-lighter: $color-grey-500;
+$color-text-inverse: $color-white;
+
+// Colors - Background
+$color-background: $color-white;
+$color-background-light: $color-grey-50;
+$color-background-dark: $color-grey-100;
+
+// Colors - Border
+$color-border: $color-grey-200;
+$color-border-light: $color-grey-100;
+$color-border-dark: $color-grey-300;
+
+// Typography
+$font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-size-base: 1rem;
+$line-height-base: 1.5;
+
+// Spacing
+$spacing-unit: 8px;
+$container-padding: $spacing-unit * 2;
+$grid-gutter: $spacing-unit * 2;
+
+// Layout
+$header-height: 60px;
+$footer-height: 60px;
+$nav-width: 250px;
+
+// Breakpoints
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+
+// Breakpoints map
+$breakpoints: (
+  'small': $breakpoint-sm,
+  'medium': $breakpoint-md,
+  'large': $breakpoint-lg,
+  'xlarge': $breakpoint-xl
+);
+
+// Z-index
+$z-index: (
+  'modal': 1000,
+  'dropdown': 900,
+  'header': 800,
+  'footer': 700,
+  'nav': 850 // Added 'nav' key
+);
+
+// Spacing scale
+$spacing-xs: 0.25rem;    /* 4px */
+$spacing-sm: 0.5rem;     /* 8px */
+$spacing-md: 1rem;       /* 16px */
+$spacing-lg: 1.5rem;     /* 24px */
+$spacing-xl: 2rem;       /* 32px */
+$spacing-2xl: 3rem;      /* 48px */
+$spacing-3xl: 4rem;      /* 64px */
+
+// Shadows
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+// Transitions
+$transition-base: all 0.2s ease-in-out;
+$transition-fade: opacity 0.15s linear;
+
+// Borders
+$border-radius: 4px;
+$border-color: $color-grey-300;
+
+// Border Radius
+$border-radius-none: 0;
+$border-radius-sm: 0.125rem;    /* 2px */
+$border-radius-md: 0.375rem;    /* 6px */
+$border-radius-lg: 0.5rem;      /* 8px */
+$border-radius-xl: 0.75rem;     /* 12px */
+$border-radius-2xl: 1rem;       /* 16px */
+$border-radius-3xl: 1.5rem;     /* 24px */
+$border-radius-full: 9999px;    /* For pills and circles */
+
+// Typography - Font Sizes
+$font-size-xs: 0.75rem;      /* 12px */
+$font-size-sm: 0.875rem;     /* 14px */
+$font-size-base: 1rem;       /* 16px */
+$font-size-lg: 1.125rem;     /* 18px */
+$font-size-xl: 1.25rem;      /* 20px */
+$font-size-2xl: 1.5rem;      /* 24px */
+$font-size-3xl: 1.875rem;    /* 30px */
+$font-size-4xl: 2.25rem;     /* 36px */
+$font-size-5xl: 3rem;        /* 48px */
+$font-size-6xl: 3.75rem;     /* 60px */
+$font-size-7xl: 4.5rem;      /* 72px */
+$font-size-8xl: 6rem;        /* 96px */
+$font-size-9xl: 8rem;        /* 128px */
+
+// Typography - Line Heights
+$line-height-none: 1;        /* For headings/tight text */
+$line-height-tight: 1.25;    /* For headings/tight text */
+$line-height-snug: 1.375;    /* For headings/tight text */
+$line-height-normal: 1.5;    /* For normal text */
+$line-height-relaxed: 1.625; /* For longer text */
+$line-height-loose: 2;       /* For very spacious text */
+
+:root {
+  // Colors - Base
+  --color-primary: #{$color-primary};
+  --color-secondary: #{$color-secondary};
+  --color-success: #{$color-success};
+  --color-danger: #{$color-danger};
+  --color-warning: #{$color-warning};
+  --color-info: #{$color-info};
+
+  // Colors - Monochrome
+  --color-white: #{$color-white};
+  --color-grey-50: #{$color-grey-50};
+  --color-grey-100: #{$color-grey-100};
+  --color-grey-200: #{$color-grey-200};
+  --color-grey-300: #{$color-grey-300};
+  --color-grey-400: #{$color-grey-400};
+  --color-grey-500: #{$color-grey-500};
+  --color-grey-600: #{$color-grey-600};
+  --color-grey-700: #{$color-grey-700};
+  --color-grey-800: #{$color-grey-800};
+  --color-grey-900: #{$color-grey-900};
+  --color-black: #{$color-black};
+
+  // Colors - Text
+  --color-text: #{$color-text};
+  --color-text-light: #{$color-text-light};
+  --color-text-lighter: #{$color-text-lighter};
+  --color-text-inverse: #{$color-text-inverse};
+
+  // Colors - Background
+  --color-background: #{$color-background};
+  --color-background-light: #{$color-background-light};
+  --color-background-dark: #{$color-background-dark};
+
+  // Colors - Border
+  --color-border: #{$color-border};
+  --color-border-light: #{$color-border-light};
+  --color-border-dark: #{$color-border-dark};
+
+  --spacing-xs: #{$spacing-xs};
+  --spacing-sm: #{$spacing-sm};
+  --spacing-md: #{$spacing-md};
+  --spacing-lg: #{$spacing-lg};
+  --spacing-xl: #{$spacing-xl};
+  --spacing-2xl: #{$spacing-2xl};
+  --spacing-3xl: #{$spacing-3xl};
+
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+  --shadow-xl: #{$shadow-xl};
+
+  // Border Radius
+  --border-radius-none: #{$border-radius-none};
+  --border-radius-sm: #{$border-radius-sm};
+  --border-radius: #{$border-radius};
+  --border-radius-md: #{$border-radius-md};
+  --border-radius-lg: #{$border-radius-lg};
+  --border-radius-xl: #{$border-radius-xl};
+  --border-radius-2xl: #{$border-radius-2xl};
+  --border-radius-3xl: #{$border-radius-3xl};
+  --border-radius-full: #{$border-radius-full};
+
+  // Font Sizes
+  --font-size-xs: #{$font-size-xs};
+  --font-size-sm: #{$font-size-sm};
+  --font-size-base: #{$font-size-base};
+  --font-size-lg: #{$font-size-lg};
+  --font-size-xl: #{$font-size-xl};
+  --font-size-2xl: #{$font-size-2xl};
+  --font-size-3xl: #{$font-size-3xl};
+  --font-size-4xl: #{$font-size-4xl};
+  --font-size-5xl: #{$font-size-5xl};
+  --font-size-6xl: #{$font-size-6xl};
+  --font-size-7xl: #{$font-size-7xl};
+  --font-size-8xl: #{$font-size-8xl};
+  --font-size-9xl: #{$font-size-9xl};
+
+  // Line Heights
+  --line-height-none: #{$line-height-none};
+  --line-height-tight: #{$line-height-tight};
+  --line-height-snug: #{$line-height-snug};
+  --line-height-normal: #{$line-height-normal};
+  --line-height-relaxed: #{$line-height-relaxed};
+  --line-height-loose: #{$line-height-loose};
+}
+
+
