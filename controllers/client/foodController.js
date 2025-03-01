@@ -1,4 +1,4 @@
-const Recipe = require("../../models/Recipe");
+const Recipe = require("../../models/recipe");
 const recipeService = require("../../services/recipeService");
 const recipeHelpers = require("../../utils/recipeHelpers");
 
