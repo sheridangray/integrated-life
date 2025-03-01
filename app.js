@@ -14,6 +14,7 @@ const helmet = require("helmet");
 const csurf = require("csurf");
 const rateLimit = require("express-rate-limit");
 const crypto = require("crypto");
+const { getBundlePath } = require("./utils/assetHelpers");
 const app = express();
 
 const port = process.env.PORT || 3000;
@@ -171,6 +172,7 @@ app.use((req, res, next) => {
   res.locals.user = req.user || null;
   res.locals.nonce = Buffer.from(crypto.randomBytes(16)).toString("base64");
   app.locals.GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+  res.locals.getBundlePath = getBundlePath;
   next();
 });
 

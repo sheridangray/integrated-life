@@ -16,10 +16,19 @@
   <div class="recipe-list-container">
     <div class="page-header">
       <h1>Recipes</h1>
-      <div class="search-bar">
+      <div class="search-controls">
+        <div class="favorites-toggle">
+          <button class="btn btn-icon" id="toggle-favorites">
+            <i class="material-icons">favorite</i>
+            <span>Favorites</span>
+          </button>
+        </div>
         <div class="search-bar__input">
           <i class="material-icons">search</i>
           <input type="text" placeholder="Search recipes..." class="form-control">
+          <button type="button" class="search-clear-btn hidden">
+            <i class="material-icons">close</i>
+          </button>
         </div>
       </div>
       <a href="/food/recipes/new" class="btn btn-primary">
@@ -30,31 +39,41 @@
 
     <div class="recipe-grid" id="recipe-list">
       <% recipes.forEach(recipe => { %>
-        <a href="/food/recipes/<%= recipe.slug %>" class="recipe-card">
-          <% if (recipe.images?.featured?.url) { %>
-            <div class="recipe-card__image">
-              <img src="<%= recipe.images.featured.url %>" alt="<%= recipe.name %>">
-            </div>
-          <% } %>
-          <div class="recipe-card__content">
-            <h3 class="recipe-card__title"><%= recipe.name %></h3>
-            <p class="recipe-card__description"><%= recipe.shortDescription %></p>
-            <div class="recipe-meta">
-              <span class="recipe-meta__item">
-                <i class="material-icons">schedule</i>
-                <%= recipe.totalTime %> min
-              </span>
-              <% if (recipe.cuisine) { %>
+        <div class="recipe-card-wrapper" data-recipe-id="<%= recipe._id %>">
+          <button class="favorite-button <%= recipe.isFavorite ? 'active' : '' %>" 
+                  aria-label="Toggle favorite">
+            <i class="material-icons">
+              <%= recipe.isFavorite ? 'favorite' : 'favorite_border' %>
+            </i>
+          </button>
+          <a href="/food/recipes/<%= recipe.slug %>" class="recipe-card">
+            <% if (recipe.images?.featured?.url) { %>
+              <div class="recipe-card__image">
+                <img src="<%= recipe.images.featured.url %>" alt="<%= recipe.name %>">
+              </div>
+            <% } %>
+            <div class="recipe-card__content">
+              <h3 class="recipe-card__title"><%= recipe.name %></h3>
+              <p class="recipe-card__description"><%= recipe.shortDescription %></p>
+              <div class="recipe-meta">
                 <span class="recipe-meta__item">
-                  <i class="material-icons">restaurant</i>
-                  <%= recipe.cuisine %>
+                  <i class="material-icons">schedule</i>
+                  <%= recipe.totalTime %> min
                 </span>
-              <% } %>
+                <% if (recipe.cuisine) { %>
+                  <span class="recipe-meta__item">
+                    <i class="material-icons">restaurant</i>
+                    <%= recipe.cuisine %>
+                  </span>
+                <% } %>
+              </div>
+              <span class="btn btn-secondary">View Recipe</span>
             </div>
-            <span class="btn btn-secondary">View Recipe</span>
-          </div>
-        </a>
+          </a>
+        </div>
       <% }); %>
     </div>
   </div>
 <% } %>
+
+<%- contentFor('scripts') %>

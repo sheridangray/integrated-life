@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
+const { Schema } = require("mongoose");
 
 const recipeSchema = new mongoose.Schema({
   name: {
@@ -180,6 +181,12 @@ const recipeSchema = new mongoose.Schema({
       },
     ],
   },
+  favoritedBy: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
 });
 
 // Add pre-save middleware to generate slug
@@ -187,6 +194,24 @@ recipeSchema.pre("save", function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
+
+// Add a virtual property to check if a specific user has favorited the recipe
+recipeSchema.virtual("isFavorite").get(function () {
+  if (!this._userId) return false; // _userId will be set in the route handler
+  return this.favoritedBy.includes(this._userId);
+});
+
+// Helper method to toggle favorite status for a user
+recipeSchema.methods.toggleFavorite = async function (userId) {
+  const index = this.favoritedBy.indexOf(userId);
+  if (index === -1) {
+    this.favoritedBy.push(userId);
+  } else {
+    this.favoritedBy.splice(index, 1);
+  }
+  await this.save();
+  return this.favoritedBy.includes(userId);
+};
 
 const Recipe = mongoose.model("Recipe", recipeSchema);
 

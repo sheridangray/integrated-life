@@ -1,5 +1,5 @@
 const Together = require("together-ai");
-const Recipe = require("../models/recipe"); // Add this line
+const Recipe = require("../models/Recipe");
 const cleanAndParseJSON = require("../utils/cleanAndParseJSON");
 const standardizeUnit = require("../utils/standardizeUnit");
 const AppError = require("../utils/appError");
@@ -212,4 +212,40 @@ exports.deleteRecipe = async (id) => {
     console.error("Error in deleteRecipe:", error);
     throw error;
   }
+};
+
+exports.toggleFavorite = async (recipeId, userId) => {
+  const recipe = await Recipe.findById(recipeId);
+  if (!recipe) {
+    throw new Error("Recipe not found");
+  }
+
+  const index = recipe.favoritedBy.indexOf(userId);
+  if (index === -1) {
+    recipe.favoritedBy.push(userId);
+  } else {
+    recipe.favoritedBy.splice(index, 1);
+  }
+
+  await recipe.save();
+  return {
+    isFavorite: recipe.favoritedBy.includes(userId),
+  };
+};
+
+exports.getAllRecipes = async (userId = null) => {
+  const recipes = await Recipe.find({}).populate("favoritedBy", "_id").lean();
+
+  if (userId) {
+    // Add isFavorite field to each recipe
+    return recipes.map((recipe) => ({
+      ...recipe,
+      isFavorite:
+        recipe.favoritedBy?.some(
+          (user) => user._id.toString() === userId.toString()
+        ) || false,
+    }));
+  }
+
+  return recipes;
 };

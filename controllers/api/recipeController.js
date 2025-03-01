@@ -1,6 +1,6 @@
-const Recipe = require("../../models/recipe");
 const catchAsync = require("../../utils/catchAsync");
 const factory = require("./handleFactory");
+const Recipe = require("../../models/Recipe");
 
 // Use the factory methods for CRUD operations
 exports.getAllRecipes = factory.getAll(Recipe);

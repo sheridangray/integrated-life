@@ -1,4 +1,4 @@
-const Recipe = require("../../models/recipe");
+const Recipe = require("../../models/Recipe");
 const recipeService = require("../../services/recipeService");
 const recipeHelpers = require("../../utils/recipeHelpers");
 
@@ -15,7 +15,7 @@ exports.getFood = (req, res) => {
 exports.getAllRecipes = async (req, res) => {
   try {
     // Get recipes from the database using your Recipe model
-    const recipes = await Recipe.find();
+    const recipes = await recipeService.getAllRecipes(req.user?._id);
 
     res.render("food/recipe-list", {
       title: "Recipes",
@@ -104,5 +104,18 @@ exports.createRecipe = async (req, res) => {
       showLeftNav: true,
       error: error.message,
     });
+  }
+};
+
+exports.toggleRecipeFavorite = async (req, res) => {
+  try {
+    const recipe = await recipeService.toggleFavorite(
+      req.params.id,
+      req.user._id
+    );
+    res.status(200).json({ success: true, isFavorite: recipe.isFavorite });
+  } catch (error) {
+    console.error("Error toggling favorite:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };

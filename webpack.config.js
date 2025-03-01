@@ -3,8 +3,9 @@ const path = require("path");
 module.exports = {
   entry: "./public/js/main.js",
   output: {
-    filename: "bundle.js",
+    filename: "bundle.[contenthash].js",
     path: path.resolve(__dirname, "public/js/dist"),
+    clean: true, // Clean the output directory before emit
   },
   module: {
     rules: [
@@ -20,6 +21,6 @@ module.exports = {
       },
     ],
   },
-  mode: "production",
+  mode: "development",
   devtool: "source-map",
 };

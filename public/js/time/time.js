@@ -23,9 +23,9 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   function updateGrid() {
-    console.log("Updating grid with phases:", JSON.stringify(phases, null, 2));
+    // console.log("Updating grid with phases:", JSON.stringify(phases, null, 2));
     const weekCells = document.querySelectorAll(".life-grid__week");
-    console.log(`Found ${weekCells.length} week cells`);
+    // console.log(`Found ${weekCells.length} week cells`);
 
     weekCells.forEach((cell, index) => {
       const cellYear = Math.floor(index / 52);
@@ -136,8 +136,8 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Log initial state
-  console.log("Initial phases:", JSON.stringify(phases, null, 2));
-  console.log("Current year:", currentYear, "Current week:", currentWeek);
+  // console.log("Initial phases:", JSON.stringify(phases, null, 2));
+  // console.log("Current year:", currentYear, "Current week:", currentWeek);
 
   // Initial grid update
   updateGrid();

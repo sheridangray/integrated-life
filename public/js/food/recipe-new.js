@@ -7,32 +7,30 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const submitButton = document.getElementById("submitButton");
+  const defaultIcon = submitButton.querySelector(".icon-default");
+  const loadingIcon = submitButton.querySelector(".icon-loading");
   const buttonText = submitButton.querySelector(".button-text");
-  const buttonSpinner = submitButton.querySelector(".button-spinner");
 
   // Add debug logging
   console.log("Elements found:", {
     submitButton,
+    defaultIcon,
+    loadingIcon,
     buttonText,
-    buttonSpinner,
   });
 
   const setLoading = (isLoading) => {
     console.log("Setting loading state:", isLoading);
     submitButton.disabled = isLoading;
-    buttonText.classList.toggle("hidden", isLoading);
-    buttonSpinner.classList.toggle("hidden", !isLoading);
-
-    // Debug log the classes after toggle
-    console.log("Button classes after toggle:", {
-      buttonTextClasses: buttonText.classList.toString(),
-      spinnerClasses: buttonSpinner.classList.toString(),
-    });
+    defaultIcon.classList.toggle("hidden", isLoading);
+    loadingIcon.classList.toggle("hidden", !isLoading);
+    buttonText.textContent = isLoading ? "Creating Recipe..." : "Create Recipe";
   };
 
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
+    console.log("Submit button clicked");
     // Prevent double submission
     if (submitButton.disabled) {
       return;

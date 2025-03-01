@@ -9,7 +9,7 @@
   "private": false,
   "scripts": {
     "start": "node app.js",
-    "start:dev": "concurrently \"nodemon --watch 'public/js/**/*.js' --watch 'public/css/**/*.scss' --watch 'views/**/*' --watch 'routes/**/*.js' --watch 'models/**/*.js' --watch 'controllers/**/*.js' --watch 'app.js' --ext js,scss,ejs\" \"npm run watch:sass\"",
+    "start:dev": "concurrently \"nodemon --watch 'public/js/**/*.js' --watch 'public/css/**/*.scss' --watch 'views/**/*' --watch 'routes/**/*.js' --watch 'models/**/*.js' --watch 'controllers/**/*.js' --watch 'app.js' --ext js,scss,ejs\" \"npm run watch:sass\" \"npm run watch:js\"",
     "watch:js": "webpack --watch --mode development",
     "watch:sass": "sass --watch public/css/style.scss:public/css/dist/style.css --source-map",
     "watch:all": "concurrently \"npm run watch:sass\" \"npm run watch:js\"",

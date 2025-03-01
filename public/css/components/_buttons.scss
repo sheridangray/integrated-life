@@ -89,6 +89,25 @@
   i {
     margin-right: vars.$spacing-unit;
   }
+
+  .button-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    position: relative;
+    
+    i {
+      position: absolute;
+      left: 0;
+      transition: opacity 0.2s ease;
+      
+      &.hidden {
+        opacity: 0;
+      }
+    }
+  }
 }
 
 .hidden {
