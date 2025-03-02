@@ -1,5 +1,5 @@
 const Together = require("together-ai");
-const Recipe = require("../models/Recipe");
+const Recipe = require("../models/recipe");
 const cleanAndParseJSON = require("../utils/cleanAndParseJSON");
 const standardizeUnit = require("../utils/standardizeUnit");
 const AppError = require("../utils/appError");

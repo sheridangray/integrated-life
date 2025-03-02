@@ -1,6 +1,7 @@
 const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
-const User = require("../../models/User"); // Adjust the path as necessary
+const User = require("../../models/userModel"); // Using consistent casing with the file
+const catchAsync = require("../../utils/catchAsync");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
