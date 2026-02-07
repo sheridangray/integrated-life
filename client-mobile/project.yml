@@ -1,0 +1,64 @@
+name: IntegratedLife
+options:
+  bundleIdPrefix: com.integratedlife
+  xcconfigTemplatePath: Config.xcconfig
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+  groupSortPosition: top
+  createIntermediateGroups: true
+
+settings:
+  base:
+    PRODUCT_BUNDLE_IDENTIFIER: com.integratedlife.app
+    SWIFT_VERSION: "5.9"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    INFOPLIST_FILE: IntegratedLife/Info.plist
+
+packages:
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: "8.0.0"
+
+targets:
+  IntegratedLife:
+    type: application
+    platform: iOS
+    sources:
+      - path: IntegratedLife
+        excludes:
+          - "*.xcassets"
+    settings:
+      configFiles:
+        Debug: Config.xcconfig
+        Release: Config.xcconfig
+      base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+        ENABLE_PREVIEWS: true
+        GENERATE_INFOPLIST_FILE: true
+        LD_RUNPATH_SEARCH_PATHS:
+          - "$(inherited)"
+          - "@executable_path/Frameworks"
+        SWIFT_EMIT_LOCALIZATION_STRINGS: NO
+    dependencies:
+      - package: GoogleSignIn
+    info:
+      path: IntegratedLife/Info.plist
+      properties:
+        API_BASE_URL: $(API_BASE_URL)
+        GOOGLE_CLIENT_ID: $(GOOGLE_CLIENT_ID)
+        CFBundleDisplayName: Integrated Life
+        CFBundleName: Integrated Life
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        LSApplicationQueriesSchemes:
+          - "com.googleusercontent.apps"
+        CFBundleURLTypes:
+          - CFBundleTypeRole: Editor
+            CFBundleURLSchemes:
+              - "$(REVERSED_CLIENT_ID)"

@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build shared
+        run: npm run build:shared
+
+      - name: Build server
+        run: npm run build:server
+
+      - name: Build client-web
+        run: npm run build:web
+
+      - name: Generate OpenAPI spec
+        run: npm run generate:openapi
+
+      - name: Generate Swift (Docker)
+        run: |
+          npm run generate:swift || echo "Swift codegen skipped (requires Docker or Java)"
