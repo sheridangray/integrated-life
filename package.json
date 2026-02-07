@@ -15,7 +15,8 @@
     "build:web": "npm run build -w client-web",
     "generate:openapi": "npm run generate:openapi -w server",
     "generate:swift": "node scripts/generate-swift.js",
-    "start": "npm run start -w server"
+    "start": "npm run start -w server",
+    "start:web": "npm run start -w client-web"
   },
   "engines": {
     "node": ">=18"

@@ -89,6 +89,7 @@ Build and run in the simulator.
 | `npm run generate:openapi` | Generate `openapi.json` from server |
 | `npm run generate:swift` | Generate Swift models from OpenAPI (requires Docker or Java) |
 | `npm start` | Start production server |
+| `npm run start:web` | Start production Next.js web app |
 
 ## API Documentation
 
@@ -97,13 +98,24 @@ When the server is running:
 - **OpenAPI spec**: `http://localhost:3001/v1/openapi.json`
 - **Swagger UI**: `http://localhost:3001/v1/docs`
 
-## Deployment (Render.com)
+## Deployment (Render)
+
+Both the API and the web app run on Render as separate Web Services (same repo, two services).
+
+**Service 1 – API**
 
 1. Create a Web Service on Render
 2. Connect your GitHub repo
-3. Build command: `npm run build`
+3. Build command: `npm ci && npm run build:shared && npm run build:server`
 4. Start command: `npm start`
-5. Add environment variables: `MONGODB_URI`, `JWT_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `GOOGLE_CLIENT_SECRET_WEB`, `GOOGLE_CLIENT_ID_IOS`, `API_URL`, `WEB_URL`
+5. Environment variables: `MONGODB_URI`, `JWT_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `GOOGLE_CLIENT_SECRET_WEB`, `GOOGLE_CLIENT_ID_IOS`, `API_URL`, `WEB_URL`
+
+**Service 2 – Web**
+
+1. Create a second Web Service on Render (same repo)
+2. Build command: `npm ci && npm run build:web`
+3. Start command: `npm run start:web`
+4. Environment variables: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID_WEB` (use your API service URL and Web client ID)
 
 ## Assets
 
