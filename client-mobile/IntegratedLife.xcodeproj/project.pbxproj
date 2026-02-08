@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -26,8 +26,9 @@
 		25A53EA7CACB338D769EC0CA /* IntegratedLifeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegratedLifeApp.swift; sourceTree = "<group>"; };
 		4337BD9A8D2718A41D95C07E /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		55FA62FF8843E4A55C4EDBB5 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
-		A593755613AD7F085ED55B53 /* IntegratedLife.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = IntegratedLife.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A593755613AD7F085ED55B53 /* IntegratedLife.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IntegratedLife.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC33410902D65442CDACFBB3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		AC5A0B832F385088000A8499 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		C1066D582A8CA878662BA08B /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		F0F52383F471281EB99FAA85 /* AuthState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthState.swift; sourceTree = "<group>"; };
 		FDBE1D4DCD0716314753933D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -70,6 +71,7 @@
 		35C423A48DDB50D233B9C9BE = {
 			isa = PBXGroup;
 			children = (
+				AC5A0B832F385088000A8499 /* Config.xcconfig */,
 				33CF8C58620D9633302BA451 /* IntegratedLife */,
 				48BBF3434DE890351FE89E6D /* Products */,
 			);
@@ -152,7 +154,6 @@
 			packageReferences = (
 				DE89FF47D7ABD24251E58CA9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -204,6 +205,7 @@
 		};
 		674CADD29D19B4F080112DDC /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AC5A0B832F385088000A8499 /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -284,6 +286,7 @@
 		};
 		C385BEDE41018726C346034E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AC5A0B832F385088000A8499 /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
