@@ -86,6 +86,7 @@ Build and run in the simulator.
 | `npm run dev:server` | Start server with hot reload |
 | `npm run dev:web` | Start Next.js dev server |
 | `npm run build` | Build shared, server, and client-web |
+| `npm run build:web:deploy` | Build shared + client-web (for web deploy) |
 | `npm run generate:openapi` | Generate `openapi.json` from server |
 | `npm run generate:swift` | Generate Swift models from OpenAPI (requires Docker or Java) |
 | `npm start` | Start production server |
@@ -113,7 +114,7 @@ Both the API and the web app run on Render as separate Web Services (same repo, 
 **Service 2 – Web**
 
 1. Create a second Web Service on Render (same repo)
-2. Build command: `npm ci && npm run build:web`
+2. Build command: `npm ci --include=dev && npm run build:web:deploy`
 3. Start command: `npm run start:web`
 4. Environment variables: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID_WEB` (use your API service URL and Web client ID)
 

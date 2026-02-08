@@ -13,6 +13,7 @@
     "build:shared": "npm run build -w shared",
     "build:server": "npm run build -w server",
     "build:web": "npm run build -w client-web",
+    "build:web:deploy": "npm run build:shared && npm run build:web",
     "generate:openapi": "npm run generate:openapi -w server",
     "generate:swift": "node scripts/generate-swift.js",
     "start": "node server/dist/src/server/index.js",
