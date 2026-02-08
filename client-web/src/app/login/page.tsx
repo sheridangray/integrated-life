@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { GoogleLoginButton } from '@/components/features/google-login-button'
@@ -11,10 +12,11 @@ export default function LoginPage() {
 	const { login, user } = useAuth()
 	const router = useRouter()
 
-	if (user) {
-		router.replace('/dashboard')
-		return null
-	}
+	useEffect(() => {
+		if (user) router.replace('/dashboard')
+	}, [user, router])
+
+	if (user) return null
 
 	const handleGoogleSuccess = async (idToken: string) => {
 		const res = await fetch(`${API_URL}/v1/auth/google`, {

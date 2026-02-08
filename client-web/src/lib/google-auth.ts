@@ -70,12 +70,17 @@ export function renderGoogleButton(
 ) {
 	loadGoogleScript().then(() => {
 		if (!window.google?.accounts?.id) return
+		const handleCredential = (response: { credential: string }) => callback(response.credential)
+		window.google.accounts.id.initialize({
+			client_id: clientId,
+			callback: handleCredential
+		})
 		window.google.accounts.id.renderButton(element, {
 			type: 'standard',
 			theme: 'outline',
 			size: 'large',
 			text: 'signin_with',
-			callback: (response) => callback(response.credential)
+			callback: handleCredential
 		})
 	})
 }

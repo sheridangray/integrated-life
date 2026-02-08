@@ -106,8 +106,8 @@ Both the API and the web app run on Render as separate Web Services (same repo, 
 
 1. Create a Web Service on Render
 2. Connect your GitHub repo
-3. Build command: `npm ci && npm run build:shared && npm run build:server`
-4. Start command: `npm start`
+3. Build command: `npm ci --include=dev && npm run build:shared && npm run build:server`
+4. Start command: `npm start` (or `node server/dist/src/server/index.js`)
 5. Environment variables: `MONGODB_URI`, `JWT_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `GOOGLE_CLIENT_SECRET_WEB`, `GOOGLE_CLIENT_ID_IOS`, `API_URL`, `WEB_URL`
 
 **Service 2 – Web**

@@ -5,11 +5,12 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/server/index.ts",
-    "start": "node dist/server/index.js",
+    "start": "node dist/src/server/index.js",
     "clean": "rm -rf dist",
     "generate:openapi": "tsx scripts/generate-openapi.ts"
   },
   "dependencies": {
+    "dotenv": "^16.0.0",
     "@asteasolutions/zod-to-openapi": "^7.3.4",
     "@integrated-life/shared": "*",
     "cors": "^2.8.5",
