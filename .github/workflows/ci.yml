@@ -25,6 +25,16 @@ jobs:
       - name: Build shared
         run: npm run build:shared
 
+      - name: Run tests
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret-min-32-characters-long
+          GOOGLE_CLIENT_ID_WEB: test-web.apps.googleusercontent.com
+          GOOGLE_CLIENT_SECRET_WEB: test-secret
+          GOOGLE_CLIENT_ID_IOS: test-ios.apps.googleusercontent.com
+          MONGODB_URI: mongodb://localhost:27017/test-placeholder
+        run: npm test
+
       - name: Build server
         run: npm run build:server
 

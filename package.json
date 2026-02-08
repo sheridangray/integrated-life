@@ -17,7 +17,8 @@
     "generate:openapi": "npm run generate:openapi -w server",
     "generate:swift": "node scripts/generate-swift.js",
     "start": "node server/dist/src/server/index.js",
-    "start:web": "npm run start -w client-web"
+    "start:web": "npm run start -w client-web",
+    "test": "npm run test -w shared && npm run test -w server && npm run test -w client-web"
   },
   "engines": {
     "node": ">=18"
