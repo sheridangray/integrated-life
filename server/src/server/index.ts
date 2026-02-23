@@ -3,10 +3,13 @@ import { env } from '../config'
 import { logger } from '../lib/logger'
 import { createApp } from './app'
 import { errorHandler } from '../middleware/errorHandler'
+import { seedHealthData } from '../seeds/health'
 
 async function start() {
 	await mongoose.connect(env.MONGODB_URI)
 	logger.info('Connected to MongoDB')
+
+	await seedHealthData()
 
 	const app = createApp()
 	app.use(errorHandler)

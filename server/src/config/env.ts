@@ -2,7 +2,7 @@ import path from 'path'
 import dotenv from 'dotenv'
 import { z } from 'zod'
 
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') })
+dotenv.config({ path: path.resolve(__dirname, '../../../../.env') })
 
 const envSchema = z.object({
 	NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -14,7 +14,8 @@ const envSchema = z.object({
 	GOOGLE_CLIENT_ID_IOS: z.string().min(1, 'GOOGLE_CLIENT_ID_IOS is required'),
 	API_URL: z.string().url().optional().default('http://localhost:3001'),
 	WEB_URL: z.string().url().optional().default('http://localhost:3000'),
-	MOBILE_BUNDLE_ID: z.string().optional().default('com.integratedlife.app')
+	MOBILE_BUNDLE_ID: z.string().optional().default('com.integratedlife.app'),
+	TOGETHER_AI_API_KEY: z.string().optional().default('')
 })
 
 export type Env = z.infer<typeof envSchema>

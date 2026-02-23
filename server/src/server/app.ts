@@ -7,6 +7,8 @@ import { env } from '../config'
 import { requestId } from '../middleware/requestId'
 import { errorHandler } from '../middleware/errorHandler'
 import { authRoutes } from '../features/auth/routes'
+import { exerciseRoutes, workoutRoutes, historyRoutes, healthInsightRoutes } from '../features/health/routes'
+import { sleepRoutes } from '../features/sleep/routes'
 import { generateOpenAPIDocument } from '../lib/openapi'
 
 export function createApp() {
@@ -40,6 +42,11 @@ export function createApp() {
 	})
 
 	app.use('/v1/auth', authLimiter, authRoutes)
+	app.use('/v1/exercises', exerciseRoutes)
+	app.use('/v1/workouts', workoutRoutes)
+	app.use('/v1/history', historyRoutes)
+	app.use('/v1/health', healthInsightRoutes)
+	app.use('/v1/sleep', sleepRoutes)
 
 	return app
 }

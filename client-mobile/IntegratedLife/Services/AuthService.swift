@@ -14,6 +14,8 @@ struct RefreshResponse: Codable {
 }
 
 final class AuthService {
+	static let shared = AuthService()
+
 	private let keychain = KeychainService.shared
 	private let apiClient = APIClient.shared
 

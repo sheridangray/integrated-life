@@ -21,7 +21,9 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.0",
+    "slugify": "^1.6.6",
     "swagger-ui-express": "^5.0.0",
+    "together-ai": "^0.37.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

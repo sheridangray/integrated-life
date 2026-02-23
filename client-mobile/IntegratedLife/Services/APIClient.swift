@@ -20,6 +20,35 @@ final class APIClient {
 		return try await request(method: "POST", path: path, body: data, token: token, as: type)
 	}
 
+	func put<T: Decodable, B: Encodable>(path: String, body: B, token: String? = nil, as type: T.Type) async throws -> T {
+		let data = try JSONEncoder().encode(body)
+		return try await request(method: "PUT", path: path, body: data, token: token, as: type)
+	}
+
+	func delete(path: String, token: String? = nil) async throws {
+		guard let url = URL(string: baseURL + path) else {
+			throw APIError.invalidURL
+		}
+		var request = URLRequest(url: url)
+		request.httpMethod = "DELETE"
+		if let token {
+			request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+		}
+		let (data, response) = try await session.data(for: request)
+		guard let httpResponse = response as? HTTPURLResponse else {
+			throw APIError.invalidResponse
+		}
+		if httpResponse.statusCode == 401 {
+			throw AuthError.notAuthenticated
+		}
+		guard (200 ..< 300).contains(httpResponse.statusCode) else {
+			if let errorBody = try? JSONDecoder().decode(APIErrorBody.self, from: data) {
+				throw APIError.serverError(errorBody.error.message)
+			}
+			throw APIError.serverError(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode))
+		}
+	}
+
 	private func request<T: Decodable>(
 		method: String,
 		path: String,

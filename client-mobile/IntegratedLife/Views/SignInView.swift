@@ -9,6 +9,11 @@ struct SignInView: View {
 	var body: some View {
 		VStack(spacing: 24) {
 			Spacer()
+
+			Image(systemName: "infinity")
+				.font(.system(size: 64, weight: .light))
+				.foregroundStyle(.blue)
+
 			Text("Integrated Life")
 				.font(.title)
 				.fontWeight(.semibold)
@@ -35,12 +40,8 @@ struct SignInView: View {
 						Text("Sign in with Google")
 					}
 				}
-				.frame(maxWidth: .infinity)
-				.padding()
-				.background(Color.blue)
-				.foregroundColor(.white)
-				.cornerRadius(10)
 			}
+			.buttonStyle(PrimaryButtonStyle())
 			.disabled(isSigningIn || Config.googleClientID.isEmpty)
 
 			if Config.googleClientID.isEmpty {

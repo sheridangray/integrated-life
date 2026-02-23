@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MainTabView: View {
 	@ObservedObject var authState: AuthState
+	@StateObject private var healthKitService = HealthKitService.shared
 
 	var body: some View {
 		TabView {
@@ -10,50 +11,15 @@ struct MainTabView: View {
 					Label("Home", systemImage: "house")
 				}
 
-			ProfileView(authState: authState)
+			PillarsOverviewView(healthKitService: healthKitService)
+				.tabItem {
+					Label("Pillars", systemImage: "square.grid.2x2")
+				}
+
+			ProfileView(authState: authState, healthKitService: healthKitService)
 				.tabItem {
 					Label("Profile", systemImage: "person")
 				}
-		}
-	}
-}
-
-struct HomeView: View {
-	var body: some View {
-		NavigationStack {
-			VStack {
-				Text("Welcome to Integrated Life")
-					.font(.title2)
-				Text("Your dashboard will appear here.")
-					.foregroundStyle(.secondary)
-			}
-			.frame(maxWidth: .infinity, maxHeight: .infinity)
-			.navigationTitle("Home")
-		}
-	}
-}
-
-struct ProfileView: View {
-	@ObservedObject var authState: AuthState
-
-	var body: some View {
-		NavigationStack {
-			VStack(alignment: .leading, spacing: 16) {
-				if let user = authState.user {
-					Text(user.name)
-						.font(.title2)
-					Text(user.email)
-						.foregroundStyle(.secondary)
-				}
-
-				Button("Sign out") {
-					authState.signOut()
-				}
-				.foregroundStyle(.red)
-			}
-			.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-			.padding()
-			.navigationTitle("Profile")
 		}
 	}
 }

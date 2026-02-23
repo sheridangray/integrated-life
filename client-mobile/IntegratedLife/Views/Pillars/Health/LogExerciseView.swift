@@ -1,0 +1,292 @@
+import SwiftUI
+
+struct LogExerciseView: View {
+	let exercise: Exercise
+	var workoutId: String?
+	var onComplete: ((ExerciseLog) -> Void)?
+
+	@Environment(\.dismiss) private var dismiss
+	@FocusState private var focusedField: LogField?
+
+	@State private var date = Date()
+	@State private var startTime = Date()
+	@State private var endTime: Date?
+	@State private var selectedResistanceType: String
+	@State private var sets: [ExerciseSet] = [ExerciseSet(setNumber: 1)]
+	@State private var notes = ""
+	@State private var insight: AIInsight?
+	@State private var lastLog: ExerciseLog?
+	@State private var isSaving = false
+	@State private var isLoadingContext = true
+
+	private let healthService = HealthService.shared
+	private let healthKitService = HealthKitService.shared
+
+	init(exercise: Exercise, workoutId: String? = nil, onComplete: ((ExerciseLog) -> Void)? = nil) {
+		self.exercise = exercise
+		self.workoutId = workoutId
+		self.onComplete = onComplete
+		_selectedResistanceType = State(initialValue: exercise.resistanceType)
+	}
+
+	var body: some View {
+		NavigationStack {
+			Form {
+				insightSection
+				setsSection
+				notesSection
+				dateTimeSection
+				resistanceSection
+			}
+			.navigationTitle("Log \(exercise.name)")
+			.navigationBarTitleDisplayMode(.inline)
+			.toolbar {
+				ToolbarItem(placement: .cancellationAction) {
+					Button("Cancel") { dismiss() }
+				}
+				ToolbarItem(placement: .confirmationAction) {
+					Button("Finish") {
+						Task { await saveLog() }
+					}
+					.disabled(isSaving)
+				}
+			}
+			.task {
+				await loadContext()
+			}
+			.onAppear {
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+					focusedField = .weight(0)
+				}
+			}
+		}
+	}
+
+	private var dateTimeSection: some View {
+		Section("Date & Time") {
+			DatePicker("Date", selection: $date, displayedComponents: .date)
+			DatePicker("Start Time", selection: $startTime, displayedComponents: .hourAndMinute)
+
+			if endTime != nil {
+				HStack {
+					DatePicker("End Time", selection: Binding(
+						get: { endTime ?? Date() },
+						set: { endTime = $0 }
+					), displayedComponents: .hourAndMinute)
+					Button {
+						endTime = nil
+					} label: {
+						Image(systemName: "xmark.circle.fill")
+							.foregroundStyle(.tertiary)
+					}
+					.buttonStyle(.plain)
+				}
+			} else {
+				HStack {
+					Text("End Time")
+					Spacer()
+					Text("Recorded on finish")
+						.foregroundStyle(.tertiary)
+				}
+				.contentShape(Rectangle())
+				.onTapGesture { endTime = Date() }
+			}
+		}
+	}
+
+	@ViewBuilder
+	private var insightSection: some View {
+		if let insightText = insight?.insight {
+			Section("AI Insight") {
+				HStack(alignment: .top, spacing: 8) {
+					Image(systemName: "sparkles")
+						.foregroundStyle(.purple)
+					Text(insightText)
+						.font(.subheadline)
+				}
+				.padding(.vertical, 4)
+			}
+		}
+	}
+
+	private var resistanceSection: some View {
+		Section("Resistance Type") {
+			Picker("Type", selection: $selectedResistanceType) {
+				ForEach(ResistanceType.allCases) { type in
+					Text(type.rawValue).tag(type.rawValue)
+				}
+			}
+		}
+	}
+
+	private var setsSection: some View {
+		Section {
+			ForEach(Array(sets.enumerated()), id: \.element.setNumber) { index, _ in
+				setRow(index: index)
+			}
+
+			Button {
+				let newIndex = sets.count
+				sets.append(ExerciseSet(setNumber: newIndex + 1))
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+					focusedField = .weight(newIndex)
+				}
+			} label: {
+				Label("Add Set", systemImage: "plus")
+			}
+		} header: {
+			Text("Sets")
+		}
+	}
+
+	private func setRow(index: Int) -> some View {
+		let measurementType = MeasurementType(rawValue: exercise.measurementType)
+		return VStack(alignment: .leading, spacing: 8) {
+			HStack {
+				Text("Set \(index + 1)")
+					.font(.caption)
+					.foregroundStyle(.secondary)
+				Spacer()
+				if sets.count >= 2 {
+					Button {
+						sets.remove(at: index)
+						renumberSets()
+					} label: {
+						Image(systemName: "minus.circle.fill")
+							.foregroundStyle(.red)
+					}
+					.buttonStyle(.plain)
+				}
+			}
+
+			HStack(spacing: 12) {
+				if measurementType == .strength || measurementType == nil {
+					numberField("Weight", value: $sets[index].weight)
+						.focused($focusedField, equals: .weight(index))
+					intField("Reps", value: $sets[index].reps)
+						.focused($focusedField, equals: .reps(index))
+				}
+
+				if measurementType == .timeBased {
+					numberField("Minutes", value: $sets[index].minutes)
+						.focused($focusedField, equals: .weight(index))
+					numberField("Seconds", value: $sets[index].seconds)
+				}
+
+				if measurementType == .distanceBased {
+					numberField("Miles", value: $sets[index].miles)
+						.focused($focusedField, equals: .weight(index))
+				}
+
+				if measurementType == .repOnly {
+					intField("Reps", value: $sets[index].reps)
+						.focused($focusedField, equals: .reps(index))
+				}
+			}
+		}
+		.padding(.vertical, 4)
+	}
+
+	private func numberField(_ label: String, value: Binding<Double?>) -> some View {
+		let text = Binding<String>(
+			get: {
+				guard let v = value.wrappedValue else { return "" }
+				return v == floor(v) ? String(format: "%.0f", v) : "\(v)"
+			},
+			set: { value.wrappedValue = Double($0) }
+		)
+		return VStack(alignment: .leading, spacing: 2) {
+			Text(label)
+				.font(.caption2)
+				.foregroundStyle(.secondary)
+			TextField(label, text: text)
+				.font(.title3)
+				.padding(10)
+				.background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
+				.keyboardType(.decimalPad)
+		}
+	}
+
+	private func intField(_ label: String, value: Binding<Int?>) -> some View {
+		let text = Binding<String>(
+			get: {
+				guard let v = value.wrappedValue else { return "" }
+				return "\(v)"
+			},
+			set: { value.wrappedValue = Int($0) }
+		)
+		return VStack(alignment: .leading, spacing: 2) {
+			Text(label)
+				.font(.caption2)
+				.foregroundStyle(.secondary)
+			TextField(label, text: text)
+				.font(.title3)
+				.padding(10)
+				.background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
+				.keyboardType(.numberPad)
+		}
+	}
+
+	private var notesSection: some View {
+		Section("Notes") {
+			TextEditor(text: $notes)
+				.frame(minHeight: 60)
+		}
+	}
+
+	private func loadContext() async {
+		isLoadingContext = true
+		async let logTask: () = loadLastLog()
+		async let insightTask: () = loadInsight()
+		_ = await (logTask, insightTask)
+		isLoadingContext = false
+	}
+
+	private func loadLastLog() async {
+		lastLog = try? await healthService.getLastLog(exerciseId: exercise.id)
+		if let lastLog {
+			sets = lastLog.sets
+			selectedResistanceType = lastLog.resistanceType
+		}
+	}
+
+	private func loadInsight() async {
+		insight = try? await healthService.getExerciseInsight(exerciseId: exercise.id)
+	}
+
+	private func renumberSets() {
+		for i in sets.indices {
+			sets[i].setNumber = i + 1
+		}
+	}
+
+	private func saveLog() async {
+		isSaving = true
+		let formatter = ISO8601DateFormatter()
+		let resolvedEndTime = endTime ?? Date()
+
+		let request = CreateExerciseLogRequest(
+			exerciseId: exercise.id,
+			date: formatter.string(from: date),
+			startTime: formatter.string(from: startTime),
+			endTime: formatter.string(from: resolvedEndTime),
+			resistanceType: selectedResistanceType,
+			sets: sets,
+			notes: notes.isEmpty ? nil : notes
+		)
+
+		do {
+			let log = try await healthService.logExercise(exerciseId: exercise.id, request: request)
+			try? await healthKitService.saveWorkout(start: startTime, end: resolvedEndTime)
+			onComplete?(log)
+			dismiss()
+		} catch {
+			isSaving = false
+		}
+	}
+}
+
+private enum LogField: Hashable {
+	case weight(Int)
+	case reps(Int)
+}

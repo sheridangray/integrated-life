@@ -12,7 +12,7 @@ final class AuthState: ObservableObject {
 	@Published var user: User?
 	@Published var isLoading = true
 
-	private let authService = AuthService()
+	private let authService = AuthService.shared
 
 	init() {
 		Task {

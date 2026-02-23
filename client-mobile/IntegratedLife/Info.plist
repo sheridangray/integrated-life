@@ -39,11 +39,10 @@
 	<array>
 		<string>com.googleusercontent.apps</string>
 	</array>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Integrated Life reads your health data including heart rate, activity, sleep, and environmental metrics to provide personalized insights.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Integrated Life saves your workout data to Apple Health so your activity is tracked in one place.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 </dict>
