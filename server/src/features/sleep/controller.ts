@@ -22,13 +22,13 @@ export async function submitNightly(req: Request, res: Response) {
 		})
 	}
 
-	const score = await sleepService.processNightlyData(authReq.userId!, parsed.data)
+	const score = await sleepService.processNightlyData(authReq.user!.userId, parsed.data)
 	return res.status(200).json(score)
 }
 
 export async function getTodayScores(req: Request, res: Response) {
 	const authReq = req as AuthenticatedRequest
-	const score = await sleepService.getTodayScores(authReq.userId!)
+	const score = await sleepService.getTodayScores(authReq.user!.userId)
 
 	if (!score) {
 		return res.status(200).json(null)
@@ -41,6 +41,6 @@ export async function getHistory(req: Request, res: Response) {
 	const authReq = req as AuthenticatedRequest
 	const days = parseInt(req.query.days as string) || 14
 
-	const scores = await sleepService.getScoreHistory(authReq.userId!, days)
+	const scores = await sleepService.getScoreHistory(authReq.user!.userId, days)
 	return res.status(200).json(scores)
 }

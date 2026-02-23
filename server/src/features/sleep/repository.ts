@@ -27,13 +27,12 @@ export async function findNightlyMetrics(
 		date: { $gte: cutoff.toISOString().split('T')[0] },
 	})
 		.sort({ date: 1 })
-		.lean()
 }
 
 export async function findBaseline(
 	userId: string
 ): Promise<SleepBaselineDocument | null> {
-	return SleepBaseline.findOne({ userId }).lean()
+	return SleepBaseline.findOne({ userId })
 }
 
 export async function upsertBaseline(
@@ -70,7 +69,6 @@ export async function findScores(
 		date: { $gte: cutoff.toISOString().split('T')[0] },
 	})
 		.sort({ date: -1 })
-		.lean()
 }
 
 export async function findLatestScore(
@@ -78,5 +76,4 @@ export async function findLatestScore(
 ): Promise<SleepScoreDocument | null> {
 	return SleepScoreModel.findOne({ userId })
 		.sort({ date: -1 })
-		.lean()
 }
