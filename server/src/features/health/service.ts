@@ -140,6 +140,22 @@ export async function getExerciseHistory(userId: string, exerciseId: string) {
 	}))
 }
 
+// --- Delete History ---
+
+export async function deleteHistoryItem(userId: string, type: string, id: string) {
+	if (type === 'exercise') {
+		const deleted = await repo.deleteExerciseLog(userId, id)
+		if (!deleted) throw new AppError('Exercise log not found or not owned by user', 404)
+		return
+	}
+	if (type === 'workout') {
+		const deleted = await repo.deleteWorkoutLog(userId, id)
+		if (!deleted) throw new AppError('Workout log not found or not owned by user', 404)
+		return
+	}
+	throw new AppError('Invalid history type', 400)
+}
+
 // --- Workouts ---
 
 export async function listWorkouts(filters: {

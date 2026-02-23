@@ -30,6 +30,7 @@ historyRoutes.use(authMiddleware)
 historyRoutes.get('/', asyncHandler(controller.getHistory))
 historyRoutes.get('/export', asyncHandler(controller.exportHistory))
 historyRoutes.get('/:type/:id', asyncHandler(controller.getHistoryDetail))
+historyRoutes.delete('/:type/:id', asyncHandler(controller.deleteHistoryItem))
 
 // --- AI Insights ---
 healthInsightRoutes.use(authMiddleware)

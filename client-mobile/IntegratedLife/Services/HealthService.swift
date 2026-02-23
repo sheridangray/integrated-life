@@ -99,6 +99,10 @@ final class HealthService {
 		return try await api.get(path: "/v1/history\(query)", token: try await token(), as: PaginatedHistory.self)
 	}
 
+	func deleteHistoryItem(type: String, id: String) async throws {
+		try await api.delete(path: "/v1/history/\(type)/\(id)", token: try await token())
+	}
+
 	func fetchHistoryDetail(type: String, id: String) async throws -> ExerciseLog {
 		try await api.get(path: "/v1/history/\(type)/\(id)", token: try await token(), as: ExerciseLog.self)
 	}

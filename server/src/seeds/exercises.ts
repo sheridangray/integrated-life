@@ -101,11 +101,11 @@ export const exerciseSeeds: ExerciseSeed[] = [
 		category: 'Core'
 	},
 	{
-		name: 'Pull-ups (assisted if needed)',
+		name: 'Pull-ups',
 		muscles: ['Latissimus Dorsi', 'Biceps', 'Trapezius'],
 		bodyParts: ['Back', 'Arms'],
-		resistanceType: 'Bodyweight',
-		measurementType: 'Rep-Only',
+		resistanceType: 'Weighted Bodyweight',
+		measurementType: 'Strength',
 		steps: [
 			'Grip the pull-up bar with palms facing away, slightly wider than shoulder-width.',
 			'Hang with arms fully extended.',

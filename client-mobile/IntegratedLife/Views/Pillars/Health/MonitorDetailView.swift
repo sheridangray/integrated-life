@@ -11,6 +11,7 @@ struct MonitorDetailView: View {
 	@State private var insight: AIInsight?
 	@State private var isLoading = true
 	@State private var selectedTimeRange: TimeRange = .week
+	@State private var selectedDataPoint: (date: Date, value: Double)?
 
 	private let healthService = HealthService.shared
 
@@ -70,26 +71,84 @@ struct MonitorDetailView: View {
 			)
 			.frame(height: 200)
 		} else {
-			Chart {
-				ForEach(Array(dataPoints.enumerated()), id: \.offset) { _, point in
-					LineMark(
-						x: .value("Date", point.date),
-						y: .value(sampleType.unit.isEmpty ? "Value" : sampleType.unit, point.value)
-					)
-					.foregroundStyle(.blue)
+			VStack(alignment: .leading, spacing: 4) {
+				if let selected = selectedDataPoint {
+					HStack(spacing: 8) {
+						Text(selected.date, style: .date)
+							.font(.caption)
+							.foregroundStyle(.secondary)
+						Spacer()
+						if sampleType.unit == "%" {
+							Text("\(String(format: "%.1f", selected.value * 100))%")
+								.font(.headline)
+						} else {
+							Text("\(selected.value, specifier: "%.1f") \(sampleType.unit)")
+								.font(.headline)
+						}
+					}
+					.padding(.horizontal, 4)
+				}
 
-					AreaMark(
-						x: .value("Date", point.date),
-						y: .value(sampleType.unit.isEmpty ? "Value" : sampleType.unit, point.value)
-					)
-					.foregroundStyle(.blue.opacity(0.1))
+				Chart {
+					ForEach(Array(dataPoints.enumerated()), id: \.offset) { _, point in
+						LineMark(
+							x: .value("Date", point.date),
+							y: .value(sampleType.unit.isEmpty ? "Value" : sampleType.unit, point.value)
+						)
+						.foregroundStyle(.blue)
+
+						AreaMark(
+							x: .value("Date", point.date),
+							y: .value(sampleType.unit.isEmpty ? "Value" : sampleType.unit, point.value)
+						)
+						.foregroundStyle(.blue.opacity(0.1))
+					}
+
+					if let selected = selectedDataPoint {
+						RuleMark(x: .value("Selected", selected.date))
+							.foregroundStyle(.gray.opacity(0.5))
+							.lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 2]))
+
+						PointMark(
+							x: .value("Date", selected.date),
+							y: .value("Value", selected.value)
+						)
+						.foregroundStyle(.blue)
+						.symbolSize(60)
+					}
+				}
+				.frame(height: 200)
+				.chartXAxis {
+					AxisMarks(values: .automatic(desiredCount: 5))
+				}
+				.chartOverlay { proxy in
+					GeometryReader { _ in
+						Rectangle()
+							.fill(.clear)
+							.contentShape(Rectangle())
+							.gesture(
+								DragGesture(minimumDistance: 0)
+									.onChanged { value in
+										let x = value.location.x
+										if let date: Date = proxy.value(atX: x) {
+											selectedDataPoint = closestDataPoint(to: date)
+										}
+									}
+									.onEnded { _ in
+										selectedDataPoint = nil
+									}
+							)
+					}
 				}
 			}
-			.frame(height: 200)
-			.chartXAxis {
-				AxisMarks(values: .automatic(desiredCount: 5))
-			}
 		}
+	}
+
+	private func closestDataPoint(to date: Date) -> (date: Date, value: Double)? {
+		guard !dataPoints.isEmpty else { return nil }
+		return dataPoints.min(by: {
+			abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date))
+		})
 	}
 
 	@ViewBuilder

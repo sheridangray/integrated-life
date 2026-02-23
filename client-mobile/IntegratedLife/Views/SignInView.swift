@@ -10,9 +10,9 @@ struct SignInView: View {
 		VStack(spacing: 24) {
 			Spacer()
 
-			Image(systemName: "infinity")
-				.font(.system(size: 64, weight: .light))
-				.foregroundStyle(.blue)
+			Text("\u{222B}")
+				.font(.system(size: 96, weight: .light))
+				.foregroundStyle(Color.accentColor)
 
 			Text("Integrated Life")
 				.font(.title)

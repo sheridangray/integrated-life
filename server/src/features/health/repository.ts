@@ -81,6 +81,18 @@ export async function findExerciseLogById(
 	return ExerciseLog.findOne({ _id: logId, userId }).exec()
 }
 
+export async function deleteExerciseLog(userId: string, logId: string): Promise<boolean> {
+	if (!mongoose.isValidObjectId(logId)) return false
+	const result = await ExerciseLog.deleteOne({ _id: logId, userId }).exec()
+	return result.deletedCount > 0
+}
+
+export async function deleteWorkoutLog(userId: string, logId: string): Promise<boolean> {
+	if (!mongoose.isValidObjectId(logId)) return false
+	const result = await WorkoutLog.deleteOne({ _id: logId, userId }).exec()
+	return result.deletedCount > 0
+}
+
 // --- Workouts ---
 
 export async function findWorkouts(filters: {

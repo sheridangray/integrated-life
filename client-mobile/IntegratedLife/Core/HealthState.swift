@@ -59,4 +59,13 @@ final class HealthState: ObservableObject {
 		}
 		isLoading = false
 	}
+
+	func deleteHistoryItem(type: String, id: String) async {
+		do {
+			try await healthService.deleteHistoryItem(type: type, id: id)
+			history?.items.removeAll { $0.id == id && $0.type == type }
+		} catch {
+			self.error = error.localizedDescription
+		}
+	}
 }

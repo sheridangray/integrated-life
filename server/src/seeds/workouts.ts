@@ -21,7 +21,7 @@ export const workoutSeeds: WorkoutSeed[] = [
 		name: 'MI7Smith Pull A',
 		difficulty: 'Intermediate',
 		exercises: [
-			'Pull-ups (assisted if needed)',
+			'Pull-ups',
 			'Cable Lat Pulldown',
 			'Face Pull',
 			'Single-Arm Cable Row',

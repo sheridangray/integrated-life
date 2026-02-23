@@ -161,8 +161,13 @@ struct LogExerciseView: View {
 
 			HStack(spacing: 12) {
 				if measurementType == .strength || measurementType == nil {
-					numberField("Weight", value: $sets[index].weight)
-						.focused($focusedField, equals: .weight(index))
+					let isWeightedBodyweight = exercise.resistanceType == ResistanceType.weightedBodyweight.rawValue
+					signedNumberField(
+						isWeightedBodyweight ? "Weight (+/-)" : "Weight",
+						value: $sets[index].weight,
+						allowNegative: isWeightedBodyweight
+					)
+					.focused($focusedField, equals: .weight(index))
 					intField("Reps", value: $sets[index].reps)
 						.focused($focusedField, equals: .reps(index))
 				}
@@ -183,8 +188,33 @@ struct LogExerciseView: View {
 						.focused($focusedField, equals: .reps(index))
 				}
 			}
+			if exercise.resistanceType == ResistanceType.weightedBodyweight.rawValue {
+				Text("Negative = assistance, Positive = added weight")
+					.font(.caption2)
+					.foregroundStyle(.secondary)
+			}
 		}
 		.padding(.vertical, 4)
+	}
+
+	private func signedNumberField(_ label: String, value: Binding<Double?>, allowNegative: Bool) -> some View {
+		let text = Binding<String>(
+			get: {
+				guard let v = value.wrappedValue else { return "" }
+				return v == floor(v) ? String(format: "%.0f", v) : "\(v)"
+			},
+			set: { value.wrappedValue = Double($0) }
+		)
+		return VStack(alignment: .leading, spacing: 2) {
+			Text(label)
+				.font(.caption2)
+				.foregroundStyle(.secondary)
+			TextField(label, text: text)
+				.font(.title3)
+				.padding(10)
+				.background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
+				.keyboardType(allowNegative ? .numbersAndPunctuation : .decimalPad)
+		}
 	}
 
 	private func numberField(_ label: String, value: Binding<Double?>) -> some View {

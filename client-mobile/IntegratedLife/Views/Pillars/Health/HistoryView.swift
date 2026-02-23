@@ -102,9 +102,23 @@ struct HistoryView: View {
 								item: displayItem.item,
 								childExercises: displayItem.childExercises
 							)
+							.swipeActions(edge: .trailing, allowsFullSwipe: true) {
+								Button(role: .destructive) {
+									Task { await healthState.deleteHistoryItem(type: displayItem.item.type, id: displayItem.item.id) }
+								} label: {
+									Label("Delete", systemImage: "trash")
+								}
+							}
 						} else {
 							NavigationLink(value: displayItem.item) {
 								ExerciseHistoryRow(item: displayItem.item)
+							}
+							.swipeActions(edge: .trailing, allowsFullSwipe: true) {
+								Button(role: .destructive) {
+									Task { await healthState.deleteHistoryItem(type: displayItem.item.type, id: displayItem.item.id) }
+								} label: {
+									Label("Delete", systemImage: "trash")
+								}
 							}
 						}
 					}

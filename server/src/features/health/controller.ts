@@ -211,6 +211,18 @@ export async function getHistoryDetail(req: AuthenticatedRequest, res: Response)
 	return res.json(detail)
 }
 
+export async function deleteHistoryItem(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	await healthService.deleteHistoryItem(req.user.userId, req.params.type, req.params.id)
+	return res.status(204).send()
+}
+
 export async function exportHistory(req: AuthenticatedRequest, res: Response) {
 	if (!req.user) {
 		return res.status(401).json({
