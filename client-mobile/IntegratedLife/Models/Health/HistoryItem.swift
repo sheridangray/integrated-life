@@ -11,7 +11,7 @@ struct HistoryItem: Codable, Identifiable {
 }
 
 struct PaginatedHistory: Codable {
-	let items: [HistoryItem]
+	var items: [HistoryItem]
 	let total: Int
 	let page: Int
 	let limit: Int
