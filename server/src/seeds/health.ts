@@ -6,13 +6,7 @@ import { workoutSeeds } from './workouts'
 import { logger } from '../lib/logger'
 
 export async function seedHealthData() {
-	const existingCount = await Exercise.countDocuments({ isGlobal: true })
-	if (existingCount >= exerciseSeeds.length) {
-		logger.debug('Health seed data already exists, skipping')
-		return
-	}
-
-	logger.info('Seeding health data...')
+	logger.info('Syncing health seed data...')
 
 	const exerciseDocs = await Promise.all(
 		exerciseSeeds.map(async (seed) => {
@@ -20,7 +14,7 @@ export async function seedHealthData() {
 			return Exercise.findOneAndUpdate(
 				{ slug },
 				{ ...seed, slug, isGlobal: true },
-				{ upsert: true, new: true, setDefaultsOnInsert: true }
+				{ upsert: true, new: true }
 			)
 		})
 	)
@@ -47,9 +41,9 @@ export async function seedHealthData() {
 				isGlobal: true,
 				exercises
 			},
-			{ upsert: true, new: true, setDefaultsOnInsert: true }
+			{ upsert: true, new: true }
 		)
 	}
 
-	logger.info(`Seeded ${exerciseDocs.length} exercises and ${workoutSeeds.length} workouts`)
+	logger.info(`Synced ${exerciseDocs.length} exercises and ${workoutSeeds.length} workouts`)
 }
