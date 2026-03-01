@@ -37,7 +37,7 @@ schemes:
       targets:
         IntegratedLife: all
     run:
-      config: Release
+      config: Debug
     profile:
       config: Release
     archive:

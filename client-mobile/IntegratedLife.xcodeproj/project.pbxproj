@@ -7,21 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		09391CBAAB593834F9DEC218 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15EAB6BE9BBEB1E6F6DFFB1 /* NotificationService.swift */; };
 		0B7EDC37D36B9983A08B4B89 /* SleepService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FE4419510561EC8B7F4511B /* SleepService.swift */; };
 		0C56B71BD1E48F111AC323F1 /* AppStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF327EF018A9E554180E1A70 /* AppStyles.swift */; };
+		0D8CF0B3FA1209BBA6EB4103 /* NotificationCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6DF7817DC127893228954F4 /* NotificationCategory.swift */; };
 		100DFB1320AC07CE46531FD0 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20FDE70F3F72C04E0F5E4D8F /* APIClient.swift */; };
 		12D53505E6958749939EC8ED /* HistoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6177222E1971743C39FB8D38 /* HistoryDetailView.swift */; };
+		16047BCCA11549530662A035 /* SleepDisplayState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E1DCC29BA4887B37749993 /* SleepDisplayState.swift */; };
 		17AEE95DDE2B99F70E26BD3C /* HealthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F4A822689FB3C3C7858115 /* HealthService.swift */; };
 		19554D2D60167AEB378510C3 /* DebugMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76570C87DD87E0F20B3523AF /* DebugMenuView.swift */; };
 		26FDEE210BF97C156D71CD6A /* LogExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CE5252CD57F97DD65967F72 /* LogExerciseView.swift */; };
+		2D5B97203423062EB18C91EB /* SleepDisplayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B009C0A0EDB4E3494101AB /* SleepDisplayService.swift */; };
 		2FA488C89839F61EC2F4A23D /* ScoreRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CA778EBB641D560E9339EED /* ScoreRingView.swift */; };
 		33AA7DCA47473FE75B1890F2 /* SleepPillarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 714A04C0C4820B001ABE58EA /* SleepPillarView.swift */; };
+		3551B52CE53322C728F528AF /* WorkoutNotificationScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B699E7C3B2402A6CCAD09C29 /* WorkoutNotificationScheduler.swift */; };
 		3A220E104316E9595BD437A2 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1066D582A8CA878662BA08B /* AuthService.swift */; };
 		435B68D83B881F9A8D256985 /* CreateWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A22CD6337718753B9BE22D12 /* CreateWorkoutView.swift */; };
 		440DB92B444CE918C70CE83E /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD5B456E60EFB181504E561 /* MainTabView.swift */; };
 		47795D54C4E9C3BAE51FD289 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 370100519CF6CBB09AE89CC4 /* Assets.xcassets */; };
 		4DB1CDB3BB1C1AD57AB1BAF1 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 21989CE479F42A008339015F /* GoogleSignIn */; };
 		4E6F7E4AEB6A3E9D06116802 /* HistoryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B3B4C00F42968A571709D6 /* HistoryItem.swift */; };
+		5236E1FE991234A6241A5C29 /* NotificationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1ECC5828ACDF51388DFC72 /* NotificationState.swift */; };
 		5B83338996ACC16331A8C565 /* SleepState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5332ACF6A1987ED117D708 /* SleepState.swift */; };
 		6591DD71C2533251F709F791 /* MonitorListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 411018643E9E366A566D94AC /* MonitorListView.swift */; };
 		6B0F5AA426897D9092F3FA47 /* ExerciseListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B997A48D5E4A1EA972A6613B /* ExerciseListView.swift */; };
@@ -30,6 +36,7 @@
 		70FE1EE01A07BA954A944608 /* SleepDataAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8EFADE838E4DFF2DEFAC83 /* SleepDataAggregator.swift */; };
 		78354445A9A95F578DD3C5AD /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 298F71C47455C5239FFFAF88 /* HistoryView.swift */; };
 		78AFD068A5EA7723D0005288 /* Exercise.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E5DA665D4FBDB0DA727173 /* Exercise.swift */; };
+		7E8F5EE92B091077BF159766 /* RecurrenceExpander.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843E7211D9CD2EAF4217AB48 /* RecurrenceExpander.swift */; };
 		8636470B2F5D379E5ED9B20A /* Workout.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB957B44064BF54C4C6C5DA1 /* Workout.swift */; };
 		86B5050DE9DD615453B1C976 /* HealthState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D3CE6F7E8870B6BBE0F815 /* HealthState.swift */; };
 		8B4E04014BBC80166CA12C23 /* AuthState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F52383F471281EB99FAA85 /* AuthState.swift */; };
@@ -47,21 +54,18 @@
 		BA0AFBB8E53C222BBBD9E3F4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDBE1D4DCD0716314753933D /* ContentView.swift */; };
 		BF4C3C13433BF5B565987724 /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D495646162D0FF25F6CEDFCB /* HealthKitService.swift */; };
 		C034B6A49D1D37254EACB602 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755F9058C8DE04685C45A67F /* HomeView.swift */; };
+		C0D923B19A1C4CE6561F1308 /* SleepDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4B6F16F85E3513C65919C3 /* SleepDisplayView.swift */; };
 		C27C108E13FD4872115FD5EF /* IntegratedLifeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A53EA7CACB338D769EC0CA /* IntegratedLifeApp.swift */; };
 		C378704891AA7F860D444F35 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4337BD9A8D2718A41D95C07E /* KeychainService.swift */; };
 		C8D2BD2A19863B7DB650758C /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05EC50EAE6E9C82D71400736 /* SignInView.swift */; };
+		D2EA4337BB1D635A54A18D67 /* NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C4B58F4E9E4D53C2BA11C /* NotificationSettingsView.swift */; };
+		D9F65616FF8BDFF93802757D /* SleepDisplayModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7369B54823AA02C012C310 /* SleepDisplayModels.swift */; };
 		E18F2E9BBAF71DAFF62D6650 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 443DA3D610A51821A929F31C /* ProfileView.swift */; };
 		E5540BD1E986484C4B735191 /* HealthTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FE69BAAFD3C74E703AD21B /* HealthTypes.swift */; };
 		E5742EAF3AB4D2BA1B12EB5E /* MonitorGatingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B4B8225CEE2204942368A6 /* MonitorGatingView.swift */; };
 		F32DDE56C2AEA2FF0BB30AA5 /* HealthKitIntegrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 952C811DD97A65436093967C /* HealthKitIntegrationView.swift */; };
 		F4175675B4BE13D0614D5843 /* IntegrationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D9DB39F45C52D374DF0293A /* IntegrationsView.swift */; };
 		F770B53826A3E79E1BE45FDF /* PillarsOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 931D1968BC86A3D09146DD4E /* PillarsOverviewView.swift */; };
-		1A2B3C4D5E6F7A8B9C0D1E2F /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* NotificationService.swift */; };
-		2B3C4D5E6F7A8B9C0D1E2F3A /* WorkoutNotificationScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* WorkoutNotificationScheduler.swift */; };
-		3C4D5E6F7A8B9C0D1E2F3A4B /* NotificationCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F6A7B8C9D0E1F2A3B4 /* NotificationCategory.swift */; };
-		4D5E6F7A8B9C0D1E2F3A4B5C /* NotificationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6A7B8C9D0E1F2A3B4C5 /* NotificationState.swift */; };
-		5E6F7A8B9C0D1E2F3A4B5C6D /* NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5F6A7B8C9D0E1F2A3B4C5D6 /* NotificationSettingsView.swift */; };
-		6F7A8B9C0D1E2F3A4B5C6D7E /* RecurrenceExpander.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7B8C9D0E1F2A3B4C5D6E7 /* RecurrenceExpander.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -83,9 +87,12 @@
 		443DA3D610A51821A929F31C /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		482D08FF7231CA7FAF17C482 /* HealthPillarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthPillarView.swift; sourceTree = "<group>"; };
 		5170E210ADFE84A532792BB2 /* SleepDetailCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepDetailCardView.swift; sourceTree = "<group>"; };
+		53B009C0A0EDB4E3494101AB /* SleepDisplayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepDisplayService.swift; sourceTree = "<group>"; };
 		55FA62FF8843E4A55C4EDBB5 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		5CA778EBB641D560E9339EED /* ScoreRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreRingView.swift; sourceTree = "<group>"; };
 		6177222E1971743C39FB8D38 /* HistoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryDetailView.swift; sourceTree = "<group>"; };
+		695C4B58F4E9E4D53C2BA11C /* NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
+		6C7369B54823AA02C012C310 /* SleepDisplayModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepDisplayModels.swift; sourceTree = "<group>"; };
 		6F1E3B84C69E285340FF68DF /* SleepStageBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepStageBarView.swift; sourceTree = "<group>"; };
 		7077E42EE103DEB387E10E10 /* IntegratedLife.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = IntegratedLife.entitlements; sourceTree = "<group>"; };
 		714A04C0C4820B001ABE58EA /* SleepPillarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepPillarView.swift; sourceTree = "<group>"; };
@@ -93,37 +100,38 @@
 		76570C87DD87E0F20B3523AF /* DebugMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugMenuView.swift; sourceTree = "<group>"; };
 		79FE69BAAFD3C74E703AD21B /* HealthTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthTypes.swift; sourceTree = "<group>"; };
 		81D3CE6F7E8870B6BBE0F815 /* HealthState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthState.swift; sourceTree = "<group>"; };
+		843E7211D9CD2EAF4217AB48 /* RecurrenceExpander.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrenceExpander.swift; sourceTree = "<group>"; };
 		931D1968BC86A3D09146DD4E /* PillarsOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillarsOverviewView.swift; sourceTree = "<group>"; };
 		952C811DD97A65436093967C /* HealthKitIntegrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitIntegrationView.swift; sourceTree = "<group>"; };
 		A1314C46C4328007315D8F09 /* SleepModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepModels.swift; sourceTree = "<group>"; };
 		A18103C8DA7DFD94F7F258A3 /* WorkoutLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLog.swift; sourceTree = "<group>"; };
 		A22CD6337718753B9BE22D12 /* CreateWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateWorkoutView.swift; sourceTree = "<group>"; };
 		A593755613AD7F085ED55B53 /* IntegratedLife.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IntegratedLife.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A6DF7817DC127893228954F4 /* NotificationCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCategory.swift; sourceTree = "<group>"; };
 		AC33410902D65442CDACFBB3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B3E5DA665D4FBDB0DA727173 /* Exercise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Exercise.swift; sourceTree = "<group>"; };
+		B699E7C3B2402A6CCAD09C29 /* WorkoutNotificationScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutNotificationScheduler.swift; sourceTree = "<group>"; };
 		B997A48D5E4A1EA972A6613B /* ExerciseListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseListView.swift; sourceTree = "<group>"; };
 		C1066D582A8CA878662BA08B /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		C15EAB6BE9BBEB1E6F6DFFB1 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		CB1ECC5828ACDF51388DFC72 /* NotificationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationState.swift; sourceTree = "<group>"; };
 		CE22672B8A005BFF69D4413D /* HealthKitDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitDataTypes.swift; sourceTree = "<group>"; };
 		CF5332ACF6A1987ED117D708 /* SleepState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepState.swift; sourceTree = "<group>"; };
 		D495646162D0FF25F6CEDFCB /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
 		D96E88729B10F91889D99A3E /* WorkoutDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailView.swift; sourceTree = "<group>"; };
+		DC4B6F16F85E3513C65919C3 /* SleepDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepDisplayView.swift; sourceTree = "<group>"; };
 		DD8EFADE838E4DFF2DEFAC83 /* SleepDataAggregator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepDataAggregator.swift; sourceTree = "<group>"; };
 		E4FD76F03B96BAAC29C904F5 /* BackfillConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackfillConfig.swift; sourceTree = "<group>"; };
 		E6F4A822689FB3C3C7858115 /* HealthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthService.swift; sourceTree = "<group>"; };
 		E9B3B4C00F42968A571709D6 /* HistoryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryItem.swift; sourceTree = "<group>"; };
 		EB957B44064BF54C4C6C5DA1 /* Workout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workout.swift; sourceTree = "<group>"; };
 		EF327EF018A9E554180E1A70 /* AppStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStyles.swift; sourceTree = "<group>"; };
+		F0E1DCC29BA4887B37749993 /* SleepDisplayState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepDisplayState.swift; sourceTree = "<group>"; };
 		F0F52383F471281EB99FAA85 /* AuthState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthState.swift; sourceTree = "<group>"; };
 		F4B4B8225CEE2204942368A6 /* MonitorGatingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorGatingView.swift; sourceTree = "<group>"; };
 		FDBE1D4DCD0716314753933D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		"TEMP_13946112-5A31-49C2-B650-A3AA8E88FBBA" /* Config.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.Release.xcconfig; sourceTree = "<group>"; };
-		"TEMP_9915B89A-ED4F-43D0-8302-6D2E71D6625E" /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
-		B2C3D4E5F6A7B8C9D0E1F2A3 /* WorkoutNotificationScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutNotificationScheduler.swift; sourceTree = "<group>"; };
-		C3D4E5F6A7B8C9D0E1F2A3B4 /* NotificationCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCategory.swift; sourceTree = "<group>"; };
-		D4E5F6A7B8C9D0E1F2A3B4C5 /* NotificationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationState.swift; sourceTree = "<group>"; };
-		E5F6A7B8C9D0E1F2A3B4C5D6 /* NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
-		F6A7B8C9D0E1F2A3B4C5D6E7 /* RecurrenceExpander.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrenceExpander.swift; sourceTree = "<group>"; };
+		"TEMP_15868631-5A43-4D23-9F5E-EBA27204C145" /* Config.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.Release.xcconfig; sourceTree = "<group>"; };
+		"TEMP_3FBC9FD1-CF0F-4EAA-BAD2-BE6163E77D84" /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +146,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0A4BEBD4D1F5BB63BABA1397 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				843E7211D9CD2EAF4217AB48 /* RecurrenceExpander.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
 		11F8E10316E3AC2179791181 /* Health */ = {
 			isa = PBXGroup;
 			children = (
@@ -157,21 +173,13 @@
 			children = (
 				9AA0CACDE5F41737DEC35C0F /* Integrations */,
 				D8BB74334BC97C458578F432 /* Pillars */,
-				7A8B9C0D1E2F3A4B5C6D7E8F /* Settings */,
+				D76CC8912721410F562B6C35 /* Settings */,
 				755F9058C8DE04685C45A67F /* HomeView.swift */,
 				1AD5B456E60EFB181504E561 /* MainTabView.swift */,
 				443DA3D610A51821A929F31C /* ProfileView.swift */,
 				05EC50EAE6E9C82D71400736 /* SignInView.swift */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		7A8B9C0D1E2F3A4B5C6D7E8F /* Settings */ = {
-			isa = PBXGroup;
-			children = (
-				E5F6A7B8C9D0E1F2A3B4C5D6 /* NotificationSettingsView.swift */,
-			);
-			path = Settings;
 			sourceTree = "<group>";
 		};
 		33CF8C58620D9633302BA451 /* IntegratedLife */ = {
@@ -182,7 +190,7 @@
 				E293ECEBA46D238046E2A86C /* Models */,
 				5FE398930988444EB951977F /* Services */,
 				F560E25E446C49CF8182AC87 /* Styles */,
-				8B9C0D1E2F3A4B5C6D7E8F9A /* Utilities */,
+				0A4BEBD4D1F5BB63BABA1397 /* Utilities */,
 				14F4F00600075092466035C4 /* Views */,
 				370100519CF6CBB09AE89CC4 /* Assets.xcassets */,
 				FDBE1D4DCD0716314753933D /* ContentView.swift */,
@@ -193,20 +201,12 @@
 			path = IntegratedLife;
 			sourceTree = "<group>";
 		};
-		8B9C0D1E2F3A4B5C6D7E8F9A /* Utilities */ = {
-			isa = PBXGroup;
-			children = (
-				F6A7B8C9D0E1F2A3B4C5D6E7 /* RecurrenceExpander.swift */,
-			);
-			path = Utilities;
-			sourceTree = "<group>";
-		};
 		35C423A48DDB50D233B9C9BE = {
 			isa = PBXGroup;
 			children = (
 				33CF8C58620D9633302BA451 /* IntegratedLife */,
 				48BBF3434DE890351FE89E6D /* Products */,
-				AC183E502F4C1852004C6582 /* Recovered References */,
+				AC2AC45F2F53EEAE005776EC /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -225,10 +225,11 @@
 				C1066D582A8CA878662BA08B /* AuthService.swift */,
 				D495646162D0FF25F6CEDFCB /* HealthKitService.swift */,
 				E6F4A822689FB3C3C7858115 /* HealthService.swift */,
-				A1B2C3D4E5F6A7B8C9D0E1F2 /* NotificationService.swift */,
+				C15EAB6BE9BBEB1E6F6DFFB1 /* NotificationService.swift */,
 				DD8EFADE838E4DFF2DEFAC83 /* SleepDataAggregator.swift */,
+				53B009C0A0EDB4E3494101AB /* SleepDisplayService.swift */,
 				3FE4419510561EC8B7F4511B /* SleepService.swift */,
-				B2C3D4E5F6A7B8C9D0E1F2A3 /* WorkoutNotificationScheduler.swift */,
+				B699E7C3B2402A6CCAD09C29 /* WorkoutNotificationScheduler.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -236,6 +237,7 @@
 		678562952D191FD695104C5C /* Sleep */ = {
 			isa = PBXGroup;
 			children = (
+				6C7369B54823AA02C012C310 /* SleepDisplayModels.swift */,
 				A1314C46C4328007315D8F09 /* SleepModels.swift */,
 			);
 			path = Sleep;
@@ -248,7 +250,8 @@
 				55FA62FF8843E4A55C4EDBB5 /* Config.swift */,
 				81D3CE6F7E8870B6BBE0F815 /* HealthState.swift */,
 				4337BD9A8D2718A41D95C07E /* KeychainService.swift */,
-				D4E5F6A7B8C9D0E1F2A3B4C5 /* NotificationState.swift */,
+				CB1ECC5828ACDF51388DFC72 /* NotificationState.swift */,
+				F0E1DCC29BA4887B37749993 /* SleepDisplayState.swift */,
 				CF5332ACF6A1987ED117D708 /* SleepState.swift */,
 			);
 			path = Core;
@@ -277,19 +280,28 @@
 			children = (
 				5CA778EBB641D560E9339EED /* ScoreRingView.swift */,
 				5170E210ADFE84A532792BB2 /* SleepDetailCardView.swift */,
+				DC4B6F16F85E3513C65919C3 /* SleepDisplayView.swift */,
 				714A04C0C4820B001ABE58EA /* SleepPillarView.swift */,
 				6F1E3B84C69E285340FF68DF /* SleepStageBarView.swift */,
 			);
 			path = Sleep;
 			sourceTree = "<group>";
 		};
-		AC183E502F4C1852004C6582 /* Recovered References */ = {
+		AC2AC45F2F53EEAE005776EC /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-				"TEMP_9915B89A-ED4F-43D0-8302-6D2E71D6625E" /* Config.xcconfig */,
-				"TEMP_13946112-5A31-49C2-B650-A3AA8E88FBBA" /* Config.Release.xcconfig */,
+				"TEMP_3FBC9FD1-CF0F-4EAA-BAD2-BE6163E77D84" /* Config.xcconfig */,
+				"TEMP_15868631-5A43-4D23-9F5E-EBA27204C145" /* Config.Release.xcconfig */,
 			);
 			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		D76CC8912721410F562B6C35 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				695C4B58F4E9E4D53C2BA11C /* NotificationSettingsView.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 		D8BB74334BC97C458578F432 /* Pillars */ = {
@@ -307,7 +319,7 @@
 			children = (
 				11F8E10316E3AC2179791181 /* Health */,
 				678562952D191FD695104C5C /* Sleep */,
-				C3D4E5F6A7B8C9D0E1F2A3B4 /* NotificationCategory.swift */,
+				A6DF7817DC127893228954F4 /* NotificationCategory.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -425,7 +437,6 @@
 				78AFD068A5EA7723D0005288 /* Exercise.swift in Sources */,
 				96E9C6467DFB0C77C3C9E91E /* ExerciseDetailView.swift in Sources */,
 				6B0F5AA426897D9092F3FA47 /* ExerciseListView.swift in Sources */,
-				6F7A8B9C0D1E2F3A4B5C6D7E /* RecurrenceExpander.swift in Sources */,
 				6B391D0BD111C5865C8982AF /* ExerciseLog.swift in Sources */,
 				AE0019C690B5C45A2106DAB9 /* HealthKitDataTypes.swift in Sources */,
 				F32DDE56C2AEA2FF0BB30AA5 /* HealthKitIntegrationView.swift in Sources */,
@@ -446,16 +457,21 @@
 				A06D3A0767E95EC7D4B790D0 /* MonitorDetailView.swift in Sources */,
 				E5742EAF3AB4D2BA1B12EB5E /* MonitorGatingView.swift in Sources */,
 				6591DD71C2533251F709F791 /* MonitorListView.swift in Sources */,
-				3C4D5E6F7A8B9C0D1E2F3A4B /* NotificationCategory.swift in Sources */,
-				5E6F7A8B9C0D1E2F3A4B5C6D /* NotificationSettingsView.swift in Sources */,
-				1A2B3C4D5E6F7A8B9C0D1E2F /* NotificationService.swift in Sources */,
-				4D5E6F7A8B9C0D1E2F3A4B5C /* NotificationState.swift in Sources */,
+				0D8CF0B3FA1209BBA6EB4103 /* NotificationCategory.swift in Sources */,
+				09391CBAAB593834F9DEC218 /* NotificationService.swift in Sources */,
+				D2EA4337BB1D635A54A18D67 /* NotificationSettingsView.swift in Sources */,
+				5236E1FE991234A6241A5C29 /* NotificationState.swift in Sources */,
 				F770B53826A3E79E1BE45FDF /* PillarsOverviewView.swift in Sources */,
 				E18F2E9BBAF71DAFF62D6650 /* ProfileView.swift in Sources */,
+				7E8F5EE92B091077BF159766 /* RecurrenceExpander.swift in Sources */,
 				2FA488C89839F61EC2F4A23D /* ScoreRingView.swift in Sources */,
 				C8D2BD2A19863B7DB650758C /* SignInView.swift in Sources */,
 				70FE1EE01A07BA954A944608 /* SleepDataAggregator.swift in Sources */,
 				98ACFB3C91590ED73EFC7F51 /* SleepDetailCardView.swift in Sources */,
+				D9F65616FF8BDFF93802757D /* SleepDisplayModels.swift in Sources */,
+				2D5B97203423062EB18C91EB /* SleepDisplayService.swift in Sources */,
+				16047BCCA11549530662A035 /* SleepDisplayState.swift in Sources */,
+				C0D923B19A1C4CE6561F1308 /* SleepDisplayView.swift in Sources */,
 				9511B5A64934E147D866A4CB /* SleepModels.swift in Sources */,
 				33AA7DCA47473FE75B1890F2 /* SleepPillarView.swift in Sources */,
 				0B7EDC37D36B9983A08B4B89 /* SleepService.swift in Sources */,
@@ -465,7 +481,7 @@
 				966BC4F8E2400E991D441A15 /* WorkoutDetailView.swift in Sources */,
 				97EEDE4E7871EC1DE004992C /* WorkoutListView.swift in Sources */,
 				B2960A4821258EAC41412559 /* WorkoutLog.swift in Sources */,
-				2B3C4D5E6F7A8B9C0D1E2F3A /* WorkoutNotificationScheduler.swift in Sources */,
+				3551B52CE53322C728F528AF /* WorkoutNotificationScheduler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -474,7 +490,7 @@
 /* Begin XCBuildConfiguration section */
 		00A6D5EE7AF6E42E0BAA70EA /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_9915B89A-ED4F-43D0-8302-6D2E71D6625E" /* Config.xcconfig */;
+			baseConfigurationReference = "TEMP_3FBC9FD1-CF0F-4EAA-BAD2-BE6163E77D84" /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -556,7 +572,7 @@
 		};
 		76D5B4471E2668ABAB0D5167 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_13946112-5A31-49C2-B650-A3AA8E88FBBA" /* Config.Release.xcconfig */;
+			baseConfigurationReference = "TEMP_15868631-5A43-4D23-9F5E-EBA27204C145" /* Config.Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

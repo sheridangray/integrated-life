@@ -45,111 +45,7 @@ struct SleepPillarView: View {
 
     @ViewBuilder
     private var sleepTabContent: some View {
-        if sleepState.isLoading || sleepState.isSyncing {
-            ProgressView("Loading sleep data...")
-                .padding(.top, 60)
-        } else if let score = sleepState.todayScore {
-            VStack(spacing: 20) {
-                scoreSection(score)
-                stageSection(score)
-                physioSection(score)
-                flagsSection(score)
-            }
-            .padding()
-        } else {
-            noDataView
-        }
-    }
-
-    @ViewBuilder
-    private func scoreSection(_ score: SleepScoreResponse) -> some View {
-        VStack(spacing: 8) {
-            ScoreRingView(score: score.sleepScore, label: "Sleep Score", size: 180)
-
-            if score.calibrationPhase < 3 {
-                Label("Calibrating (\(score.calibrationPhase)/3)", systemImage: "gauge.with.dots.needle.33percent")
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 4)
-                    .background(.orange.opacity(0.1), in: Capsule())
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func stageSection(_ score: SleepScoreResponse) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Sleep Stages")
-                .font(.headline)
-
-            SleepStageBarView(
-                deep: score.sleepBreakdown.deep.map(Double.init),
-                core: nil,
-                rem: score.sleepBreakdown.rem.map(Double.init),
-                awake: nil
-            )
-        }
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-    }
-
-    @ViewBuilder
-    private func physioSection(_ score: SleepScoreResponse) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Score Breakdown")
-                .font(.headline)
-
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                breakdownItem("Duration", score: score.sleepBreakdown.duration)
-                breakdownItem("Efficiency", score: score.sleepBreakdown.efficiency)
-                breakdownItem("Restfulness", score: score.sleepBreakdown.restfulness)
-                breakdownItem("Timing", score: score.sleepBreakdown.timing)
-                breakdownItem("Physiology", score: score.sleepBreakdown.physioStability)
-                if let deep = score.sleepBreakdown.deep {
-                    breakdownItem("Deep Sleep", score: deep)
-                }
-                if let rem = score.sleepBreakdown.rem {
-                    breakdownItem("REM Sleep", score: rem)
-                }
-            }
-        }
-    }
-
-    private func breakdownItem(_ label: String, score: Int) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            HStack {
-                Text("\(score)")
-                    .font(.title3.weight(.semibold))
-                Spacer()
-                ScoreRingView(score: score, label: "", size: 36)
-            }
-        }
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
-    }
-
-    @ViewBuilder
-    private func flagsSection(_ score: SleepScoreResponse) -> some View {
-        if !score.interactionFlags.isEmpty {
-            DisclosureGroup {
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(score.interactionFlags, id: \.self) { flag in
-                        Label(formatFlag(flag), systemImage: "exclamationmark.triangle")
-                            .font(.subheadline)
-                            .foregroundStyle(.orange)
-                    }
-                }
-            } label: {
-                Label("Why This Score?", systemImage: "questionmark.circle")
-                    .font(.headline)
-            }
-            .padding()
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-        }
+        SleepDisplayView()
     }
 
     // MARK: - Readiness Tab
@@ -269,8 +165,20 @@ struct SleepPillarView: View {
 
     // MARK: - Helpers
 
-    private func formatFlag(_ flag: String) -> String {
-        flag.replacingOccurrences(of: "_", with: " ").capitalized
+    private func breakdownItem(_ label: String, score: Int) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            HStack {
+                Text("\(score)")
+                    .font(.title3.weight(.semibold))
+                Spacer()
+                ScoreRingView(score: score, label: "", size: 36)
+            }
+        }
+        .padding(12)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
     }
 
     private func actionColor(_ bucket: ActionBucket) -> Color {

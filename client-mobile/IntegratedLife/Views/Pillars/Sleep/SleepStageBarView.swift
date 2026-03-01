@@ -20,7 +20,7 @@ struct SleepStageBarView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             if total > 0 {
                 GeometryReader { geo in
                     HStack(spacing: 2) {
@@ -36,15 +36,18 @@ struct SleepStageBarView: View {
                 .frame(height: 24)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
 
-                HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
                     ForEach(segments.indices, id: \.self) { i in
                         let segment = segments[i]
-                        HStack(spacing: 4) {
+                        HStack(spacing: 8) {
                             Circle()
                                 .fill(segment.color)
                                 .frame(width: 8, height: 8)
-                            Text("\(segment.label) \(formatMinutes(segment.value))")
-                                .font(.caption2)
+                            Text(segment.label)
+                                .font(.subheadline)
+                            Spacer()
+                            Text(formatMinutes(segment.value))
+                                .font(.subheadline.weight(.medium))
                                 .foregroundStyle(.secondary)
                         }
                     }
