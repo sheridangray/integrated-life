@@ -74,6 +74,12 @@ export async function getNightlyMetrics(req: Request, res: Response) {
 	return res.status(200).json({ count: metrics.length, metrics: summary })
 }
 
+export async function recomputeBaseline(req: Request, res: Response) {
+	const authReq = req as AuthenticatedRequest
+	const baseline = await sleepService.recomputeBaseline(authReq.user!.userId)
+	return res.status(200).json(baseline)
+}
+
 export async function getSyncStatus(req: Request, res: Response) {
 	const authReq = req as AuthenticatedRequest
 	const userId = authReq.user!.userId

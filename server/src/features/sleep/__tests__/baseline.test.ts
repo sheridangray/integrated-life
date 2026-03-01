@@ -95,7 +95,7 @@ describe('updateBaseline', () => {
 describe('computeSlopes', () => {
 	it('returns empty when fewer than 5 data points', () => {
 		const metrics = [makeMetrics(), makeMetrics({ date: '2026-02-21' })]
-		const result = computeSlopes(metrics, [80, 82], null)
+		const result = computeSlopes(metrics, [80, 82])
 		expect(result.hrvSlope14d).toBeUndefined()
 	})
 
@@ -109,7 +109,7 @@ describe('computeSlopes', () => {
 		)
 		const scores = [70, 72, 74, 76, 78, 80, 82]
 
-		const result = computeSlopes(metrics, scores, null)
+		const result = computeSlopes(metrics, scores)
 		expect(result.hrvSlope14d).toBeDefined()
 		expect(result.hrvSlope14d!).toBeGreaterThan(0)
 		expect(result.durationSlope14d).toBeDefined()

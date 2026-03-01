@@ -25,12 +25,16 @@ function computeStats(values: number[]): MetricBaseline {
 function extractMetricValues(
 	metrics: NightlyMetrics[],
 	extractor: (m: NightlyMetrics) => number | undefined,
-	existingBaseline?: MetricBaseline
 ): number[] {
 	const raw = metrics.map(extractor).filter((v): v is number => v !== undefined)
-	if (!existingBaseline || existingBaseline.std === 0) return raw
+	if (raw.length < 5) return raw
 
-	return raw.filter(v => !isOutlier(v, existingBaseline.mean, existingBaseline.std))
+	const mean = raw.reduce((s, v) => s + v, 0) / raw.length
+	const variance = raw.reduce((s, v) => s + (v - mean) ** 2, 0) / raw.length
+	const std = Math.sqrt(variance)
+	if (std === 0) return raw
+
+	return raw.filter(v => !isOutlier(v, mean, std))
 }
 
 function midpointHour(isoString: string): number {
@@ -46,32 +50,29 @@ export function updateBaseline(
 ): BaselineStats {
 	if (recentMetrics.length === 0 && existing) return existing
 
-	const durations = extractMetricValues(recentMetrics, m => m.totalAsleepDuration, existing?.duration)
+	const durations = extractMetricValues(recentMetrics, m => m.totalAsleepDuration)
 	const efficiencies = extractMetricValues(
 		recentMetrics,
 		m => m.totalInBedDuration > 0 ? (m.totalAsleepDuration / m.totalInBedDuration) * 100 : undefined,
-		existing?.efficiency
 	)
-	const midpoints = extractMetricValues(recentMetrics, m => midpointHour(m.sleepMidpoint), existing?.sleepMidpoint)
-	const hrs = extractMetricValues(recentMetrics, m => m.avgHr, existing?.restingHr)
+	const midpoints = extractMetricValues(recentMetrics, m => midpointHour(m.sleepMidpoint))
+	const hrs = extractMetricValues(recentMetrics, m => m.avgHr)
 
 	const deepPcts = extractMetricValues(
 		recentMetrics,
 		m => m.deepDuration !== undefined && m.totalAsleepDuration > 0
 			? (m.deepDuration / m.totalAsleepDuration) * 100 : undefined,
-		existing?.deepPct ?? undefined
 	)
 
 	const remPcts = extractMetricValues(
 		recentMetrics,
 		m => m.remDuration !== undefined && m.totalAsleepDuration > 0
 			? (m.remDuration / m.totalAsleepDuration) * 100 : undefined,
-		existing?.remPct ?? undefined
 	)
 
-	const hrvValues = extractMetricValues(recentMetrics, m => m.hrvMean, existing?.hrv ?? undefined)
-	const rrValues = extractMetricValues(recentMetrics, m => m.respiratoryRateMean, existing?.respiratoryRate ?? undefined)
-	const tempValues = extractMetricValues(recentMetrics, m => m.temperatureDeviation, existing?.tempDeviation ?? undefined)
+	const hrvValues = extractMetricValues(recentMetrics, m => m.hrvMean)
+	const rrValues = extractMetricValues(recentMetrics, m => m.respiratoryRateMean)
+	const tempValues = extractMetricValues(recentMetrics, m => m.temperatureDeviation)
 
 	const lastDate = recentMetrics.length > 0
 		? recentMetrics[recentMetrics.length - 1].date
@@ -87,7 +88,7 @@ export function updateBaseline(
 		respiratoryRate: rrValues.length > 0 ? computeStats(rrValues) : existing?.respiratoryRate,
 		tempDeviation: tempValues.length > 0 ? computeStats(tempValues) : existing?.tempDeviation,
 		sleepMidpoint: midpoints.length > 0 ? computeStats(midpoints) : existing?.sleepMidpoint ?? { mean: 3, std: 1, median: 3 },
-		dataPointCount: (existing?.dataPointCount ?? 0) + recentMetrics.length,
+		dataPointCount: recentMetrics.length,
 		lastUpdatedDate: lastDate,
 		hrvSlope14d: existing?.hrvSlope14d,
 		durationSlope14d: existing?.durationSlope14d,
@@ -98,14 +99,18 @@ export function updateBaseline(
 export function computeSlopes(
 	recentMetrics: NightlyMetrics[],
 	recentScores: number[],
-	existingBaseline: BaselineStats | null
 ): { hrvSlope14d?: number; durationSlope14d?: number; sleepScoreSlope14d?: number } {
 	if (recentMetrics.length < 5) return {}
 
-	const filtered = existingBaseline
+	const hrvRaw = recentMetrics.map(m => m.hrvMean).filter((v): v is number => v !== undefined)
+	const hrvMean = hrvRaw.length > 0 ? hrvRaw.reduce((s, v) => s + v, 0) / hrvRaw.length : 0
+	const hrvVar = hrvRaw.length > 0 ? hrvRaw.reduce((s, v) => s + (v - hrvMean) ** 2, 0) / hrvRaw.length : 0
+	const hrvStd = Math.sqrt(hrvVar)
+
+	const filtered = hrvStd > 0
 		? recentMetrics.filter(m => {
-			if (m.hrvMean === undefined || !existingBaseline.hrv) return true
-			return !isOutlier(m.hrvMean, existingBaseline.hrv.mean, existingBaseline.hrv.std)
+			if (m.hrvMean === undefined) return true
+			return !isOutlier(m.hrvMean, hrvMean, hrvStd)
 		})
 		: recentMetrics
 

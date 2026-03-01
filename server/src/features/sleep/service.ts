@@ -96,7 +96,7 @@ export async function processNightlyData(
 
 	const recentScoreDocs = await repository.findScores(userId, 14)
 	const recentScoreValues = recentScoreDocs.map(d => d.sleepScore)
-	const slopes = computeSlopes(recentMetrics.slice(-14), recentScoreValues, baseline)
+	const slopes = computeSlopes(recentMetrics.slice(-14), recentScoreValues)
 
 	const updatedBaseline = updateBaseline(existingBaseline, recentMetrics)
 	await repository.upsertBaseline(userId, {
@@ -107,6 +107,44 @@ export async function processNightlyData(
 	})
 
 	return docToSleepScore(scoreDoc)
+}
+
+export async function recomputeBaseline(userId: string): Promise<BaselineStats> {
+	const recentMetricDocs = await repository.findNightlyMetrics(userId, 90)
+	const recentMetrics: NightlyMetrics[] = recentMetricDocs.map(d => ({
+		date: d.date,
+		sleepStartTime: d.sleepStartTime,
+		sleepEndTime: d.sleepEndTime,
+		sleepMidpoint: d.sleepMidpoint,
+		totalAsleepDuration: d.totalAsleepDuration,
+		totalInBedDuration: d.totalInBedDuration,
+		deepDuration: d.deepDuration,
+		remDuration: d.remDuration,
+		coreDuration: d.coreDuration,
+		wasoDuration: d.wasoDuration,
+		minHrValue: d.minHrValue,
+		minHrTimestamp: d.minHrTimestamp,
+		avgHr: d.avgHr,
+		hrvMean: d.hrvMean,
+		respiratoryRateMean: d.respiratoryRateMean,
+		temperatureDeviation: d.temperatureDeviation,
+		deviceTier: d.deviceTier as 'A' | 'B' | 'C',
+	}))
+
+	const freshBaseline = updateBaseline(null, recentMetrics)
+
+	const recentScoreDocs = await repository.findScores(userId, 14)
+	const recentScoreValues = recentScoreDocs.map(d => d.sleepScore)
+	const slopes = computeSlopes(recentMetrics.slice(-14), recentScoreValues)
+
+	const saved = await repository.upsertBaseline(userId, {
+		...freshBaseline,
+		hrvSlope14d: slopes.hrvSlope14d,
+		durationSlope14d: slopes.durationSlope14d,
+		sleepScoreSlope14d: slopes.sleepScoreSlope14d,
+	})
+
+	return saved.toObject() as unknown as BaselineStats
 }
 
 export async function getTodayScores(userId: string): Promise<SleepScore | null> {
