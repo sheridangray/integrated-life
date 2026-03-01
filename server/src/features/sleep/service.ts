@@ -1,6 +1,8 @@
 import type { NightlyMetrics, SleepScore, BaselineStats } from '@integrated-life/shared'
 import * as repository from './repository'
-import { computeSleepScore, computeReadinessScore, getCalibrationPhase, determineActionBucket, SCORING_CONFIG_V1 } from './scoring'
+import { computeSleepScore, computeReadinessScore, getCalibrationPhase, determineActionBucket, computeContributorDetail, SCORING_CONFIG_V1 } from './scoring'
+import type { ContributorDetail } from './scoring'
+import { getContributorAssessment } from './ai'
 import { updateBaseline, computeSlopes } from './baseline'
 import { computeSleepDebt, getOptimalDuration } from './sleep-debt'
 import type { ScoringResult } from './types'
@@ -145,6 +147,43 @@ export async function recomputeBaseline(userId: string): Promise<BaselineStats> 
 	})
 
 	return saved.toObject() as unknown as BaselineStats
+}
+
+export async function getContributorDetailForDate(
+	userId: string,
+	date: string,
+	key: string
+): Promise<(ContributorDetail & { aiAssessment: string | null }) | null> {
+	const metricDoc = await repository.findNightlyMetricsByDate(userId, date)
+	if (!metricDoc) return null
+
+	const metrics: NightlyMetrics = {
+		date: metricDoc.date,
+		sleepStartTime: metricDoc.sleepStartTime,
+		sleepEndTime: metricDoc.sleepEndTime,
+		sleepMidpoint: metricDoc.sleepMidpoint,
+		totalAsleepDuration: metricDoc.totalAsleepDuration,
+		totalInBedDuration: metricDoc.totalInBedDuration,
+		deepDuration: metricDoc.deepDuration,
+		remDuration: metricDoc.remDuration,
+		coreDuration: metricDoc.coreDuration,
+		wasoDuration: metricDoc.wasoDuration,
+		minHrValue: metricDoc.minHrValue,
+		minHrTimestamp: metricDoc.minHrTimestamp,
+		avgHr: metricDoc.avgHr,
+		hrvMean: metricDoc.hrvMean,
+		respiratoryRateMean: metricDoc.respiratoryRateMean,
+		temperatureDeviation: metricDoc.temperatureDeviation,
+		deviceTier: metricDoc.deviceTier as 'A' | 'B' | 'C',
+	}
+
+	const baseline = await repository.findBaseline(userId) as BaselineStats | null
+	const detail = computeContributorDetail(key, metrics, baseline)
+	if (!detail) return null
+
+	const aiAssessment = await getContributorAssessment(detail)
+
+	return { ...detail, aiAssessment }
 }
 
 export async function getTodayScores(userId: string): Promise<SleepScore | null> {

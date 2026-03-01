@@ -2,7 +2,11 @@ import SwiftUI
 
 struct SleepContributorsView: View {
     let breakdown: SleepBreakdown
+    let scoreDate: String
     var nightData: SleepNightDisplay?
+
+    @State private var selectedContributor: String?
+    @State private var showDetail = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -10,38 +14,43 @@ struct SleepContributorsView: View {
                 .font(.headline)
                 .padding(.bottom, 12)
 
-            contributorRow("Total Sleep", value: totalSleepDisplay,
+            contributorRow("Total Sleep", key: "duration", value: totalSleepDisplay,
                            fraction: totalSleepFraction)
             divider
-            contributorRow("Efficiency", value: efficiencyDisplay,
+            contributorRow("Efficiency", key: "efficiency", value: efficiencyDisplay,
                            fraction: efficiencyFraction)
             divider
-            contributorRow("Restfulness", value: qualitativeLabel(restfulnessScore),
+            contributorRow("Restfulness", key: "restfulness", value: qualitativeLabel(restfulnessScore),
                            fraction: Double(restfulnessScore) / 100.0)
             divider
 
             if breakdown.rem != nil {
-                contributorRow("REM Sleep", value: remDisplay,
+                contributorRow("REM Sleep", key: "rem", value: remDisplay,
                                fraction: remFraction)
                 divider
             }
             if breakdown.deep != nil {
-                contributorRow("Deep Sleep", value: deepDisplay,
+                contributorRow("Deep Sleep", key: "deep", value: deepDisplay,
                                fraction: deepFraction)
                 divider
             }
 
-            contributorRow("Timing", value: qualitativeLabel(breakdown.timing),
+            contributorRow("Timing", key: "timing", value: qualitativeLabel(breakdown.timing),
                            fraction: Double(breakdown.timing) / 100.0)
             divider
-            contributorRow("Physio Stability", value: qualitativeLabel(breakdown.physioStability),
+            contributorRow("Physio Stability", key: "physioStability", value: qualitativeLabel(breakdown.physioStability),
                            fraction: Double(breakdown.physioStability) / 100.0)
+        }
+        .sheet(isPresented: $showDetail) {
+            if let key = selectedContributor {
+                ContributorDetailView(contributorKey: key, date: scoreDate)
+            }
         }
     }
 
     // MARK: - Row
 
-    private func contributorRow(_ label: String, value: String, fraction: Double) -> some View {
+    private func contributorRow(_ label: String, key: String, value: String, fraction: Double) -> some View {
         let clamped = max(0.02, min(1.0, fraction))
         let score = Int(clamped * 100)
         return VStack(alignment: .leading, spacing: 6) {
@@ -58,6 +67,11 @@ struct SleepContributorsView: View {
             .frame(height: 4)
         }
         .padding(.vertical, 10)
+        .contentShape(Rectangle())
+        .onLongPressGesture {
+            selectedContributor = key
+            showDetail = true
+        }
     }
 
     private var divider: some View { Divider() }

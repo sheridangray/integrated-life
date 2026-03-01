@@ -29,6 +29,13 @@ export async function findNightlyMetrics(
 		.sort({ date: 1 })
 }
 
+export async function findNightlyMetricsByDate(
+	userId: string,
+	date: string
+): Promise<SleepNightlyMetricsDocument | null> {
+	return SleepNightlyMetrics.findOne({ userId, date })
+}
+
 export async function findBaseline(
 	userId: string
 ): Promise<SleepBaselineDocument | null> {

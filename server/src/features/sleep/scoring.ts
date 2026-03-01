@@ -201,6 +201,224 @@ export function computeSleepScore(
 	}
 }
 
+// MARK: - Contributor Detail
+
+export type ContributorDetail = {
+	key: string
+	score: number
+	rawValue: number
+	rawLabel: string
+	baselineMean?: number
+	baselineStd?: number
+	zScore?: number
+	formula: string
+	weight: number
+	subComponents?: Array<{
+		name: string
+		rawValue: number
+		score: number
+		baselineMean?: number
+		baselineStd?: number
+		zScore?: number
+	}>
+}
+
+function formatMinutes(mins: number): string {
+	const h = Math.floor(mins / 60)
+	const m = Math.round(mins % 60)
+	return h > 0 ? `${h}h ${m}m` : `${m}m`
+}
+
+function midpointToTimeLabel(hour: number): string {
+	let h24 = hour < 0 ? hour + 24 : hour
+	const h12 = h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24
+	const suffix = h24 < 12 ? 'AM' : 'PM'
+	const mins = Math.round((h24 % 1) * 60)
+	return `${Math.floor(h12)}:${mins.toString().padStart(2, '0')} ${suffix}`
+}
+
+export function computeContributorDetail(
+	key: string,
+	metrics: NightlyMetrics,
+	baseline: BaselineStats | null,
+	config = SCORING_CONFIG_V1,
+): ContributorDetail | null {
+	const w = config.sleepWeights
+	const k = config.kValues
+
+	const efficiency = metrics.totalInBedDuration > 0
+		? (metrics.totalAsleepDuration / metrics.totalInBedDuration) * 100
+		: 0
+
+	switch (key) {
+		case 'duration': {
+			let score: number
+			let zScore: number | undefined
+			if (baseline) {
+				zScore = computeZScore(metrics.totalAsleepDuration, baseline.duration.mean, baseline.duration.std)
+				score = Math.round(sigmoid(zScore, k.gentle))
+			} else {
+				score = Math.round(Math.min(100, (metrics.totalAsleepDuration / 480) * 100))
+			}
+			return {
+				key, score, weight: w.duration,
+				rawValue: metrics.totalAsleepDuration,
+				rawLabel: formatMinutes(metrics.totalAsleepDuration),
+				baselineMean: baseline?.duration.mean,
+				baselineStd: baseline?.duration.std,
+				zScore,
+				formula: baseline
+					? 'Sigmoid of Z-score vs your average sleep duration'
+					: 'Percentage of 8-hour target (no baseline yet)',
+			}
+		}
+		case 'efficiency': {
+			let score: number
+			let zScore: number | undefined
+			if (baseline) {
+				zScore = computeZScore(efficiency, baseline.efficiency.mean, baseline.efficiency.std)
+				score = Math.round(sigmoid(zScore, k.moderate))
+			} else {
+				score = Math.round(Math.min(100, efficiency))
+			}
+			return {
+				key, score, weight: w.efficiency,
+				rawValue: Math.round(efficiency * 10) / 10,
+				rawLabel: `${Math.round(efficiency)}%`,
+				baselineMean: baseline?.efficiency.mean,
+				baselineStd: baseline?.efficiency.std,
+				zScore,
+				formula: baseline
+					? 'Sigmoid of Z-score vs your average sleep efficiency'
+					: 'Raw efficiency percentage (no baseline yet)',
+			}
+		}
+		case 'deep': {
+			if (metrics.deepDuration === undefined || metrics.totalAsleepDuration === 0) return null
+			const deepPct = (metrics.deepDuration / metrics.totalAsleepDuration) * 100
+			let score: number
+			let zScore: number | undefined
+			if (baseline?.deepPct) {
+				zScore = computeZScore(deepPct, baseline.deepPct.mean, baseline.deepPct.std)
+				score = Math.round(sigmoid(zScore, k.gentle))
+			} else {
+				score = Math.round(Math.min(100, (deepPct / 20) * 100))
+			}
+			return {
+				key, score, weight: w.deep,
+				rawValue: Math.round(deepPct * 10) / 10,
+				rawLabel: `${formatMinutes(metrics.deepDuration)} (${Math.round(deepPct)}%)`,
+				baselineMean: baseline?.deepPct?.mean,
+				baselineStd: baseline?.deepPct?.std,
+				zScore,
+				formula: baseline?.deepPct
+					? 'Sigmoid of Z-score vs your average deep sleep percentage'
+					: 'Percentage of 20% deep sleep target',
+			}
+		}
+		case 'rem': {
+			if (metrics.remDuration === undefined || metrics.totalAsleepDuration === 0) return null
+			const remPct = (metrics.remDuration / metrics.totalAsleepDuration) * 100
+			let score: number
+			let zScore: number | undefined
+			if (baseline?.remPct) {
+				zScore = computeZScore(remPct, baseline.remPct.mean, baseline.remPct.std)
+				score = Math.round(sigmoid(zScore, k.gentle))
+			} else {
+				score = Math.round(Math.min(100, (remPct / 25) * 100))
+			}
+			return {
+				key, score, weight: w.rem,
+				rawValue: Math.round(remPct * 10) / 10,
+				rawLabel: `${formatMinutes(metrics.remDuration)} (${Math.round(remPct)}%)`,
+				baselineMean: baseline?.remPct?.mean,
+				baselineStd: baseline?.remPct?.std,
+				zScore,
+				formula: baseline?.remPct
+					? 'Sigmoid of Z-score vs your average REM percentage'
+					: 'Percentage of 25% REM sleep target',
+			}
+		}
+		case 'restfulness': {
+			const wasoPct = metrics.wasoDuration !== undefined && metrics.totalInBedDuration > 0
+				? (metrics.wasoDuration / metrics.totalInBedDuration) * 100
+				: (100 - efficiency)
+			const score = Math.round(Math.max(0, Math.min(100, 100 - wasoPct * 5)))
+			return {
+				key, score, weight: w.restfulness,
+				rawValue: Math.round(wasoPct * 10) / 10,
+				rawLabel: `${Math.round(wasoPct)}% time awake`,
+				formula: 'Score = 100 minus (wake percentage x 5). Lower wake time = higher score.',
+			}
+		}
+		case 'timing': {
+			const midpointHour = minutesToMidpointHour(metrics.sleepMidpoint)
+			let score: number
+			let zScore: number | undefined
+			if (baseline) {
+				zScore = computeZScore(midpointHour, baseline.sleepMidpoint.mean, baseline.sleepMidpoint.std)
+				score = Math.round(100 * Math.exp(-0.5 * zScore * zScore))
+			} else {
+				score = 75
+			}
+			return {
+				key, score, weight: w.timing,
+				rawValue: Math.round(midpointHour * 100) / 100,
+				rawLabel: midpointToTimeLabel(midpointHour),
+				baselineMean: baseline?.sleepMidpoint.mean,
+				baselineStd: baseline?.sleepMidpoint.std,
+				zScore,
+				formula: baseline
+					? 'Gaussian decay based on deviation from your typical sleep midpoint'
+					: 'Default score (no baseline yet)',
+			}
+		}
+		case 'physioStability': {
+			const subs: ContributorDetail['subComponents'] = []
+			let physioSum = 0
+			let physioCount = 0
+
+			if (metrics.hrvMean !== undefined && baseline?.hrv) {
+				const z = computeZScore(metrics.hrvMean, baseline.hrv.mean, baseline.hrv.std)
+				const s = sigmoid(z, k.moderate)
+				subs.push({ name: 'HRV', rawValue: Math.round(metrics.hrvMean * 10) / 10, score: Math.round(s), baselineMean: baseline.hrv.mean, baselineStd: baseline.hrv.std, zScore: z })
+				physioSum += s; physioCount++
+			}
+			if (baseline?.restingHr) {
+				const z = computeZScore(metrics.avgHr, baseline.restingHr.mean, baseline.restingHr.std)
+				const s = sigmoid(-z, k.moderate)
+				subs.push({ name: 'Resting HR', rawValue: Math.round(metrics.avgHr * 10) / 10, score: Math.round(s), baselineMean: baseline.restingHr.mean, baselineStd: baseline.restingHr.std, zScore: z })
+				physioSum += s; physioCount++
+			}
+			if (metrics.respiratoryRateMean !== undefined && baseline?.respiratoryRate) {
+				const z = computeZScore(metrics.respiratoryRateMean, baseline.respiratoryRate.mean, baseline.respiratoryRate.std)
+				const s = sigmoid(-Math.abs(z), k.steep)
+				subs.push({ name: 'Respiratory Rate', rawValue: Math.round(metrics.respiratoryRateMean * 10) / 10, score: Math.round(s), baselineMean: baseline.respiratoryRate.mean, baselineStd: baseline.respiratoryRate.std, zScore: z })
+				physioSum += s; physioCount++
+			}
+			if (metrics.temperatureDeviation !== undefined && baseline?.tempDeviation) {
+				const z = computeZScore(metrics.temperatureDeviation, baseline.tempDeviation.mean, baseline.tempDeviation.std)
+				const s = sigmoid(-Math.abs(z), k.steep)
+				subs.push({ name: 'Temperature', rawValue: Math.round(metrics.temperatureDeviation * 100) / 100, score: Math.round(s), baselineMean: baseline.tempDeviation.mean, baselineStd: baseline.tempDeviation.std, zScore: z })
+				physioSum += s; physioCount++
+			}
+
+			const score = physioCount > 0 ? Math.round(physioSum / physioCount) : 50
+			return {
+				key, score, weight: w.physioStability,
+				rawValue: score,
+				rawLabel: `${score}/100`,
+				formula: physioCount > 0
+					? `Average of ${physioCount} physiological metric(s) compared to your baseline`
+					: 'Default score (no baseline data available)',
+				subComponents: subs.length > 0 ? subs : undefined,
+			}
+		}
+		default:
+			return null
+	}
+}
+
 export type InteractionResult = {
 	factor: number
 	flags: string[]

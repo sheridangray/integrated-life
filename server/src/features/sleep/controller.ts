@@ -80,6 +80,37 @@ export async function recomputeBaseline(req: Request, res: Response) {
 	return res.status(200).json(baseline)
 }
 
+export async function getContributorDetail(req: Request, res: Response) {
+	const authReq = req as AuthenticatedRequest
+	const date = req.query.date as string
+	const key = req.query.key as string
+
+	if (!date || !key) {
+		return res.status(400).json({
+			error: { code: 'VALIDATION_ERROR', message: 'date and key query params are required' },
+			requestId: requestId(req),
+		})
+	}
+
+	const validKeys = ['duration', 'efficiency', 'deep', 'rem', 'restfulness', 'timing', 'physioStability']
+	if (!validKeys.includes(key)) {
+		return res.status(400).json({
+			error: { code: 'VALIDATION_ERROR', message: `key must be one of: ${validKeys.join(', ')}` },
+			requestId: requestId(req),
+		})
+	}
+
+	const detail = await sleepService.getContributorDetailForDate(authReq.user!.userId, date, key)
+	if (!detail) {
+		return res.status(404).json({
+			error: { code: 'NOT_FOUND', message: 'No metrics found for the given date or contributor unavailable' },
+			requestId: requestId(req),
+		})
+	}
+
+	return res.status(200).json(detail)
+}
+
 export async function getSyncStatus(req: Request, res: Response) {
 	const authReq = req as AuthenticatedRequest
 	const userId = authReq.user!.userId

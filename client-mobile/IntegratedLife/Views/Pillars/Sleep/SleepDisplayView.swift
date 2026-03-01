@@ -276,6 +276,7 @@ struct SleepDisplayView: View {
 
             SleepContributorsView(
                 breakdown: score.sleepBreakdown,
+                scoreDate: score.date,
                 nightData: state.dayData
             )
         }

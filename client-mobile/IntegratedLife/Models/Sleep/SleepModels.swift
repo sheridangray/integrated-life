@@ -81,6 +81,33 @@ struct ReadinessBreakdown: Codable {
 
 // MARK: - Sleep Score Response
 
+// MARK: - Contributor Detail (from server)
+
+struct ContributorSubComponent: Codable {
+    let name: String
+    let rawValue: Double
+    let score: Int
+    let baselineMean: Double?
+    let baselineStd: Double?
+    let zScore: Double?
+}
+
+struct ContributorDetail: Codable {
+    let key: String
+    let score: Int
+    let rawValue: Double
+    let rawLabel: String
+    let baselineMean: Double?
+    let baselineStd: Double?
+    let zScore: Double?
+    let formula: String
+    let weight: Double
+    let subComponents: [ContributorSubComponent]?
+    let aiAssessment: String?
+}
+
+// MARK: - Sleep Score Response
+
 struct SleepScoreResponse: Codable, Identifiable {
     let id: String
     let date: String

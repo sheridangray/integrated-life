@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -47,6 +47,7 @@
 		97115EA0B4A786996B737CFE /* SleepStageBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F1E3B84C69E285340FF68DF /* SleepStageBarView.swift */; };
 		97EEDE4E7871EC1DE004992C /* WorkoutListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 321124BDF58808A3877BA209 /* WorkoutListView.swift */; };
 		98ACFB3C91590ED73EFC7F51 /* SleepDetailCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5170E210ADFE84A532792BB2 /* SleepDetailCardView.swift */; };
+		9DC80FDFCE35BA8297082CD0 /* ContributorDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A78B0F4E40BBC472820159CF /* ContributorDetailView.swift */; };
 		A06D3A0767E95EC7D4B790D0 /* MonitorDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A797A6F8CC6AD67E519A5D9 /* MonitorDetailView.swift */; };
 		AE0019C690B5C45A2106DAB9 /* HealthKitDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE22672B8A005BFF69D4413D /* HealthKitDataTypes.swift */; };
 		B13C2ECC114862E8D026CFCE /* HealthPillarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 482D08FF7231CA7FAF17C482 /* HealthPillarView.swift */; };
@@ -108,8 +109,9 @@
 		A1314C46C4328007315D8F09 /* SleepModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepModels.swift; sourceTree = "<group>"; };
 		A18103C8DA7DFD94F7F258A3 /* WorkoutLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLog.swift; sourceTree = "<group>"; };
 		A22CD6337718753B9BE22D12 /* CreateWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateWorkoutView.swift; sourceTree = "<group>"; };
-		A593755613AD7F085ED55B53 /* IntegratedLife.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IntegratedLife.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A593755613AD7F085ED55B53 /* IntegratedLife.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = IntegratedLife.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6DF7817DC127893228954F4 /* NotificationCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCategory.swift; sourceTree = "<group>"; };
+		A78B0F4E40BBC472820159CF /* ContributorDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContributorDetailView.swift; sourceTree = "<group>"; };
 		AC33410902D65442CDACFBB3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B3E5DA665D4FBDB0DA727173 /* Exercise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Exercise.swift; sourceTree = "<group>"; };
 		B699E7C3B2402A6CCAD09C29 /* WorkoutNotificationScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutNotificationScheduler.swift; sourceTree = "<group>"; };
@@ -132,8 +134,8 @@
 		F0F52383F471281EB99FAA85 /* AuthState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthState.swift; sourceTree = "<group>"; };
 		F4B4B8225CEE2204942368A6 /* MonitorGatingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorGatingView.swift; sourceTree = "<group>"; };
 		FDBE1D4DCD0716314753933D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		"TEMP_7FB1E4E6-1F40-4C87-A7B8-BD30B3D3ADE3" /* Config.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.Release.xcconfig; sourceTree = "<group>"; };
-		"TEMP_B2832A3A-106F-4C28-A1ED-CDE62DB43ECC" /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
+		"TEMP_05C58F87-92B6-4407-A23A-F9BF8EE09EF3" /* Config.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.Release.xcconfig; sourceTree = "<group>"; };
+		"TEMP_7BF0EBEE-14BE-4AB9-8E8C-86C11F18E3CD" /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -208,7 +210,6 @@
 			children = (
 				33CF8C58620D9633302BA451 /* IntegratedLife */,
 				48BBF3434DE890351FE89E6D /* Products */,
-				AC2AC4602F53F867005776EC /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -280,6 +281,7 @@
 		A5E6E1C031EF392142C35318 /* Sleep */ = {
 			isa = PBXGroup;
 			children = (
+				A78B0F4E40BBC472820159CF /* ContributorDetailView.swift */,
 				5CA778EBB641D560E9339EED /* ScoreRingView.swift */,
 				5D6F64CF12ED849DA7E177E9 /* SleepContributorsView.swift */,
 				5170E210ADFE84A532792BB2 /* SleepDetailCardView.swift */,
@@ -288,15 +290,6 @@
 				6F1E3B84C69E285340FF68DF /* SleepStageBarView.swift */,
 			);
 			path = Sleep;
-			sourceTree = "<group>";
-		};
-		AC2AC4602F53F867005776EC /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				"TEMP_B2832A3A-106F-4C28-A1ED-CDE62DB43ECC" /* Config.xcconfig */,
-				"TEMP_7FB1E4E6-1F40-4C87-A7B8-BD30B3D3ADE3" /* Config.Release.xcconfig */,
-			);
-			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		D76CC8912721410F562B6C35 /* Settings */ = {
@@ -354,6 +347,15 @@
 			path = Styles;
 			sourceTree = "<group>";
 		};
+		"TEMP_6B8ACBA6-961C-4D40-A225-A173D7A7DDF7" /* client-mobile */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_7BF0EBEE-14BE-4AB9-8E8C-86C11F18E3CD" /* Config.xcconfig */,
+				"TEMP_05C58F87-92B6-4407-A23A-F9BF8EE09EF3" /* Config.Release.xcconfig */,
+			);
+			path = "client-mobile";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -387,6 +389,7 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					A940E6CCD12AA99354CDC775 = {
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -404,6 +407,7 @@
 			packageReferences = (
 				DE89FF47D7ABD24251E58CA9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -435,6 +439,7 @@
 				9424A7936B56F387B699B8A2 /* BackfillConfig.swift in Sources */,
 				6FF7662C5F2AC056370B862A /* Config.swift in Sources */,
 				BA0AFBB8E53C222BBBD9E3F4 /* ContentView.swift in Sources */,
+				9DC80FDFCE35BA8297082CD0 /* ContributorDetailView.swift in Sources */,
 				435B68D83B881F9A8D256985 /* CreateWorkoutView.swift in Sources */,
 				19554D2D60167AEB378510C3 /* DebugMenuView.swift in Sources */,
 				78AFD068A5EA7723D0005288 /* Exercise.swift in Sources */,
@@ -494,14 +499,14 @@
 /* Begin XCBuildConfiguration section */
 		00A6D5EE7AF6E42E0BAA70EA /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_B2832A3A-106F-4C28-A1ED-CDE62DB43ECC" /* Config.xcconfig */;
+			baseConfigurationReference = "TEMP_7BF0EBEE-14BE-4AB9-8E8C-86C11F18E3CD" /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = IntegratedLife/IntegratedLife.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 29XGJ7H3RU;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IntegratedLife/Info.plist;
@@ -576,14 +581,14 @@
 		};
 		76D5B4471E2668ABAB0D5167 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_7FB1E4E6-1F40-4C87-A7B8-BD30B3D3ADE3" /* Config.Release.xcconfig */;
+			baseConfigurationReference = "TEMP_05C58F87-92B6-4407-A23A-F9BF8EE09EF3" /* Config.Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = IntegratedLife/IntegratedLife.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 29XGJ7H3RU;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IntegratedLife/Info.plist;

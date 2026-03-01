@@ -35,4 +35,12 @@ final class SleepService {
             as: [SleepScoreResponse].self
         )
     }
+
+    func getContributorDetail(date: String, key: String) async throws -> ContributorDetail {
+        try await api.get(
+            path: "/v1/sleep/contributor-detail?date=\(date)&key=\(key)",
+            token: try await token(),
+            as: ContributorDetail.self
+        )
+    }
 }
