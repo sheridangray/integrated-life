@@ -24,6 +24,14 @@ struct SleepPillarView: View {
             .padding(.horizontal)
             .padding(.vertical, 8)
 
+            if let progress = sleepState.syncProgress {
+                HStack(spacing: 8) {
+                    ProgressView().controlSize(.small)
+                    Text(progress).font(.caption).foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 4)
+            }
+
             ScrollView {
                 switch selectedTab {
                 case .sleep:
@@ -45,7 +53,7 @@ struct SleepPillarView: View {
 
     @ViewBuilder
     private var sleepTabContent: some View {
-        SleepDisplayView()
+        SleepDisplayView(scoreResponse: sleepState.todayScore)
     }
 
     // MARK: - Readiness Tab

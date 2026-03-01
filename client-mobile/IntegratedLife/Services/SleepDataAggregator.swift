@@ -3,15 +3,49 @@ import HealthKit
 
 final class SleepDataAggregator {
     private let healthStore = HKHealthStore()
+    private let isoFormatter = ISO8601DateFormatter()
 
     func aggregateLastNight() async throws -> NightlyMetrics? {
-        let calendar = Calendar.current
-        let now = Date()
+        try await aggregateNight(for: Date())
+    }
 
-        guard let windowStart = calendar.date(bySettingHour: 20, minute: 0, second: 0, of: calendar.date(byAdding: .day, value: -1, to: now)!),
-              let windowEnd = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: now) else {
+    /// Aggregate HealthKit sleep data for the night ending on the morning of `wakeDate`.
+    func aggregateNight(for wakeDate: Date) async throws -> NightlyMetrics? {
+        let calendar = Calendar.current
+        let dayStart = calendar.startOfDay(for: wakeDate)
+
+        guard let windowStart = calendar.date(bySettingHour: 20, minute: 0, second: 0, of: calendar.date(byAdding: .day, value: -1, to: dayStart)!),
+              let windowEnd = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: dayStart) else {
             return nil
         }
+
+        return try await aggregateWindow(start: windowStart, end: windowEnd)
+    }
+
+    /// Returns all dates in HealthKit that have sleep data, going back `maxDays`.
+    func availableSleepDates(maxDays: Int = 90) async throws -> [Date] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        guard let rangeStart = calendar.date(byAdding: .day, value: -maxDays, to: today) else { return [] }
+
+        let samples = try await fetchSleepSamples(start: rangeStart, end: Date())
+        var dateSet = Set<Date>()
+        for sample in samples {
+            guard let value = HKCategoryValueSleepAnalysis(rawValue: sample.value) else { continue }
+            switch value {
+            case .asleepCore, .asleepDeep, .asleepREM, .asleepUnspecified:
+                let nightDate = calendar.startOfDay(for: sample.endDate)
+                dateSet.insert(nightDate)
+            default: break
+            }
+        }
+        return dateSet.sorted()
+    }
+
+    // MARK: - Core aggregation for a single sleep window
+
+    private func aggregateWindow(start windowStart: Date, end windowEnd: Date) async throws -> NightlyMetrics? {
+        let calendar = Calendar.current
 
         let sleepSamples = try await fetchSleepSamples(start: windowStart, end: windowEnd)
         guard !sleepSamples.isEmpty else { return nil }
@@ -77,13 +111,13 @@ final class SleepDataAggregator {
             }
         }
 
-        let dateStr = ISO8601DateFormatter().string(from: calendar.startOfDay(for: sleepStart.addingTimeInterval(4 * 3600)))
+        let dateStr = isoFormatter.string(from: calendar.startOfDay(for: sleepStart.addingTimeInterval(4 * 3600)))
 
         return NightlyMetrics(
             date: dateStr,
-            sleepStartTime: ISO8601DateFormatter().string(from: sleepStart),
-            sleepEndTime: ISO8601DateFormatter().string(from: sleepEnd),
-            sleepMidpoint: ISO8601DateFormatter().string(from: midpoint),
+            sleepStartTime: isoFormatter.string(from: sleepStart),
+            sleepEndTime: isoFormatter.string(from: sleepEnd),
+            sleepMidpoint: isoFormatter.string(from: midpoint),
             totalAsleepDuration: totalAsleep,
             totalInBedDuration: totalInBed,
             deepDuration: deepDuration,
@@ -91,7 +125,7 @@ final class SleepDataAggregator {
             coreDuration: coreDuration,
             wasoDuration: wasoDuration,
             minHrValue: minHrSample.value,
-            minHrTimestamp: ISO8601DateFormatter().string(from: minHrSample.date),
+            minHrTimestamp: isoFormatter.string(from: minHrSample.date),
             avgHr: avgHr,
             hrvMean: hrvMean,
             respiratoryRateMean: respiratoryRateMean,

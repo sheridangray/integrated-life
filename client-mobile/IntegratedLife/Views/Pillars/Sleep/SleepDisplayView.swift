@@ -2,6 +2,8 @@ import SwiftUI
 import Charts
 
 struct SleepDisplayView: View {
+    var scoreResponse: SleepScoreResponse?
+
     @StateObject private var state = SleepDisplayState()
     @State private var selectedTime: Date?
     @State private var selectedDate: Date?
@@ -34,6 +36,9 @@ struct SleepDisplayView: View {
                     timeAsleepSection
                     graphSection
                     stagesSection
+                    if let score = scoreResponse {
+                        sleepScoreSection(score)
+                    }
                 }
                 .padding()
             }
@@ -89,8 +94,8 @@ struct SleepDisplayView: View {
                         RectangleMark(
                             xStart: .value("Start", segment.start),
                             xEnd: .value("End", segment.end),
-                            yStart: .value("Min", 0),
-                            yEnd: .value("Max", 1)
+                            yStart: .value("Stage", hypnogramY(segment.stage)),
+                            yEnd: .value("Stage", hypnogramY(segment.stage) + 1)
                         )
                         .foregroundStyle(colorForStage(segment.stage))
                     }
@@ -106,9 +111,19 @@ struct SleepDisplayView: View {
                         AxisValueLabel(format: .dateTime.hour())
                     }
                 }
-                .chartYAxis(.hidden)
+                .chartYScale(domain: 0...4)
+                .chartYAxis {
+                    AxisMarks(values: [0.5, 1.5, 2.5, 3.5]) { value in
+                        AxisValueLabel {
+                            if let v = value.as(Double.self) {
+                                Text(hypnogramLabel(v))
+                                    .font(.caption2)
+                            }
+                        }
+                    }
+                }
                 .chartXSelection(value: $selectedTime)
-                .frame(height: 60)
+                .frame(height: 140)
 
                 if let time = selectedTime,
                    let segment = night.stageSegments.first(where: { $0.start <= time && time <= $0.end }) {
@@ -234,14 +249,35 @@ struct SleepDisplayView: View {
                     .font(.headline)
 
                 SleepStageBarView(
-                    deep: durations.deep > 0 ? durations.deep : nil,
+                    awake: durations.awake > 0 ? durations.awake : nil,
                     core: durations.core > 0 ? durations.core : nil,
                     rem: durations.rem > 0 ? durations.rem : nil,
-                    awake: durations.awake > 0 ? durations.awake : nil
+                    deep: durations.deep > 0 ? durations.deep : nil
                 )
             }
             .padding()
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    // MARK: - Sleep Score
+
+    @ViewBuilder
+    private func sleepScoreSection(_ score: SleepScoreResponse) -> some View {
+        VStack(spacing: 16) {
+            ScoreRingView(score: score.sleepScore, label: "Sleep", size: 140)
+
+            if score.calibrationPhase == 1 {
+                Label("Building your baseline -- scores become more accurate with more data.", systemImage: "info.circle")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal)
+            }
+
+            SleepContributorsView(
+                breakdown: score.sleepBreakdown,
+                nightData: state.dayData
+            )
         }
     }
 
@@ -267,6 +303,28 @@ struct SleepDisplayView: View {
             Spacer()
             Text(formatTimeRange(night.sleepStart, night.sleepEnd))
                 .font(.caption).foregroundStyle(.secondary)
+        }
+    }
+
+    // MARK: - Hypnogram Helpers
+
+    /// Maps a sleep stage to its Y position (Awake=3, Core=2, REM=1, Deep=0).
+    private func hypnogramY(_ stage: SleepStage) -> Double {
+        switch stage {
+        case .awake: return 3
+        case .core: return 2
+        case .rem: return 1
+        case .deep: return 0
+        }
+    }
+
+    private func hypnogramLabel(_ yCenter: Double) -> String {
+        switch Int(yCenter) {
+        case 3: return "Awake"
+        case 2: return "Core"
+        case 1: return "REM"
+        case 0: return "Deep"
+        default: return ""
         }
     }
 

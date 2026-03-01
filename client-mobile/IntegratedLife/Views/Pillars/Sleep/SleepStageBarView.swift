@@ -1,17 +1,17 @@
 import SwiftUI
 
 struct SleepStageBarView: View {
-    let deep: Double?
+    let awake: Double?
     let core: Double?
     let rem: Double?
-    let awake: Double?
+    let deep: Double?
 
     private var segments: [(label: String, value: Double, color: Color)] {
         var result: [(String, Double, Color)] = []
-        if let deep, deep > 0 { result.append(("Deep", deep, .indigo)) }
+        if let awake, awake > 0 { result.append(("Awake", awake, .orange)) }
         if let core, core > 0 { result.append(("Core", core, .blue)) }
         if let rem, rem > 0 { result.append(("REM", rem, .cyan)) }
-        if let awake, awake > 0 { result.append(("Awake", awake, .orange)) }
+        if let deep, deep > 0 { result.append(("Deep", deep, .indigo)) }
         return result
     }
 
