@@ -64,5 +64,43 @@ export const workoutSeeds: WorkoutSeed[] = [
 			'Cable Hip Abduction',
 			'Single-Leg Balance'
 		]
+	},
+	// Plan A — Bodyweight Only (Apartment)
+	{
+		name: 'Push A (Bodyweight)',
+		exercises: ['Standard Push-Up', 'Decline Push-Up', 'Chair Dips']
+	},
+	{
+		name: 'Pull A (Bodyweight)',
+		exercises: ['Reverse Snow Angels', 'Superman Hold', 'Prone Back Extensions']
+	},
+	{
+		name: 'Legs A (Bodyweight)',
+		exercises: ['Bodyweight Squat', 'Reverse Lunge', 'Single-Leg Glute Bridge']
+	},
+	// Plan B — Resistance Bands (Apartment)
+	{
+		name: 'Push A (Bands)',
+		exercises: [
+			'Standing Resistance Band Chest Press',
+			'Resistance Band Overhead Press',
+			'Resistance Band Triceps Extension'
+		]
+	},
+	{
+		name: 'Pull A (Bands)',
+		exercises: [
+			'Resistance Band Seated Row',
+			'Resistance Band Face Pull',
+			'Resistance Band Biceps Curl'
+		]
+	},
+	{
+		name: 'Legs A (Bands)',
+		exercises: [
+			'Resistance Band Squat',
+			'Resistance Band Romanian Deadlift',
+			'Resistance Band Lateral Walk'
+		]
 	}
 ]

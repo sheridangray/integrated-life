@@ -474,5 +474,277 @@ export const exerciseSeeds: ExerciseSeed[] = [
 		],
 		videoUrl: 'https://www.youtube.com/watch?v=H2bPFa73eHE',
 		category: 'Legs'
+	},
+	// Plan A — Bodyweight Only (Apartment)
+	{
+		name: 'Standard Push-Up',
+		muscles: ['Pectoralis', 'Triceps', 'Deltoids', 'Serratus'],
+		bodyParts: ['Chest', 'Arms', 'Shoulders'],
+		resistanceType: 'Bodyweight',
+		measurementType: 'Rep-Only',
+		steps: [
+			'Begin in a high plank with hands under shoulders.',
+			'Lower chest toward the floor keeping core braced.',
+			'Touch chest near the floor.',
+			'Push back up to starting position.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=IODxDxX7oi4',
+		category: 'Push'
+	},
+	{
+		name: 'Decline Push-Up',
+		muscles: ['Pectoralis', 'Deltoids', 'Triceps'],
+		bodyParts: ['Chest', 'Shoulders', 'Arms'],
+		resistanceType: 'Bodyweight',
+		measurementType: 'Rep-Only',
+		steps: [
+			'Place feet on a raised surface.',
+			'Perform push-up lowering chest toward floor.',
+			'Keep body straight.',
+			'Press up to start.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=WDIpL0pjun0',
+		category: 'Push'
+	},
+	{
+		name: 'Chair Dips',
+		muscles: ['Triceps', 'Pectoralis', 'Deltoids'],
+		bodyParts: ['Arms', 'Chest', 'Shoulders'],
+		resistanceType: 'Bodyweight',
+		measurementType: 'Rep-Only',
+		steps: [
+			'Sit on edge of a sturdy chair with hands beside hips.',
+			'Slide hips forward off chair.',
+			'Lower hips toward floor.',
+			'Push through palms to extend arms.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=0326dy_-CzM',
+		category: 'Push'
+	},
+	{
+		name: 'Reverse Snow Angels',
+		muscles: ['Trapezius', 'Deltoids', 'Rotator Cuff'],
+		bodyParts: ['Back', 'Shoulders'],
+		resistanceType: 'Bodyweight',
+		measurementType: 'Rep-Only',
+		steps: [
+			'Lie face down with arms overhead.',
+			'Lift arms slightly off floor.',
+			'Sweep arms down toward hips.',
+			'Return overhead with control.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=3p8EBPVZ2Iw',
+		category: 'Pull'
+	},
+	{
+		name: 'Superman Hold',
+		muscles: ['Trapezius', 'Glutes', 'Abdominals'],
+		bodyParts: ['Back', 'Core', 'Lower Body'],
+		resistanceType: 'Bodyweight',
+		measurementType: 'Time-Based',
+		steps: [
+			'Lie face down with arms extended.',
+			'Lift arms and legs off floor.',
+			'Squeeze glutes and upper back.',
+			'Hold with steady breathing.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=z6PJMT2y8GQ',
+		category: 'Pull'
+	},
+	{
+		name: 'Prone Back Extensions',
+		muscles: ['Trapezius', 'Glutes'],
+		bodyParts: ['Back', 'Lower Body'],
+		resistanceType: 'Bodyweight',
+		measurementType: 'Rep-Only',
+		steps: [
+			'Lie face down with hands by temples.',
+			'Lift chest up off floor.',
+			'Squeeze lower back and glutes.',
+			'Lower with control.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=xTcPPXKgl9o',
+		category: 'Pull'
+	},
+	{
+		name: 'Bodyweight Squat',
+		muscles: ['Quadriceps', 'Glutes', 'Hamstrings'],
+		bodyParts: ['Lower Body'],
+		resistanceType: 'Bodyweight',
+		measurementType: 'Rep-Only',
+		steps: [
+			'Stand feet shoulder-width apart.',
+			'Sit hips back and down.',
+			'Keep chest upright.',
+			'Stand back up through heels.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=jXwT0EPvA3s',
+		category: 'Legs'
+	},
+	{
+		name: 'Reverse Lunge',
+		muscles: ['Quadriceps', 'Glutes', 'Hamstrings'],
+		bodyParts: ['Lower Body'],
+		resistanceType: 'Bodyweight',
+		measurementType: 'Rep-Only',
+		steps: [
+			'Step one foot back.',
+			'Lower until front knee is bent ~90 degrees.',
+			'Drive through front heel to return up.',
+			'Alternate legs.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=QOVaHwm-Q6U',
+		category: 'Legs'
+	},
+	{
+		name: 'Single-Leg Glute Bridge',
+		muscles: ['Glutes', 'Hamstrings'],
+		bodyParts: ['Lower Body', 'Core'],
+		resistanceType: 'Bodyweight',
+		measurementType: 'Rep-Only',
+		steps: [
+			'Lie on back with one foot planted.',
+			'Lift hips toward ceiling.',
+			'Squeeze glutes at top.',
+			'Lower slowly.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=m2Zx-57cSok',
+		category: 'Legs'
+	},
+	// Plan B — Resistance Bands (Apartment)
+	{
+		name: 'Standing Resistance Band Chest Press',
+		muscles: ['Pectoralis', 'Triceps', 'Deltoids'],
+		bodyParts: ['Chest', 'Arms', 'Shoulders'],
+		resistanceType: 'Resistance Bands',
+		measurementType: 'Strength',
+		steps: [
+			'Anchor band behind you at chest level.',
+			'Hold handles at chest height.',
+			'Press forward until arms extended.',
+			'Return with control.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=6-86jEAXA08',
+		category: 'Push'
+	},
+	{
+		name: 'Resistance Band Overhead Press',
+		muscles: ['Deltoids', 'Triceps'],
+		bodyParts: ['Shoulders', 'Arms'],
+		resistanceType: 'Resistance Bands',
+		measurementType: 'Strength',
+		steps: [
+			'Stand on band with feet hip width.',
+			'Hold handles at shoulder height.',
+			'Press overhead.',
+			'Slowly return to start.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=OYH1My-n_Kw',
+		category: 'Push'
+	},
+	{
+		name: 'Resistance Band Triceps Extension',
+		muscles: ['Triceps'],
+		bodyParts: ['Arms'],
+		resistanceType: 'Resistance Bands',
+		measurementType: 'Strength',
+		steps: [
+			'Anchor band overhead.',
+			'Hold handles with elbows tucked close.',
+			'Extend arms downward.',
+			'Return slowly.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=OYH1My-n_Kw',
+		category: 'Push'
+	},
+	{
+		name: 'Resistance Band Seated Row',
+		muscles: ['Latissimus Dorsi', 'Biceps', 'Trapezius'],
+		bodyParts: ['Back', 'Arms'],
+		resistanceType: 'Resistance Bands',
+		measurementType: 'Strength',
+		steps: [
+			'Sit with band looped around feet.',
+			'Hold handles with arms extended.',
+			'Pull handles toward torso.',
+			'Return with control.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=OYH1My-n_Kw',
+		category: 'Pull'
+	},
+	{
+		name: 'Resistance Band Face Pull',
+		muscles: ['Trapezius', 'Deltoids', 'Rotator Cuff'],
+		bodyParts: ['Back', 'Shoulders'],
+		resistanceType: 'Resistance Bands',
+		measurementType: 'Strength',
+		steps: [
+			'Anchor band at face height.',
+			'Pull handles toward face.',
+			'Keep elbows high.',
+			'Extend arms forward slowly.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=OYH1My-n_Kw',
+		category: 'Pull'
+	},
+	{
+		name: 'Resistance Band Biceps Curl',
+		muscles: ['Biceps', 'Brachioradialis'],
+		bodyParts: ['Arms'],
+		resistanceType: 'Resistance Bands',
+		measurementType: 'Strength',
+		steps: [
+			'Stand on band.',
+			'Hold handles palms-up.',
+			'Curl upward.',
+			'Lower with control.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=OYH1My-n_Kw',
+		category: 'Pull'
+	},
+	{
+		name: 'Resistance Band Squat',
+		muscles: ['Quadriceps', 'Glutes', 'Hamstrings'],
+		bodyParts: ['Lower Body'],
+		resistanceType: 'Resistance Bands',
+		measurementType: 'Strength',
+		steps: [
+			'Stand on band with handles at shoulders.',
+			'Squat down keeping knees tracking over toes.',
+			'Drive up through heels.',
+			'Return slowly.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=OYH1My-n_Kw',
+		category: 'Legs'
+	},
+	{
+		name: 'Resistance Band Romanian Deadlift',
+		muscles: ['Hamstrings', 'Glutes'],
+		bodyParts: ['Lower Body'],
+		resistanceType: 'Resistance Bands',
+		measurementType: 'Strength',
+		steps: [
+			'Stand on band with feet hip width.',
+			'Hinge at hips with back flat.',
+			'Squeeze glutes at top.',
+			'Lower with control.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=OYH1My-n_Kw',
+		category: 'Legs'
+	},
+	{
+		name: 'Resistance Band Lateral Walk',
+		muscles: ['Abductors', 'Glutes'],
+		bodyParts: ['Lower Body'],
+		resistanceType: 'Resistance Bands',
+		measurementType: 'Rep-Only',
+		steps: [
+			'Place mini band above knees.',
+			'Lower into quarter squat.',
+			'Step sideways with tension.',
+			'Repeat both directions.'
+		],
+		videoUrl: 'https://www.youtube.com/watch?v=OYH1My-n_Kw',
+		category: 'Legs'
 	}
 ]
