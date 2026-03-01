@@ -3,10 +3,20 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BB22CC33DD44EE55FF66AA01 /* TimeCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF01 /* TimeCategory.swift */; };
+		BB22CC33DD44EE55FF66AA02 /* TimeEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF02 /* TimeEntry.swift */; };
+		BB22CC33DD44EE55FF66AA03 /* TimeBudget.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF03 /* TimeBudget.swift */; };
+		BB22CC33DD44EE55FF66AA04 /* TimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF04 /* TimeService.swift */; };
+		BB22CC33DD44EE55FF66AA05 /* TimeState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF05 /* TimeState.swift */; };
+		BB22CC33DD44EE55FF66AA06 /* TimePillarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF06 /* TimePillarView.swift */; };
+		BB22CC33DD44EE55FF66AA07 /* TimeBudgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF07 /* TimeBudgetView.swift */; };
+		BB22CC33DD44EE55FF66AA08 /* TimeDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF08 /* TimeDashboardView.swift */; };
+		BB22CC33DD44EE55FF66AA09 /* CategoryPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF09 /* CategoryPickerSheet.swift */; };
+		BB22CC33DD44EE55FF66AA0A /* ActiveTimerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF0A /* ActiveTimerCard.swift */; };
 		09391CBAAB593834F9DEC218 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15EAB6BE9BBEB1E6F6DFFB1 /* NotificationService.swift */; };
 		0B7EDC37D36B9983A08B4B89 /* SleepService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FE4419510561EC8B7F4511B /* SleepService.swift */; };
 		0C56B71BD1E48F111AC323F1 /* AppStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF327EF018A9E554180E1A70 /* AppStyles.swift */; };
@@ -71,6 +81,16 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AA11BB22CC33DD44EE55FF01 /* TimeCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeCategory.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF02 /* TimeEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeEntry.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF03 /* TimeBudget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeBudget.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF04 /* TimeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeService.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF05 /* TimeState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeState.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF06 /* TimePillarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimePillarView.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF07 /* TimeBudgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeBudgetView.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF08 /* TimeDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeDashboardView.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF09 /* CategoryPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryPickerSheet.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF0A /* ActiveTimerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveTimerCard.swift; sourceTree = "<group>"; };
 		05EC50EAE6E9C82D71400736 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		19A394AA426B648265B38C49 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
 		1AD5B456E60EFB181504E561 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -109,7 +129,7 @@
 		A1314C46C4328007315D8F09 /* SleepModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepModels.swift; sourceTree = "<group>"; };
 		A18103C8DA7DFD94F7F258A3 /* WorkoutLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLog.swift; sourceTree = "<group>"; };
 		A22CD6337718753B9BE22D12 /* CreateWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateWorkoutView.swift; sourceTree = "<group>"; };
-		A593755613AD7F085ED55B53 /* IntegratedLife.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = IntegratedLife.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A593755613AD7F085ED55B53 /* IntegratedLife.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IntegratedLife.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6DF7817DC127893228954F4 /* NotificationCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCategory.swift; sourceTree = "<group>"; };
 		A78B0F4E40BBC472820159CF /* ContributorDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContributorDetailView.swift; sourceTree = "<group>"; };
 		AC33410902D65442CDACFBB3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -175,6 +195,7 @@
 		14F4F00600075092466035C4 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				CC33DD44EE55FF66AA77BB03 /* Home */,
 				9AA0CACDE5F41737DEC35C0F /* Integrations */,
 				D8BB74334BC97C458578F432 /* Pillars */,
 				D76CC8912721410F562B6C35 /* Settings */,
@@ -184,6 +205,15 @@
 				05EC50EAE6E9C82D71400736 /* SignInView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		CC33DD44EE55FF66AA77BB03 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				AA11BB22CC33DD44EE55FF0A /* ActiveTimerCard.swift */,
+				AA11BB22CC33DD44EE55FF09 /* CategoryPickerSheet.swift */,
+			);
+			path = Home;
 			sourceTree = "<group>";
 		};
 		33CF8C58620D9633302BA451 /* IntegratedLife */ = {
@@ -210,6 +240,7 @@
 			children = (
 				33CF8C58620D9633302BA451 /* IntegratedLife */,
 				48BBF3434DE890351FE89E6D /* Products */,
+				AC2AC4612F54137E005776EC /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -232,6 +263,7 @@
 				DD8EFADE838E4DFF2DEFAC83 /* SleepDataAggregator.swift */,
 				53B009C0A0EDB4E3494101AB /* SleepDisplayService.swift */,
 				3FE4419510561EC8B7F4511B /* SleepService.swift */,
+				AA11BB22CC33DD44EE55FF04 /* TimeService.swift */,
 				B699E7C3B2402A6CCAD09C29 /* WorkoutNotificationScheduler.swift */,
 			);
 			path = Services;
@@ -246,6 +278,16 @@
 			path = Sleep;
 			sourceTree = "<group>";
 		};
+		CC33DD44EE55FF66AA77BB01 /* Time */ = {
+			isa = PBXGroup;
+			children = (
+				AA11BB22CC33DD44EE55FF03 /* TimeBudget.swift */,
+				AA11BB22CC33DD44EE55FF01 /* TimeCategory.swift */,
+				AA11BB22CC33DD44EE55FF02 /* TimeEntry.swift */,
+			);
+			path = Time;
+			sourceTree = "<group>";
+		};
 		70332C737E315C148C28ADEC /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -256,6 +298,7 @@
 				CB1ECC5828ACDF51388DFC72 /* NotificationState.swift */,
 				F0E1DCC29BA4887B37749993 /* SleepDisplayState.swift */,
 				CF5332ACF6A1987ED117D708 /* SleepState.swift */,
+				AA11BB22CC33DD44EE55FF05 /* TimeState.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -292,6 +335,15 @@
 			path = Sleep;
 			sourceTree = "<group>";
 		};
+		AC2AC4612F54137E005776EC /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_7BF0EBEE-14BE-4AB9-8E8C-86C11F18E3CD" /* Config.xcconfig */,
+				"TEMP_05C58F87-92B6-4407-A23A-F9BF8EE09EF3" /* Config.Release.xcconfig */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		D76CC8912721410F562B6C35 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
@@ -305,9 +357,20 @@
 			children = (
 				EAE5BE453C4E6B25D27EFDBB /* Health */,
 				A5E6E1C031EF392142C35318 /* Sleep */,
+				CC33DD44EE55FF66AA77BB02 /* Time */,
 				931D1968BC86A3D09146DD4E /* PillarsOverviewView.swift */,
 			);
 			path = Pillars;
+			sourceTree = "<group>";
+		};
+		CC33DD44EE55FF66AA77BB02 /* Time */ = {
+			isa = PBXGroup;
+			children = (
+				AA11BB22CC33DD44EE55FF07 /* TimeBudgetView.swift */,
+				AA11BB22CC33DD44EE55FF08 /* TimeDashboardView.swift */,
+				AA11BB22CC33DD44EE55FF06 /* TimePillarView.swift */,
+			);
+			path = Time;
 			sourceTree = "<group>";
 		};
 		E293ECEBA46D238046E2A86C /* Models */ = {
@@ -315,6 +378,7 @@
 			children = (
 				11F8E10316E3AC2179791181 /* Health */,
 				678562952D191FD695104C5C /* Sleep */,
+				CC33DD44EE55FF66AA77BB01 /* Time */,
 				A6DF7817DC127893228954F4 /* NotificationCategory.swift */,
 			);
 			path = Models;
@@ -345,15 +409,6 @@
 				EF327EF018A9E554180E1A70 /* AppStyles.swift */,
 			);
 			path = Styles;
-			sourceTree = "<group>";
-		};
-		"TEMP_6B8ACBA6-961C-4D40-A225-A173D7A7DDF7" /* client-mobile */ = {
-			isa = PBXGroup;
-			children = (
-				"TEMP_7BF0EBEE-14BE-4AB9-8E8C-86C11F18E3CD" /* Config.xcconfig */,
-				"TEMP_05C58F87-92B6-4407-A23A-F9BF8EE09EF3" /* Config.Release.xcconfig */,
-			);
-			path = "client-mobile";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -389,7 +444,6 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					A940E6CCD12AA99354CDC775 = {
-						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -407,7 +461,6 @@
 			packageReferences = (
 				DE89FF47D7ABD24251E58CA9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -489,6 +542,16 @@
 				8636470B2F5D379E5ED9B20A /* Workout.swift in Sources */,
 				966BC4F8E2400E991D441A15 /* WorkoutDetailView.swift in Sources */,
 				97EEDE4E7871EC1DE004992C /* WorkoutListView.swift in Sources */,
+				BB22CC33DD44EE55FF66AA0A /* ActiveTimerCard.swift in Sources */,
+				BB22CC33DD44EE55FF66AA09 /* CategoryPickerSheet.swift in Sources */,
+				BB22CC33DD44EE55FF66AA03 /* TimeBudget.swift in Sources */,
+				BB22CC33DD44EE55FF66AA07 /* TimeBudgetView.swift in Sources */,
+				BB22CC33DD44EE55FF66AA01 /* TimeCategory.swift in Sources */,
+				BB22CC33DD44EE55FF66AA08 /* TimeDashboardView.swift in Sources */,
+				BB22CC33DD44EE55FF66AA02 /* TimeEntry.swift in Sources */,
+				BB22CC33DD44EE55FF66AA06 /* TimePillarView.swift in Sources */,
+				BB22CC33DD44EE55FF66AA04 /* TimeService.swift in Sources */,
+				BB22CC33DD44EE55FF66AA05 /* TimeState.swift in Sources */,
 				B2960A4821258EAC41412559 /* WorkoutLog.swift in Sources */,
 				3551B52CE53322C728F528AF /* WorkoutNotificationScheduler.swift in Sources */,
 			);
@@ -506,7 +569,7 @@
 				CODE_SIGN_ENTITLEMENTS = IntegratedLife/IntegratedLife.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 29XGJ7H3RU;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IntegratedLife/Info.plist;
@@ -588,7 +651,7 @@
 				CODE_SIGN_ENTITLEMENTS = IntegratedLife/IntegratedLife.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 29XGJ7H3RU;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IntegratedLife/Info.plist;

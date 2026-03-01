@@ -9,6 +9,7 @@ import { errorHandler } from '../middleware/errorHandler'
 import { authRoutes } from '../features/auth/routes'
 import { exerciseRoutes, workoutRoutes, historyRoutes, healthInsightRoutes } from '../features/health/routes'
 import { sleepRoutes } from '../features/sleep/routes'
+import { timeRoutes } from '../features/time/routes'
 import { generateOpenAPIDocument } from '../lib/openapi'
 
 export function createApp() {
@@ -47,6 +48,7 @@ export function createApp() {
 	app.use('/v1/history', historyRoutes)
 	app.use('/v1/health', healthInsightRoutes)
 	app.use('/v1/sleep', sleepRoutes)
+	app.use('/v1/time', timeRoutes)
 
 	return app
 }

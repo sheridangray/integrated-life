@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PillarsOverviewView: View {
 	@ObservedObject var healthKitService: HealthKitService
+	@ObservedObject var timeState: TimeState
 
 	var body: some View {
 		NavigationStack {
@@ -26,6 +27,8 @@ struct PillarsOverviewView: View {
 	@ViewBuilder
 	private func destinationView(for pillar: Pillar) -> some View {
 		switch pillar {
+		case .time:
+			TimePillarView(timeState: timeState)
 		case .health:
 			HealthPillarView(healthKitService: healthKitService)
 		case .sleep:
