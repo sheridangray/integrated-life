@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import type { AuthenticatedRequest } from '../../middleware/auth'
 import * as sleepService from './service'
 import { submitNightlyValidator } from './validators'
+import * as repository from './repository'
 
 function requestId(req: Request): string | undefined {
 	return (req as Request & { id?: string }).id
@@ -43,4 +44,59 @@ export async function getHistory(req: Request, res: Response) {
 
 	const scores = await sleepService.getScoreHistory(authReq.user!.userId, days)
 	return res.status(200).json(scores)
+}
+
+export async function getBaseline(req: Request, res: Response) {
+	const authReq = req as AuthenticatedRequest
+	const baseline = await repository.findBaseline(authReq.user!.userId)
+	return res.status(200).json(baseline)
+}
+
+export async function getNightlyMetrics(req: Request, res: Response) {
+	const authReq = req as AuthenticatedRequest
+	const days = parseInt(req.query.days as string) || 90
+	const metrics = await repository.findNightlyMetrics(authReq.user!.userId, days)
+
+	const summary = metrics.map(m => ({
+		date: m.date,
+		totalAsleepDuration: m.totalAsleepDuration,
+		totalInBedDuration: m.totalInBedDuration,
+		deepDuration: m.deepDuration,
+		remDuration: m.remDuration,
+		coreDuration: m.coreDuration,
+		avgHr: m.avgHr,
+		hrvMean: m.hrvMean,
+		respiratoryRateMean: m.respiratoryRateMean,
+		temperatureDeviation: m.temperatureDeviation,
+		deviceTier: m.deviceTier,
+	}))
+
+	return res.status(200).json({ count: metrics.length, metrics: summary })
+}
+
+export async function getSyncStatus(req: Request, res: Response) {
+	const authReq = req as AuthenticatedRequest
+	const userId = authReq.user!.userId
+
+	const baseline = await repository.findBaseline(userId)
+	const metrics = await repository.findNightlyMetrics(userId, 90)
+	const scores = await repository.findScores(userId, 90)
+
+	return res.status(200).json({
+		nightsSynced: metrics.length,
+		scoresComputed: scores.length,
+		calibrationPhase: baseline?.dataPointCount
+			? baseline.dataPointCount < 7 ? 1 : baseline.dataPointCount < 21 ? 2 : 3
+			: 0,
+		dataPointCount: baseline?.dataPointCount ?? 0,
+		hasBaseline: baseline !== null,
+		baselineHasHrv: baseline?.hrv !== undefined && baseline?.hrv !== null,
+		baselineHasRestingHr: baseline?.restingHr !== undefined && baseline?.restingHr !== null,
+		baselineHasRespiratoryRate: baseline?.respiratoryRate !== undefined && baseline?.respiratoryRate !== null,
+		baselineHasTempDeviation: baseline?.tempDeviation !== undefined && baseline?.tempDeviation !== null,
+		lastUpdatedDate: baseline?.lastUpdatedDate ?? null,
+		dateRange: metrics.length > 0
+			? { earliest: metrics[0].date, latest: metrics[metrics.length - 1].date }
+			: null,
+	})
 }
