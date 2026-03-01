@@ -98,10 +98,6 @@ export const MeasurementTypeDetailsMap: Record<
 	}
 }
 
-export const DifficultyEnum = z.enum(['Beginner', 'Intermediate', 'Advanced'])
-
-export type Difficulty = z.infer<typeof DifficultyEnum>
-
 export const WorkoutVisibilityEnum = z.enum(['Global', 'User'])
 
 export type WorkoutVisibility = z.infer<typeof WorkoutVisibilityEnum>
@@ -219,7 +215,6 @@ export type WorkoutExercise = z.infer<typeof WorkoutExerciseSchema>
 export const WorkoutSchema = z.object({
 	id: z.string(),
 	name: z.string().min(1),
-	difficulty: DifficultyEnum,
 	isGlobal: z.boolean(),
 	userId: z.string().optional().nullable(),
 	exercises: z.array(WorkoutExerciseSchema),
@@ -278,7 +273,6 @@ export const ExerciseFiltersSchema = z.object({
 export type ExerciseFilters = z.infer<typeof ExerciseFiltersSchema>
 
 export const WorkoutFiltersSchema = z.object({
-	difficulty: DifficultyEnum.optional(),
 	visibility: WorkoutVisibilityEnum.optional()
 })
 

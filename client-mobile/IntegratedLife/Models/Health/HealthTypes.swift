@@ -66,14 +66,6 @@ enum MeasurementType: String, Codable, CaseIterable, Identifiable {
 	}
 }
 
-enum Difficulty: String, Codable, CaseIterable, Identifiable {
-	case beginner = "Beginner"
-	case intermediate = "Intermediate"
-	case advanced = "Advanced"
-
-	var id: String { rawValue }
-}
-
 enum WorkoutVisibility: String, Codable, CaseIterable {
 	case global = "Global"
 	case user = "User"

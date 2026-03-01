@@ -23,7 +23,6 @@ struct RecurrenceRule: Codable {
 struct Workout: Codable, Identifiable {
 	let id: String
 	let name: String
-	let difficulty: String
 	let isGlobal: Bool
 	let userId: String?
 	let exercises: [WorkoutExercise]?
@@ -33,7 +32,6 @@ struct Workout: Codable, Identifiable {
 
 struct CreateWorkoutRequest: Codable {
 	let name: String
-	let difficulty: String
 	let exercises: [WorkoutExerciseInput]
 	let schedule: RecurrenceRule?
 }

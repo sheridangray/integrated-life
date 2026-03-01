@@ -1,13 +1,11 @@
 type WorkoutSeed = {
 	name: string
-	difficulty: string
 	exercises: string[]
 }
 
 export const workoutSeeds: WorkoutSeed[] = [
 	{
 		name: 'MI7Smith Push A',
-		difficulty: 'Intermediate',
 		exercises: [
 			'Cable Chest Press',
 			'Barbell Bench Press',
@@ -19,7 +17,6 @@ export const workoutSeeds: WorkoutSeed[] = [
 	},
 	{
 		name: 'MI7Smith Pull A',
-		difficulty: 'Intermediate',
 		exercises: [
 			'Pull-ups',
 			'Cable Lat Pulldown',
@@ -30,7 +27,6 @@ export const workoutSeeds: WorkoutSeed[] = [
 	},
 	{
 		name: 'MI7Smith Legs A',
-		difficulty: 'Intermediate',
 		exercises: [
 			'Barbell Hip Thrust',
 			'Barbell Romanian Deadlift',
@@ -41,7 +37,6 @@ export const workoutSeeds: WorkoutSeed[] = [
 	},
 	{
 		name: 'MI7Smith Push B',
-		difficulty: 'Intermediate',
 		exercises: [
 			'Standing Cable Overhead Press',
 			'Barbell Incline Press',
@@ -52,7 +47,6 @@ export const workoutSeeds: WorkoutSeed[] = [
 	},
 	{
 		name: 'MI7Smith Pull B',
-		difficulty: 'Intermediate',
 		exercises: [
 			'Seated Cable Row',
 			'Barbell Bent-Over Row',
@@ -63,7 +57,6 @@ export const workoutSeeds: WorkoutSeed[] = [
 	},
 	{
 		name: 'MI7Smith Legs B',
-		difficulty: 'Intermediate',
 		exercises: [
 			'Plate Goblet Squat',
 			'Barbell Split Squat',

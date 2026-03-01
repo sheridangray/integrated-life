@@ -6,7 +6,6 @@ struct CreateWorkoutView: View {
 	var existingWorkout: Workout?
 
 	@State private var name: String
-	@State private var difficulty: Difficulty
 	@State private var selectedExercises: [WorkoutExerciseInput] = []
 	@State private var availableExercises: [Exercise] = []
 	@State private var searchText = ""
@@ -20,7 +19,6 @@ struct CreateWorkoutView: View {
 	init(existingWorkout: Workout? = nil) {
 		self.existingWorkout = existingWorkout
 		_name = State(initialValue: existingWorkout?.name ?? "")
-		_difficulty = State(initialValue: Difficulty(rawValue: existingWorkout?.difficulty ?? "Intermediate") ?? .intermediate)
 
 		if let exercises = existingWorkout?.exercises {
 			_selectedExercises = State(initialValue: exercises.map { ex in
@@ -46,11 +44,6 @@ struct CreateWorkoutView: View {
 			Form {
 				Section("Details") {
 					TextField("Workout Name", text: $name)
-					Picker("Difficulty", selection: $difficulty) {
-						ForEach(Difficulty.allCases) { diff in
-							Text(diff.rawValue).tag(diff)
-						}
-					}
 				}
 
 				Section("Schedule") {
@@ -177,7 +170,6 @@ struct CreateWorkoutView: View {
 
 		let request = CreateWorkoutRequest(
 			name: name,
-			difficulty: difficulty.rawValue,
 			exercises: selectedExercises,
 			schedule: schedule
 		)
@@ -188,6 +180,7 @@ struct CreateWorkoutView: View {
 			} else {
 				_ = try await healthService.createWorkout(request: request)
 			}
+			await WorkoutNotificationScheduler.shared.rescheduleAll()
 			dismiss()
 		} catch {
 			isSaving = false

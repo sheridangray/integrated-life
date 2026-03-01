@@ -58,9 +58,8 @@ final class HealthService {
 
 	// MARK: - Workouts
 
-	func fetchWorkouts(difficulty: String? = nil, visibility: String? = nil) async throws -> [Workout] {
+	func fetchWorkouts(visibility: String? = nil) async throws -> [Workout] {
 		var queryItems: [String] = []
-		if let difficulty { queryItems.append("difficulty=\(difficulty)") }
 		if let visibility { queryItems.append("visibility=\(visibility)") }
 		let query = queryItems.isEmpty ? "" : "?\(queryItems.joined(separator: "&"))"
 

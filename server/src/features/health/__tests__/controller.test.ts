@@ -304,7 +304,6 @@ describe('createWorkout', () => {
 	it('returns 201 on success', async () => {
 		const workoutData = {
 			name: 'Push Day',
-			difficulty: 'Beginner',
 			exercises: [{ exerciseId: 'ex1', order: 0 }],
 		}
 		vi.mocked(healthService.createWorkout).mockResolvedValue({ id: 'w-new', ...workoutData } as any)

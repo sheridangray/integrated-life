@@ -159,12 +159,10 @@ export async function deleteHistoryItem(userId: string, type: string, id: string
 // --- Workouts ---
 
 export async function listWorkouts(filters: {
-	difficulty?: string
 	visibility?: string
 	userId?: string
 }) {
 	const workouts = await repo.findWorkouts({
-		difficulty: filters.difficulty,
 		visibility: filters.visibility,
 		userId: filters.userId
 	})
@@ -172,7 +170,6 @@ export async function listWorkouts(filters: {
 	return workouts.map((w) => ({
 		id: w._id.toString(),
 		name: w.name,
-		difficulty: w.difficulty,
 		isGlobal: w.isGlobal,
 		userId: w.userId?.toString() ?? null,
 		exerciseCount: w.exercises.length,
@@ -187,7 +184,6 @@ export async function getWorkout(id: string) {
 	return {
 		id: workout._id.toString(),
 		name: workout.name,
-		difficulty: workout.difficulty,
 		isGlobal: workout.isGlobal,
 		userId: workout.userId?.toString() ?? null,
 		exercises: workout.exercises.map((e) => {
@@ -207,7 +203,6 @@ export async function getWorkout(id: string) {
 
 export async function createWorkout(userId: string, data: {
 	name: string
-	difficulty: string
 	exercises: Array<{ exerciseId: string; order: number; defaultSets?: number; defaultReps?: number; defaultWeight?: number }>
 	schedule?: Record<string, unknown> | null
 }) {
@@ -215,7 +210,6 @@ export async function createWorkout(userId: string, data: {
 	return {
 		id: workout._id.toString(),
 		name: workout.name,
-		difficulty: workout.difficulty,
 		isGlobal: workout.isGlobal,
 		userId: workout.userId?.toString() ?? null,
 		exercises: workout.exercises,
@@ -230,7 +224,6 @@ export async function updateWorkout(id: string, userId: string, data: Record<str
 	return {
 		id: workout._id.toString(),
 		name: workout.name,
-		difficulty: workout.difficulty,
 		isGlobal: workout.isGlobal,
 		exercises: workout.exercises,
 		schedule: workout.schedule ?? null

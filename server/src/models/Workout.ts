@@ -19,7 +19,6 @@ export type RecurrenceRuleSubdoc = {
 
 export type WorkoutDocument = Document & {
 	name: string
-	difficulty: string
 	isGlobal: boolean
 	userId?: mongoose.Types.ObjectId
 	exercises: WorkoutExerciseSubdoc[]
@@ -54,7 +53,6 @@ const recurrenceRuleSchema = new Schema<RecurrenceRuleSubdoc>(
 const workoutSchema = new Schema<WorkoutDocument>(
 	{
 		name: { type: String, required: true },
-		difficulty: { type: String, required: true },
 		isGlobal: { type: Boolean, default: false },
 		userId: { type: Schema.Types.ObjectId, ref: 'User' },
 		exercises: [workoutExerciseSchema],
@@ -65,7 +63,6 @@ const workoutSchema = new Schema<WorkoutDocument>(
 
 workoutSchema.index({ userId: 1 })
 workoutSchema.index({ isGlobal: 1 })
-workoutSchema.index({ difficulty: 1 })
 
 export const Workout: Model<WorkoutDocument> =
 	mongoose.models.Workout ?? mongoose.model<WorkoutDocument>('Workout', workoutSchema)

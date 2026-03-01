@@ -158,6 +158,73 @@ final class HealthKitService: ObservableObject {
 		}
 	}
 
+	// MARK: - Sleep Wake-Up Time
+
+	/// Returns the average wake-up time (as a time-of-day Date) from the last N days of sleep data.
+	/// Adds a 15-minute buffer and caps at 7:45 AM.
+	func fetchRecentWakeUpTime(days: Int = 7) async throws -> Date? {
+		guard let sleepType = HKCategoryType.categoryType(forIdentifier: .sleepAnalysis) else { return nil }
+
+		let calendar = Calendar.current
+		let now = Date()
+		guard let windowStart = calendar.date(byAdding: .day, value: -days, to: now) else { return nil }
+
+		let predicate = HKQuery.predicateForSamples(withStart: windowStart, end: now, options: .strictStartDate)
+		let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+
+		let samples: [HKCategorySample] = try await withCheckedThrowingContinuation { continuation in
+			let query = HKSampleQuery(
+				sampleType: sleepType,
+				predicate: predicate,
+				limit: HKObjectQueryNoLimit,
+				sortDescriptors: [sortDescriptor]
+			) { _, results, error in
+				if let error {
+					continuation.resume(throwing: error)
+					return
+				}
+				continuation.resume(returning: (results as? [HKCategorySample]) ?? [])
+			}
+			healthStore.execute(query)
+		}
+
+		let asleepValues: Set<Int> = [
+			HKCategoryValueSleepAnalysis.asleepCore.rawValue,
+			HKCategoryValueSleepAnalysis.asleepDeep.rawValue,
+			HKCategoryValueSleepAnalysis.asleepREM.rawValue,
+			HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue,
+		]
+		let asleepSamples = samples.filter { asleepValues.contains($0.value) }
+		guard !asleepSamples.isEmpty else { return nil }
+
+		var wakeUpsByDay: [Date: Date] = [:]
+		for sample in asleepSamples {
+			let day = calendar.startOfDay(for: sample.endDate)
+			if let existing = wakeUpsByDay[day] {
+				if sample.endDate > existing {
+					wakeUpsByDay[day] = sample.endDate
+				}
+			} else {
+				wakeUpsByDay[day] = sample.endDate
+			}
+		}
+
+		guard !wakeUpsByDay.isEmpty else { return nil }
+
+		let totalMinutes = wakeUpsByDay.values.reduce(0.0) { total, wakeUp in
+			let comps = calendar.dateComponents([.hour, .minute], from: wakeUp)
+			return total + Double(comps.hour ?? 0) * 60 + Double(comps.minute ?? 0)
+		}
+		let avgMinutes = Int(totalMinutes / Double(wakeUpsByDay.count))
+		let bufferMinutes = 15
+		let bufferedMinutes = avgMinutes + bufferMinutes
+
+		let maxMinutes = 7 * 60 + 45
+		let clampedMinutes = min(bufferedMinutes, maxMinutes)
+
+		return calendar.date(from: DateComponents(hour: clampedMinutes / 60, minute: clampedMinutes % 60))
+	}
+
 	// MARK: - Write Workout
 
 	func saveWorkout(

@@ -37,7 +37,6 @@ export async function seedHealthData() {
 			{ name: workoutSeed.name, isGlobal: true },
 			{
 				name: workoutSeed.name,
-				difficulty: workoutSeed.difficulty,
 				isGlobal: true,
 				exercises
 			},

@@ -63,7 +63,6 @@ function mockWorkoutDoc(overrides: Record<string, unknown> = {}) {
 	return {
 		_id: { toString: () => 'w-id-1' },
 		name: 'Push Day',
-		difficulty: 'Intermediate',
 		isGlobal: true,
 		userId: null,
 		exercises: [
@@ -266,7 +265,6 @@ describe('listWorkouts', () => {
 		const doc = {
 			_id: { toString: () => 'w-id-1' },
 			name: 'Push Day',
-			difficulty: 'Intermediate',
 			isGlobal: true,
 			userId: null,
 			exercises: [{ exerciseId: 'ex1' }, { exerciseId: 'ex2' }],
@@ -308,7 +306,6 @@ describe('createWorkout', () => {
 		const created = {
 			_id: { toString: () => 'w-new' },
 			name: 'Leg Day',
-			difficulty: 'Beginner',
 			isGlobal: false,
 			userId: { toString: () => 'user-1' },
 			exercises: [],
@@ -318,7 +315,6 @@ describe('createWorkout', () => {
 
 		const result = await service.createWorkout('user-1', {
 			name: 'Leg Day',
-			difficulty: 'Beginner',
 			exercises: [],
 		})
 
@@ -332,7 +328,6 @@ describe('createWorkout', () => {
 		vi.mocked(repo.createWorkout).mockResolvedValue({
 			_id: { toString: () => 'w-new' },
 			name: 'Test',
-			difficulty: 'Beginner',
 			isGlobal: false,
 			userId: null,
 			exercises: [],
@@ -341,7 +336,6 @@ describe('createWorkout', () => {
 
 		await service.createWorkout('user-1', {
 			name: 'Test',
-			difficulty: 'Beginner',
 			exercises: [],
 			schedule: null,
 		})
@@ -359,7 +353,6 @@ describe('updateWorkout', () => {
 		const updated = {
 			_id: { toString: () => 'w-id-1' },
 			name: 'Updated Push Day',
-			difficulty: 'Advanced',
 			isGlobal: false,
 			exercises: [],
 			schedule: null,

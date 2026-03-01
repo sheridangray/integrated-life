@@ -4,7 +4,6 @@ import {
 	MuscleEnum,
 	ResistanceTypeEnum,
 	MeasurementTypeEnum,
-	DifficultyEnum,
 	RecurrenceFrequencyEnum,
 	DayOfWeekEnum,
 	WorkoutVisibilityEnum,
@@ -79,18 +78,6 @@ describe('MeasurementTypeEnum', () => {
 
 	it('rejects invalid measurement type', () => {
 		expect(MeasurementTypeEnum.safeParse('Velocity').success).toBe(false)
-	})
-})
-
-describe('DifficultyEnum', () => {
-	it('accepts valid difficulties', () => {
-		for (const d of ['Beginner', 'Intermediate', 'Advanced']) {
-			expect(DifficultyEnum.safeParse(d).success).toBe(true)
-		}
-	})
-
-	it('rejects invalid difficulty', () => {
-		expect(DifficultyEnum.safeParse('Expert').success).toBe(false)
 	})
 })
 
@@ -350,7 +337,6 @@ describe('WorkoutSchema', () => {
 	const validWorkout = {
 		id: 'w123',
 		name: 'Push Day',
-		difficulty: 'Intermediate',
 		isGlobal: true,
 		exercises: [{ exerciseId: 'ex1', order: 0 }],
 	}
@@ -376,17 +362,11 @@ describe('WorkoutSchema', () => {
 		const result = WorkoutSchema.safeParse({ ...validWorkout, name: '' })
 		expect(result.success).toBe(false)
 	})
-
-	it('rejects invalid difficulty', () => {
-		const result = WorkoutSchema.safeParse({ ...validWorkout, difficulty: 'Expert' })
-		expect(result.success).toBe(false)
-	})
 })
 
 describe('CreateWorkoutSchema', () => {
 	const validCreate = {
 		name: 'Pull Day',
-		difficulty: 'Beginner',
 		exercises: [{ exerciseId: 'ex1', order: 0, defaultSets: 3, defaultReps: 10 }],
 	}
 
@@ -478,16 +458,8 @@ describe('WorkoutFiltersSchema', () => {
 		expect(WorkoutFiltersSchema.safeParse({}).success).toBe(true)
 	})
 
-	it('accepts valid difficulty', () => {
-		expect(WorkoutFiltersSchema.safeParse({ difficulty: 'Beginner' }).success).toBe(true)
-	})
-
 	it('accepts valid visibility', () => {
 		expect(WorkoutFiltersSchema.safeParse({ visibility: 'Global' }).success).toBe(true)
-	})
-
-	it('rejects invalid difficulty', () => {
-		expect(WorkoutFiltersSchema.safeParse({ difficulty: 'Expert' }).success).toBe(false)
 	})
 })
 

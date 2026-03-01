@@ -3,7 +3,6 @@ import SwiftUI
 struct WorkoutListView: View {
 	@ObservedObject var healthState: HealthState
 
-	@State private var selectedDifficulty: Difficulty?
 	@State private var selectedVisibility: WorkoutVisibility?
 	@State private var showCreateSheet = false
 
@@ -28,12 +27,6 @@ struct WorkoutListView: View {
 			ToolbarItem(placement: .topBarTrailing) {
 				HStack(spacing: 12) {
 					Menu {
-						Menu("Difficulty") {
-							Button("All") { selectedDifficulty = nil }
-							ForEach(Difficulty.allCases) { diff in
-								Button(diff.rawValue) { selectedDifficulty = diff }
-							}
-						}
 						Menu("Visibility") {
 							Button("All") { selectedVisibility = nil }
 							Button("Global") { selectedVisibility = .global }
@@ -62,19 +55,13 @@ struct WorkoutListView: View {
 		.task {
 			await loadWorkouts()
 		}
-		.onChange(of: selectedDifficulty) {
-			Task { await loadWorkouts() }
-		}
 		.onChange(of: selectedVisibility) {
 			Task { await loadWorkouts() }
 		}
 	}
 
 	private func loadWorkouts() async {
-		await healthState.loadWorkouts(
-			difficulty: selectedDifficulty?.rawValue,
-			visibility: selectedVisibility?.rawValue
-		)
+		await healthState.loadWorkouts(visibility: selectedVisibility?.rawValue)
 	}
 }
 

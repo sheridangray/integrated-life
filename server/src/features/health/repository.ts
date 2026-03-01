@@ -96,13 +96,11 @@ export async function deleteWorkoutLog(userId: string, logId: string): Promise<b
 // --- Workouts ---
 
 export async function findWorkouts(filters: {
-	difficulty?: string
 	visibility?: string
 	userId?: string
 }): Promise<WorkoutDocument[]> {
 	const query: Record<string, unknown> = {}
 
-	if (filters.difficulty) query.difficulty = filters.difficulty
 	if (filters.visibility === 'Global') {
 		query.isGlobal = true
 	} else if (filters.visibility === 'User' && filters.userId) {
@@ -120,7 +118,6 @@ export async function findWorkoutById(id: string): Promise<WorkoutDocument | nul
 
 export async function createWorkout(data: {
 	name: string
-	difficulty: string
 	userId: string
 	exercises: Array<{ exerciseId: string; order: number; defaultSets?: number; defaultReps?: number; defaultWeight?: number }>
 	schedule?: Record<string, unknown>

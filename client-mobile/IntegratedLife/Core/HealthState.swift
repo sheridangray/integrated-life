@@ -36,15 +36,25 @@ final class HealthState: ObservableObject {
 
 	// MARK: - Workouts
 
-	func loadWorkouts(difficulty: String? = nil, visibility: String? = nil) async {
+	func loadWorkouts(visibility: String? = nil) async {
 		isLoading = true
 		error = nil
 		do {
-			workouts = try await healthService.fetchWorkouts(difficulty: difficulty, visibility: visibility)
+			workouts = try await healthService.fetchWorkouts(visibility: visibility)
 		} catch {
 			self.error = error.localizedDescription
 		}
 		isLoading = false
+	}
+
+	func deleteWorkout(id: String) async {
+		do {
+			try await healthService.deleteWorkout(id: id)
+			workouts.removeAll { $0.id == id }
+			await WorkoutNotificationScheduler.shared.rescheduleAll()
+		} catch {
+			self.error = error.localizedDescription
+		}
 	}
 
 	// MARK: - History

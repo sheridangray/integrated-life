@@ -261,7 +261,6 @@ describe('Health integration tests', () => {
 				.set('Authorization', `Bearer ${accessToken}`)
 				.send({
 					name: 'My Custom Workout',
-					difficulty: 'Beginner',
 					exercises: [{ exerciseId, order: 0 }],
 				})
 				.expect(201)
@@ -290,7 +289,6 @@ describe('Health integration tests', () => {
 				.set('Authorization', `Bearer ${accessToken}`)
 				.send({
 					name: 'To Update',
-					difficulty: 'Beginner',
 					exercises: [{ exerciseId, order: 0 }],
 				})
 				.expect(201)
@@ -333,7 +331,6 @@ describe('Health integration tests', () => {
 				.set('Authorization', `Bearer ${accessToken}`)
 				.send({
 					name: 'To Delete',
-					difficulty: 'Beginner',
 					exercises: [{ exerciseId, order: 0 }],
 				})
 				.expect(201)

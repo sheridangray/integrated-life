@@ -3,6 +3,7 @@ import SwiftUI
 struct ProfileView: View {
 	@ObservedObject var authState: AuthState
 	@ObservedObject var healthKitService: HealthKitService
+	@StateObject private var notificationState = NotificationState()
 
 	var body: some View {
 		NavigationStack {
@@ -25,8 +26,8 @@ struct ProfileView: View {
 				}
 
 			Section("More") {
-				NavigationLink("Settings") {
-					SettingsPlaceholderView()
+				NavigationLink("Notifications") {
+					NotificationSettingsView(notificationState: notificationState)
 				}
 				NavigationLink("Integrations") {
 					IntegrationsView(healthKitService: healthKitService)
@@ -62,12 +63,6 @@ struct ProfileView: View {
 }
 
 // MARK: - Placeholder destination views
-
-struct SettingsPlaceholderView: View {
-	var body: some View {
-		PlaceholderContent(title: "Settings", message: "App settings will appear here.")
-	}
-}
 
 struct ActivityHistoryPlaceholderView: View {
 	var body: some View {
