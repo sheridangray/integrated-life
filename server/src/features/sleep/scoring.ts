@@ -93,7 +93,7 @@ export function computeSleepScore(
 
 		const midpointHour = minutesToMidpointHour(metrics.sleepMidpoint)
 		const timingZ = computeZScore(midpointHour, baseline.sleepMidpoint.mean, baseline.sleepMidpoint.std)
-		timingScore = sigmoid(-Math.abs(timingZ), k.gentle)
+		timingScore = 100 * Math.exp(-0.5 * timingZ * timingZ)
 	} else {
 		durationScore = Math.min(100, (metrics.totalAsleepDuration / 480) * 100)
 		efficiencyScore = Math.min(100, efficiency)
