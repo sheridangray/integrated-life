@@ -23,6 +23,15 @@ enum HealthKitCategory: String, CaseIterable, Identifiable {
 	}
 }
 
+// MARK: - Aggregation Strategy
+
+enum AggregationStrategy {
+	case cumulative
+	case average
+	case sparse
+	case categorical
+}
+
 // MARK: - Data Type
 
 struct HealthKitDataType: Identifiable, Hashable {
@@ -34,6 +43,23 @@ struct HealthKitDataType: Identifiable, Hashable {
 	let quantityTypeId: HKQuantityTypeIdentifier?
 	let categoryTypeId: HKCategoryTypeIdentifier?
 	let hkUnit: HKUnit?
+	let aggregation: AggregationStrategy
+	let lowerIsBetter: Bool
+
+	init(
+		id: String, name: String, icon: String, unit: String,
+		category: HealthKitCategory,
+		quantityTypeId: HKQuantityTypeIdentifier? = nil,
+		categoryTypeId: HKCategoryTypeIdentifier? = nil,
+		hkUnit: HKUnit? = nil,
+		aggregation: AggregationStrategy = .average,
+		lowerIsBetter: Bool = false
+	) {
+		self.id = id; self.name = name; self.icon = icon; self.unit = unit
+		self.category = category; self.quantityTypeId = quantityTypeId
+		self.categoryTypeId = categoryTypeId; self.hkUnit = hkUnit
+		self.aggregation = aggregation; self.lowerIsBetter = lowerIsBetter
+	}
 
 	var hkObjectType: HKObjectType? {
 		if let qid = quantityTypeId {
@@ -105,53 +131,54 @@ extension HealthKitDataType {
 	private static let cardiovascularTypes: [HealthKitDataType] = [
 		HealthKitDataType(
 			id: "heartRate", name: "Heart Rate", icon: "heart.fill", unit: "bpm",
-			category: .cardiovascular, quantityTypeId: .heartRate, categoryTypeId: nil,
-			hkUnit: HKUnit.count().unitDivided(by: .minute())
+			category: .cardiovascular, quantityTypeId: .heartRate,
+			hkUnit: HKUnit.count().unitDivided(by: .minute()), aggregation: .average
 		),
 		HealthKitDataType(
 			id: "restingHeartRate", name: "Resting Heart Rate", icon: "heart", unit: "bpm",
-			category: .cardiovascular, quantityTypeId: .restingHeartRate, categoryTypeId: nil,
-			hkUnit: HKUnit.count().unitDivided(by: .minute())
+			category: .cardiovascular, quantityTypeId: .restingHeartRate,
+			hkUnit: HKUnit.count().unitDivided(by: .minute()), aggregation: .average, lowerIsBetter: true
 		),
 		HealthKitDataType(
 			id: "walkingHeartRateAverage", name: "Walking Heart Rate Avg", icon: "figure.walk", unit: "bpm",
-			category: .cardiovascular, quantityTypeId: .walkingHeartRateAverage, categoryTypeId: nil,
-			hkUnit: HKUnit.count().unitDivided(by: .minute())
+			category: .cardiovascular, quantityTypeId: .walkingHeartRateAverage,
+			hkUnit: HKUnit.count().unitDivided(by: .minute()), aggregation: .average
 		),
 		HealthKitDataType(
 			id: "heartRateVariability", name: "Heart Rate Variability", icon: "waveform.path.ecg", unit: "ms",
-			category: .cardiovascular, quantityTypeId: .heartRateVariabilitySDNN, categoryTypeId: nil,
-			hkUnit: .secondUnit(with: .milli)
+			category: .cardiovascular, quantityTypeId: .heartRateVariabilitySDNN,
+			hkUnit: .secondUnit(with: .milli), aggregation: .average
 		),
 		HealthKitDataType(
 			id: "vo2Max", name: "VO2 Max", icon: "lungs.fill", unit: "mL/kg/min",
-			category: .cardiovascular, quantityTypeId: .vo2Max, categoryTypeId: nil,
-			hkUnit: HKUnit.literUnit(with: .milli).unitDivided(by: .gramUnit(with: .kilo).unitMultiplied(by: .minute()))
+			category: .cardiovascular, quantityTypeId: .vo2Max,
+			hkUnit: HKUnit.literUnit(with: .milli).unitDivided(by: .gramUnit(with: .kilo).unitMultiplied(by: .minute())),
+			aggregation: .sparse
 		),
 		HealthKitDataType(
 			id: "bloodOxygenSaturation", name: "Blood Oxygen", icon: "drop.fill", unit: "%",
-			category: .cardiovascular, quantityTypeId: .oxygenSaturation, categoryTypeId: nil,
-			hkUnit: .percent()
+			category: .cardiovascular, quantityTypeId: .oxygenSaturation,
+			hkUnit: .percent(), aggregation: .average
 		),
 		HealthKitDataType(
 			id: "respiratoryRate", name: "Respiratory Rate", icon: "wind", unit: "br/min",
-			category: .cardiovascular, quantityTypeId: .respiratoryRate, categoryTypeId: nil,
-			hkUnit: HKUnit.count().unitDivided(by: .minute())
+			category: .cardiovascular, quantityTypeId: .respiratoryRate,
+			hkUnit: HKUnit.count().unitDivided(by: .minute()), aggregation: .average
 		),
 		HealthKitDataType(
 			id: "cardioRecovery", name: "Cardio Recovery", icon: "arrow.down.heart.fill", unit: "bpm",
-			category: .cardiovascular, quantityTypeId: .heartRateRecoveryOneMinute, categoryTypeId: nil,
-			hkUnit: HKUnit.count().unitDivided(by: .minute())
+			category: .cardiovascular, quantityTypeId: .heartRateRecoveryOneMinute,
+			hkUnit: HKUnit.count().unitDivided(by: .minute()), aggregation: .sparse
 		),
 		HealthKitDataType(
 			id: "atrialFibrillationBurden", name: "AFib Burden", icon: "waveform.path.ecg.rectangle", unit: "%",
-			category: .cardiovascular, quantityTypeId: .atrialFibrillationBurden, categoryTypeId: nil,
-			hkUnit: .percent()
+			category: .cardiovascular, quantityTypeId: .atrialFibrillationBurden,
+			hkUnit: .percent(), aggregation: .average, lowerIsBetter: true
 		),
 		HealthKitDataType(
 			id: "irregularHeartRhythm", name: "Irregular Heart Rhythm", icon: "exclamationmark.heart.fill", unit: "",
-			category: .cardiovascular, quantityTypeId: nil, categoryTypeId: .irregularHeartRhythmEvent,
-			hkUnit: nil
+			category: .cardiovascular, categoryTypeId: .irregularHeartRhythmEvent,
+			aggregation: .categorical, lowerIsBetter: true
 		),
 	]
 
@@ -160,93 +187,93 @@ extension HealthKitDataType {
 	private static let activityMovementTypes: [HealthKitDataType] = [
 		HealthKitDataType(
 			id: "activeEnergy", name: "Active Energy", icon: "flame.fill", unit: "kcal",
-			category: .activityMovement, quantityTypeId: .activeEnergyBurned, categoryTypeId: nil,
-			hkUnit: .kilocalorie()
+			category: .activityMovement, quantityTypeId: .activeEnergyBurned,
+			hkUnit: .kilocalorie(), aggregation: .cumulative
 		),
 		HealthKitDataType(
 			id: "basalEnergy", name: "Basal Energy", icon: "flame", unit: "kcal",
-			category: .activityMovement, quantityTypeId: .basalEnergyBurned, categoryTypeId: nil,
-			hkUnit: .kilocalorie()
+			category: .activityMovement, quantityTypeId: .basalEnergyBurned,
+			hkUnit: .kilocalorie(), aggregation: .cumulative
 		),
 		HealthKitDataType(
 			id: "exerciseTime", name: "Exercise Time", icon: "timer", unit: "min",
-			category: .activityMovement, quantityTypeId: .appleExerciseTime, categoryTypeId: nil,
-			hkUnit: .minute()
+			category: .activityMovement, quantityTypeId: .appleExerciseTime,
+			hkUnit: .minute(), aggregation: .cumulative
 		),
 		HealthKitDataType(
 			id: "standTime", name: "Stand Time", icon: "figure.stand", unit: "min",
-			category: .activityMovement, quantityTypeId: .appleStandTime, categoryTypeId: nil,
-			hkUnit: .minute()
+			category: .activityMovement, quantityTypeId: .appleStandTime,
+			hkUnit: .minute(), aggregation: .cumulative
 		),
 		HealthKitDataType(
 			id: "steps", name: "Steps", icon: "figure.walk", unit: "steps",
-			category: .activityMovement, quantityTypeId: .stepCount, categoryTypeId: nil,
-			hkUnit: .count()
+			category: .activityMovement, quantityTypeId: .stepCount,
+			hkUnit: .count(), aggregation: .cumulative
 		),
 		HealthKitDataType(
 			id: "distanceWalkingRunning", name: "Walking + Running Distance", icon: "figure.walk.motion", unit: "mi",
-			category: .activityMovement, quantityTypeId: .distanceWalkingRunning, categoryTypeId: nil,
-			hkUnit: .mile()
+			category: .activityMovement, quantityTypeId: .distanceWalkingRunning,
+			hkUnit: .mile(), aggregation: .cumulative
 		),
 		HealthKitDataType(
 			id: "walkingSpeed", name: "Walking Speed", icon: "speedometer", unit: "mph",
-			category: .activityMovement, quantityTypeId: .walkingSpeed, categoryTypeId: nil,
-			hkUnit: HKUnit.mile().unitDivided(by: .hour())
+			category: .activityMovement, quantityTypeId: .walkingSpeed,
+			hkUnit: HKUnit.mile().unitDivided(by: .hour()), aggregation: .average
 		),
 		HealthKitDataType(
 			id: "walkingAsymmetry", name: "Walking Asymmetry", icon: "figure.walk", unit: "%",
-			category: .activityMovement, quantityTypeId: .walkingAsymmetryPercentage, categoryTypeId: nil,
-			hkUnit: .percent()
+			category: .activityMovement, quantityTypeId: .walkingAsymmetryPercentage,
+			hkUnit: .percent(), aggregation: .average, lowerIsBetter: true
 		),
 		HealthKitDataType(
 			id: "walkingDoubleSupport", name: "Double Support Time", icon: "figure.walk", unit: "%",
-			category: .activityMovement, quantityTypeId: .walkingDoubleSupportPercentage, categoryTypeId: nil,
-			hkUnit: .percent()
+			category: .activityMovement, quantityTypeId: .walkingDoubleSupportPercentage,
+			hkUnit: .percent(), aggregation: .average
 		),
 		HealthKitDataType(
 			id: "stairAscentSpeed", name: "Stair Ascent Speed", icon: "figure.stairs", unit: "ft/s",
-			category: .activityMovement, quantityTypeId: .stairAscentSpeed, categoryTypeId: nil,
-			hkUnit: HKUnit.foot().unitDivided(by: .second())
+			category: .activityMovement, quantityTypeId: .stairAscentSpeed,
+			hkUnit: HKUnit.foot().unitDivided(by: .second()), aggregation: .sparse
 		),
 		HealthKitDataType(
 			id: "flightsClimbed", name: "Flights Climbed", icon: "figure.stairs", unit: "flights",
-			category: .activityMovement, quantityTypeId: .flightsClimbed, categoryTypeId: nil,
-			hkUnit: .count()
+			category: .activityMovement, quantityTypeId: .flightsClimbed,
+			hkUnit: .count(), aggregation: .cumulative
 		),
 		HealthKitDataType(
 			id: "runningPower", name: "Running Power", icon: "figure.run", unit: "W",
-			category: .activityMovement, quantityTypeId: .runningPower, categoryTypeId: nil,
-			hkUnit: .watt()
+			category: .activityMovement, quantityTypeId: .runningPower,
+			hkUnit: .watt(), aggregation: .sparse
 		),
 		HealthKitDataType(
 			id: "runningGroundContactTime", name: "Ground Contact Time", icon: "figure.run", unit: "ms",
-			category: .activityMovement, quantityTypeId: .runningGroundContactTime, categoryTypeId: nil,
-			hkUnit: .secondUnit(with: .milli)
+			category: .activityMovement, quantityTypeId: .runningGroundContactTime,
+			hkUnit: .secondUnit(with: .milli), aggregation: .sparse, lowerIsBetter: true
 		),
 		HealthKitDataType(
 			id: "runningVerticalOscillation", name: "Vertical Oscillation", icon: "figure.run", unit: "cm",
-			category: .activityMovement, quantityTypeId: .runningVerticalOscillation, categoryTypeId: nil,
-			hkUnit: .meterUnit(with: .centi)
+			category: .activityMovement, quantityTypeId: .runningVerticalOscillation,
+			hkUnit: .meterUnit(with: .centi), aggregation: .sparse, lowerIsBetter: true
 		),
 		HealthKitDataType(
 			id: "runningStrideLength", name: "Stride Length", icon: "figure.run", unit: "m",
-			category: .activityMovement, quantityTypeId: .runningStrideLength, categoryTypeId: nil,
-			hkUnit: .meter()
+			category: .activityMovement, quantityTypeId: .runningStrideLength,
+			hkUnit: .meter(), aggregation: .sparse
 		),
 		HealthKitDataType(
 			id: "cyclingSpeed", name: "Cycling Speed", icon: "bicycle", unit: "mph",
-			category: .activityMovement, quantityTypeId: .cyclingSpeed, categoryTypeId: nil,
-			hkUnit: HKUnit.mile().unitDivided(by: .hour())
+			category: .activityMovement, quantityTypeId: .cyclingSpeed,
+			hkUnit: HKUnit.mile().unitDivided(by: .hour()), aggregation: .sparse
 		),
 		HealthKitDataType(
 			id: "cyclingPower", name: "Cycling Power", icon: "bicycle", unit: "W",
-			category: .activityMovement, quantityTypeId: .cyclingPower, categoryTypeId: nil,
-			hkUnit: .watt()
+			category: .activityMovement, quantityTypeId: .cyclingPower,
+			hkUnit: .watt(), aggregation: .sparse
 		),
 		HealthKitDataType(
 			id: "swimmingStrokeCount", name: "Swimming Strokes", icon: "figure.pool.swim", unit: "strokes",
-			category: .activityMovement, quantityTypeId: .swimmingStrokeCount, categoryTypeId: nil,
-			hkUnit: .count()
+			category: .activityMovement, quantityTypeId: .swimmingStrokeCount,
+			hkUnit: .count(), aggregation: .cumulative
 		),
 	]
 
@@ -254,19 +281,14 @@ extension HealthKitDataType {
 
 	private static let sleepRecoveryTypes: [HealthKitDataType] = [
 		HealthKitDataType(
-			id: "sleepAnalysis", name: "Sleep Analysis", icon: "bed.double.fill", unit: "",
-			category: .sleepRecovery, quantityTypeId: nil, categoryTypeId: .sleepAnalysis,
-			hkUnit: nil
-		),
-		HealthKitDataType(
 			id: "wristTemperature", name: "Wrist Temperature", icon: "thermometer.medium", unit: "°C",
-			category: .sleepRecovery, quantityTypeId: .appleSleepingWristTemperature, categoryTypeId: nil,
-			hkUnit: .degreeCelsius()
+			category: .sleepRecovery, quantityTypeId: .appleSleepingWristTemperature,
+			hkUnit: .degreeCelsius(), aggregation: .average
 		),
 		HealthKitDataType(
 			id: "bodyTemperature", name: "Body Temperature", icon: "thermometer", unit: "°F",
-			category: .sleepRecovery, quantityTypeId: .bodyTemperature, categoryTypeId: nil,
-			hkUnit: .degreeFahrenheit()
+			category: .sleepRecovery, quantityTypeId: .bodyTemperature,
+			hkUnit: .degreeFahrenheit(), aggregation: .average
 		),
 	]
 
@@ -275,8 +297,8 @@ extension HealthKitDataType {
 	private static let stressMindfulnessTypes: [HealthKitDataType] = [
 		HealthKitDataType(
 			id: "mindfulSession", name: "Mindful Minutes", icon: "brain.head.profile", unit: "min",
-			category: .stressMindfulness, quantityTypeId: nil, categoryTypeId: .mindfulSession,
-			hkUnit: nil
+			category: .stressMindfulness, categoryTypeId: .mindfulSession,
+			aggregation: .categorical
 		),
 	]
 
@@ -285,18 +307,18 @@ extension HealthKitDataType {
 	private static let environmentSafetyTypes: [HealthKitDataType] = [
 		HealthKitDataType(
 			id: "environmentalAudioExposure", name: "Environmental Sound", icon: "speaker.wave.2.fill", unit: "dB",
-			category: .environmentSafety, quantityTypeId: .environmentalAudioExposure, categoryTypeId: nil,
-			hkUnit: .decibelAWeightedSoundPressureLevel()
+			category: .environmentSafety, quantityTypeId: .environmentalAudioExposure,
+			hkUnit: .decibelAWeightedSoundPressureLevel(), aggregation: .average, lowerIsBetter: true
 		),
 		HealthKitDataType(
 			id: "headphoneAudioExposure", name: "Headphone Audio", icon: "headphones", unit: "dB",
-			category: .environmentSafety, quantityTypeId: .headphoneAudioExposure, categoryTypeId: nil,
-			hkUnit: .decibelAWeightedSoundPressureLevel()
+			category: .environmentSafety, quantityTypeId: .headphoneAudioExposure,
+			hkUnit: .decibelAWeightedSoundPressureLevel(), aggregation: .average, lowerIsBetter: true
 		),
 		HealthKitDataType(
 			id: "handwashingEvent", name: "Handwashing", icon: "hands.sparkles.fill", unit: "",
-			category: .environmentSafety, quantityTypeId: nil, categoryTypeId: .handwashingEvent,
-			hkUnit: nil
+			category: .environmentSafety, categoryTypeId: .handwashingEvent,
+			aggregation: .categorical
 		),
 	]
 }

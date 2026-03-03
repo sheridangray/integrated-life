@@ -33,6 +33,7 @@ struct LogExerciseView: View {
 		NavigationStack {
 			Form {
 				insightSection
+				lastSessionSection
 				setsSection
 				notesSection
 				dateTimeSection
@@ -109,6 +110,42 @@ struct LogExerciseView: View {
 		}
 	}
 
+	@ViewBuilder
+	private var lastSessionSection: some View {
+		if let lastLog, !isLoadingContext {
+			Section("Last Session") {
+				VStack(alignment: .leading, spacing: 4) {
+					Text(DateFormatting.displayDate(lastLog.date))
+						.font(.caption)
+						.foregroundStyle(.secondary)
+					Text(lastLog.sets.map { set in
+						formatSetSummary(set)
+					}.joined(separator: "  ·  "))
+						.font(.subheadline)
+				}
+				.padding(.vertical, 2)
+			}
+		}
+	}
+
+	private func formatSetSummary(_ set: ExerciseSet) -> String {
+		let measurementType = MeasurementType(rawValue: exercise.measurementType)
+		switch measurementType {
+		case .timeBased:
+			let min = set.minutes.map { String(format: "%.0f", $0) } ?? "0"
+			let sec = set.seconds.map { String(format: "%.0f", $0) } ?? "0"
+			return "\(min)m \(sec)s"
+		case .distanceBased:
+			let miles = set.miles.map { String(format: "%.1f", $0) } ?? "0"
+			return "\(miles) mi"
+		case .repOnly:
+			return "\(set.reps ?? 0) reps"
+		default:
+			let w = set.weight.map { $0 == floor($0) ? String(format: "%.0f", $0) : "\($0)" } ?? "0"
+			return "\(w) x \(set.reps ?? 0)"
+		}
+	}
+
 	private var resistanceSection: some View {
 		Section("Resistance Type") {
 			Picker("Type", selection: $selectedResistanceType) {
@@ -127,7 +164,16 @@ struct LogExerciseView: View {
 
 			Button {
 				let newIndex = sets.count
-				sets.append(ExerciseSet(setNumber: newIndex + 1))
+				let previous = sets.last
+				let newSet = ExerciseSet(
+					setNumber: newIndex + 1,
+					weight: previous?.weight,
+					reps: previous?.reps,
+					minutes: previous?.minutes,
+					seconds: previous?.seconds,
+					miles: previous?.miles
+				)
+				sets.append(newSet)
 				DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
 					focusedField = .weight(newIndex)
 				}
@@ -141,29 +187,18 @@ struct LogExerciseView: View {
 
 	private func setRow(index: Int) -> some View {
 		let measurementType = MeasurementType(rawValue: exercise.measurementType)
-		return VStack(alignment: .leading, spacing: 8) {
-			HStack {
-				Text("Set \(index + 1)")
-					.font(.caption)
-					.foregroundStyle(.secondary)
-				Spacer()
-				if sets.count >= 2 {
-					Button {
-						sets.remove(at: index)
-						renumberSets()
-					} label: {
-						Image(systemName: "minus.circle.fill")
-							.foregroundStyle(.red)
-					}
-					.buttonStyle(.plain)
-				}
-			}
-
+		return VStack(alignment: .leading, spacing: 4) {
 			HStack(spacing: 12) {
+				Text("Set \(index + 1)")
+					.font(.caption2)
+					.fontWeight(.medium)
+					.foregroundStyle(.secondary)
+					.frame(width: 36, alignment: .leading)
+
 				if measurementType == .strength || measurementType == nil {
 					let isWeightedBodyweight = exercise.resistanceType == ResistanceType.weightedBodyweight.rawValue
 					signedNumberField(
-						isWeightedBodyweight ? "Weight (+/-)" : "Weight",
+						isWeightedBodyweight ? "+/-" : "Weight",
 						value: $sets[index].weight,
 						allowNegative: isWeightedBodyweight
 					)
@@ -187,14 +222,27 @@ struct LogExerciseView: View {
 					intField("Reps", value: $sets[index].reps)
 						.focused($focusedField, equals: .reps(index))
 				}
+
+				if sets.count >= 2 {
+					Button {
+						sets.remove(at: index)
+						renumberSets()
+					} label: {
+						Image(systemName: "minus.circle.fill")
+							.font(.caption)
+							.foregroundStyle(.red)
+					}
+					.buttonStyle(.plain)
+				}
 			}
 			if exercise.resistanceType == ResistanceType.weightedBodyweight.rawValue {
 				Text("Negative = assistance, Positive = added weight")
 					.font(.caption2)
 					.foregroundStyle(.secondary)
+					.padding(.leading, 48)
 			}
 		}
-		.padding(.vertical, 4)
+		.padding(.vertical, 2)
 	}
 
 	private func signedNumberField(_ label: String, value: Binding<Double?>, allowNegative: Bool) -> some View {
@@ -205,13 +253,13 @@ struct LogExerciseView: View {
 			},
 			set: { value.wrappedValue = Double($0) }
 		)
-		return VStack(alignment: .leading, spacing: 2) {
+		return VStack(alignment: .leading, spacing: 1) {
 			Text(label)
 				.font(.caption2)
 				.foregroundStyle(.secondary)
 			TextField(label, text: text)
-				.font(.title3)
-				.padding(10)
+				.font(.body)
+				.padding(8)
 				.background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
 				.keyboardType(allowNegative ? .numbersAndPunctuation : .decimalPad)
 		}
@@ -225,13 +273,13 @@ struct LogExerciseView: View {
 			},
 			set: { value.wrappedValue = Double($0) }
 		)
-		return VStack(alignment: .leading, spacing: 2) {
+		return VStack(alignment: .leading, spacing: 1) {
 			Text(label)
 				.font(.caption2)
 				.foregroundStyle(.secondary)
 			TextField(label, text: text)
-				.font(.title3)
-				.padding(10)
+				.font(.body)
+				.padding(8)
 				.background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
 				.keyboardType(.decimalPad)
 		}
@@ -245,13 +293,13 @@ struct LogExerciseView: View {
 			},
 			set: { value.wrappedValue = Int($0) }
 		)
-		return VStack(alignment: .leading, spacing: 2) {
+		return VStack(alignment: .leading, spacing: 1) {
 			Text(label)
 				.font(.caption2)
 				.foregroundStyle(.secondary)
 			TextField(label, text: text)
-				.font(.title3)
-				.padding(10)
+				.font(.body)
+				.padding(8)
 				.background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
 				.keyboardType(.numberPad)
 		}
@@ -274,8 +322,15 @@ struct LogExerciseView: View {
 
 	private func loadLastLog() async {
 		lastLog = try? await healthService.getLastLog(exerciseId: exercise.id)
-		if let lastLog {
-			sets = lastLog.sets
+		if let lastLog, let firstSet = lastLog.sets.first {
+			sets = [ExerciseSet(
+				setNumber: 1,
+				weight: firstSet.weight,
+				reps: firstSet.reps,
+				minutes: firstSet.minutes,
+				seconds: firstSet.seconds,
+				miles: firstSet.miles
+			)]
 			selectedResistanceType = lastLog.resistanceType
 		}
 	}

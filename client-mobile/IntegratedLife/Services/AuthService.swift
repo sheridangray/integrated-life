@@ -76,6 +76,14 @@ final class AuthService {
 		let token = try await getValidAccessToken()
 		return try await apiClient.get(path: "/v1/auth/me", token: token, as: User.self)
 	}
+
+	func updateProfile(gender: String?, dateOfBirth: String?) async throws -> User {
+		let token = try await getValidAccessToken()
+		var body: [String: String] = [:]
+		if let gender { body["gender"] = gender }
+		if let dateOfBirth { body["dateOfBirth"] = dateOfBirth }
+		return try await apiClient.put(path: "/v1/auth/me", body: body, token: token, as: User.self)
+	}
 }
 
 enum AuthError: Error {

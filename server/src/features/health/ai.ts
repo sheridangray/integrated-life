@@ -106,7 +106,6 @@ const SAMPLE_TYPE_META: Record<string, { name: string; unit: string }> = {
 	wristTemperature: { name: 'Wrist Temperature', unit: '°C' },
 	environmentalAudioExposure: { name: 'Environmental Sound Levels', unit: 'dB(A)' },
 	headphoneAudioExposure: { name: 'Headphone Audio Levels', unit: 'dB(A)' },
-	sleepAnalysis: { name: 'Sleep Analysis', unit: 'categorical' },
 	mindfulSession: { name: 'Mindful Minutes', unit: 'min' },
 }
 
@@ -132,6 +131,59 @@ ${dataSummary}
 Provide a brief observation about the trend. Only suggest an action if there is a meaningful concern or opportunity for improvement — if the readings are consistently healthy, simply affirm that.`
 
 	const insight = await chatCompletion(HEALTH_COACH_SYSTEM_PROMPT, userMessage)
+	if (!insight) return null
+
+	return { insight, generatedAt: new Date().toISOString() }
+}
+
+const MONITOR_ANALYSIS_SYSTEM_PROMPT = `You are a medically-trained fitness instructor analyzing Apple HealthKit data for the Integrated Life app.
+
+Provide a thorough analysis including:
+- What this metric means and how the user's values compare to healthy ranges
+- Interpretation of trends (improving, declining, stable)
+- Reasonable targets for improvement, if applicable
+- Specific actionable steps the user can take
+- If values are consistently healthy, affirm that and do not suggest unnecessary changes
+
+Consider the user's age and gender when interpreting values (if provided).
+Use a knowledgeable but approachable tone. Keep the response to 2-4 paragraphs.`
+
+export async function getMonitorAnalysis(
+	sampleType: string,
+	data: Array<{ date: string; value: number }>,
+	timeRange: string,
+	userProfile?: { gender?: string; dateOfBirth?: Date }
+): Promise<AIInsight | null> {
+	if (data.length === 0) return null
+
+	const meta = SAMPLE_TYPE_META[sampleType]
+	const displayName = meta?.name ?? sampleType
+	const unitLabel = meta?.unit ?? ''
+
+	const dataSummary = data
+		.map((d) => `${d.date}: ${d.value}`)
+		.join('\n')
+
+	let profileContext = ''
+	if (userProfile?.gender || userProfile?.dateOfBirth) {
+		const parts: string[] = []
+		if (userProfile.gender) parts.push(`Gender: ${userProfile.gender}`)
+		if (userProfile.dateOfBirth) {
+			const age = Math.floor((Date.now() - userProfile.dateOfBirth.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+			parts.push(`Age: ${age}`)
+		}
+		profileContext = `\nUser profile: ${parts.join(', ')}`
+	}
+
+	const userMessage = `Health metric: ${displayName}${unitLabel ? ` (${unitLabel})` : ''}
+Time range: ${timeRange}${profileContext}
+
+Data points:
+${dataSummary}
+
+Analyze this data thoroughly. Provide insights on the trend, whether the values are within healthy ranges, and actionable recommendations if appropriate.`
+
+	const insight = await chatCompletion(MONITOR_ANALYSIS_SYSTEM_PROMPT, userMessage)
 	if (!insight) return null
 
 	return { insight, generatedAt: new Date().toISOString() }

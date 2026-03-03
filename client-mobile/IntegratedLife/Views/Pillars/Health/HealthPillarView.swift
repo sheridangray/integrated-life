@@ -1,8 +1,8 @@
 import SwiftUI
 
 enum HealthTab: String, CaseIterable, Identifiable {
-	case exercises = "Exercises"
 	case workouts = "Workouts"
+	case exercises = "Exercises"
 	case history = "History"
 	case monitor = "Monitor"
 
@@ -18,7 +18,7 @@ struct HealthPillarView: View {
 	@StateObject private var healthState = HealthState()
 	@ObservedObject var healthKitService: HealthKitService
 
-	@State private var selectedTab: HealthTab = .exercises
+	@State private var selectedTab: HealthTab = .workouts
 
 	var body: some View {
 		VStack(spacing: 0) {

@@ -5,6 +5,8 @@ export type UserDocument = Document & {
 	email: string
 	name: string
 	avatarUrl?: string
+	gender?: 'female' | 'male' | 'other'
+	dateOfBirth?: Date
 	createdAt: Date
 	updatedAt: Date
 }
@@ -14,7 +16,9 @@ const userSchema = new Schema<UserDocument>(
 		googleId: { type: String, required: true, unique: true },
 		email: { type: String, required: true },
 		name: { type: String, required: true },
-		avatarUrl: { type: String }
+		avatarUrl: { type: String },
+		gender: { type: String, enum: ['female', 'male', 'other'] },
+		dateOfBirth: { type: Date }
 	},
 	{ timestamps: true }
 )

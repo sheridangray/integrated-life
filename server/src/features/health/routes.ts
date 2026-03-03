@@ -37,6 +37,7 @@ healthInsightRoutes.use(authMiddleware)
 healthInsightRoutes.get('/insights/exercise/:exerciseId', asyncHandler(controller.getExerciseInsight))
 healthInsightRoutes.get('/insights/summary', asyncHandler(controller.getHistorySummary))
 healthInsightRoutes.post('/insights/monitor/:sampleType', asyncHandler(controller.getMonitorInsight))
+healthInsightRoutes.post('/insights/monitor/:sampleType/analyze', asyncHandler(controller.getMonitorAnalysis))
 
 // Optional auth: attaches user if token present, continues without error if absent
 function optionalAuth(req: Parameters<typeof authMiddleware>[0], res: Parameters<typeof authMiddleware>[1], next: Parameters<typeof authMiddleware>[2]) {

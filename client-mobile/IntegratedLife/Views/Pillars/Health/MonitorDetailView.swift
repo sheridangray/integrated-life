@@ -5,23 +5,28 @@ import HealthKit
 struct MonitorDetailView: View {
 	let sampleType: HealthKitDataType
 	@ObservedObject var healthKitService: HealthKitService
+	var user: User?
 
-	@State private var dataPoints: [(date: Date, value: Double)] = []
+	@State private var rawDataPoints: [(date: Date, value: Double)] = []
+	@State private var dailyDataPoints: [(date: Date, value: Double, min: Double?, max: Double?)] = []
 	@State private var categoryPoints: [(date: Date, value: Int)] = []
-	@State private var insight: AIInsight?
+	@State private var analysis: AIInsight?
 	@State private var isLoading = true
+	@State private var isAnalyzing = false
 	@State private var selectedTimeRange: TimeRange = .week
 	@State private var selectedDataPoint: (date: Date, value: Double)?
 
 	private let healthService = HealthService.shared
 
 	enum TimeRange: String, CaseIterable {
+		case day = "D"
 		case week = "7D"
 		case month = "30D"
 		case threeMonths = "90D"
 
 		var days: Int {
 			switch self {
+			case .day: return 1
 			case .week: return 7
 			case .month: return 30
 			case .threeMonths: return 90
@@ -29,17 +34,37 @@ struct MonitorDetailView: View {
 		}
 	}
 
+	private var chartDataPoints: [(date: Date, value: Double)] {
+		if useAggregatedData {
+			return dailyDataPoints.map { ($0.date, $0.value) }
+		}
+		return rawDataPoints
+	}
+
+	private var useAggregatedData: Bool {
+		selectedTimeRange != .day &&
+		sampleType.isQuantityType &&
+		(sampleType.aggregation == .cumulative || sampleType.aggregation == .average)
+	}
+
+	private var usesBarChart: Bool {
+		useAggregatedData && sampleType.aggregation == .cumulative
+	}
+
 	var body: some View {
 		ScrollView {
 			VStack(alignment: .leading, spacing: 20) {
+				headerSection
 				timeRangePicker
-			if sampleType.isCategoryType {
-				categoryDataSection
-			} else {
-				chartSection
-				insightSection
-				dataListSection
-			}
+				blurbSection
+
+				if sampleType.isCategoryType {
+					categoryDataSection
+				} else {
+					analyzeButton
+					chartSection
+					dataListSection
+				}
 			}
 			.padding()
 		}
@@ -48,9 +73,36 @@ struct MonitorDetailView: View {
 			await loadData()
 		}
 		.onChange(of: selectedTimeRange) {
+			analysis = nil
 			Task { await loadData() }
 		}
 	}
+
+	// MARK: - Header with Status
+
+	private var headerSection: some View {
+		HStack(spacing: 12) {
+			Image(systemName: sampleType.icon)
+				.font(.title2)
+				.foregroundStyle(.blue)
+
+			if let latest = rawDataPoints.first {
+				let status = sampleType.statusColor(for: latest.value, gender: user?.gender, age: user?.age)
+				HStack(spacing: 6) {
+					Circle()
+						.fill(colorFor(status))
+						.frame(width: 10, height: 10)
+					Text(formatValue(latest.value))
+						.font(.title2)
+						.fontWeight(.semibold)
+				}
+			}
+
+			Spacer()
+		}
+	}
+
+	// MARK: - Time Range
 
 	private var timeRangePicker: some View {
 		Picker("Time Range", selection: $selectedTimeRange) {
@@ -61,54 +113,115 @@ struct MonitorDetailView: View {
 		.pickerStyle(.segmented)
 	}
 
+	// MARK: - Educational Blurb
+
+	private var blurbSection: some View {
+		Text(sampleType.description)
+			.font(.caption)
+			.foregroundStyle(.secondary)
+			.padding(12)
+			.frame(maxWidth: .infinity, alignment: .leading)
+			.background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+	}
+
+	// MARK: - Analyze Button
+
+	@ViewBuilder
+	private var analyzeButton: some View {
+		if let analysisText = analysis?.insight {
+			VStack(alignment: .leading, spacing: 8) {
+				Label("Analysis", systemImage: "stethoscope")
+					.font(.headline)
+					.foregroundStyle(.purple)
+				Text(analysisText)
+					.font(.subheadline)
+					.padding()
+					.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+			}
+		}
+
+		Button {
+			Task { await runAnalysis() }
+		} label: {
+			HStack {
+				if isAnalyzing {
+					ProgressView()
+						.controlSize(.small)
+						.padding(.trailing, 4)
+				}
+				Label(
+					analysis == nil ? "Analyze with AI" : "Re-analyze",
+					systemImage: "sparkles"
+				)
+			}
+			.frame(maxWidth: .infinity)
+		}
+		.buttonStyle(.bordered)
+		.tint(.purple)
+		.disabled(isAnalyzing || chartDataPoints.isEmpty)
+	}
+
+	// MARK: - Chart
+
 	@ViewBuilder
 	private var chartSection: some View {
-		if dataPoints.isEmpty && !isLoading {
+		if chartDataPoints.isEmpty && !isLoading {
 			ContentUnavailableView(
 				"No Data",
 				systemImage: "chart.line.downtrend.xyaxis",
 				description: Text("No \(sampleType.name.lowercased()) data available for this period.")
 			)
 			.frame(height: 200)
-		} else {
+		} else if !chartDataPoints.isEmpty {
 			VStack(alignment: .leading, spacing: 4) {
-				if let selected = selectedDataPoint {
-					HStack(spacing: 8) {
-						Text(selected.date, style: .date)
-							.font(.caption)
-							.foregroundStyle(.secondary)
-						Spacer()
-						if sampleType.unit == "%" {
-							Text("\(String(format: "%.1f", selected.value * 100))%")
-								.font(.headline)
-						} else {
-							Text("\(selected.value, specifier: "%.1f") \(sampleType.unit)")
-								.font(.headline)
-						}
-					}
-					.padding(.horizontal, 4)
-				}
+				selectedDataOverlay
 
 				Chart {
-					ForEach(Array(dataPoints.enumerated()), id: \.offset) { _, point in
-						LineMark(
-							x: .value("Date", point.date),
-							y: .value(sampleType.unit.isEmpty ? "Value" : sampleType.unit, point.value)
-						)
-						.foregroundStyle(.blue)
+					if usesBarChart {
+						ForEach(Array(chartDataPoints.enumerated()), id: \.offset) { _, point in
+							BarMark(
+								x: .value("Date", point.date, unit: .day),
+								y: .value(yLabel, point.value)
+							)
+							.foregroundStyle(.blue.opacity(0.7))
+						}
+					} else {
+						if useAggregatedData && sampleType.aggregation == .average {
+							ForEach(Array(dailyDataPoints.enumerated()), id: \.offset) { _, point in
+								if let minVal = point.min, let maxVal = point.max {
+									AreaMark(
+										x: .value("Date", point.date),
+										yStart: .value("Min", minVal),
+										yEnd: .value("Max", maxVal)
+									)
+									.foregroundStyle(.blue.opacity(0.08))
+								}
+							}
+						}
 
-						AreaMark(
-							x: .value("Date", point.date),
-							y: .value(sampleType.unit.isEmpty ? "Value" : sampleType.unit, point.value)
-						)
-						.foregroundStyle(.blue.opacity(0.1))
+						ForEach(Array(chartDataPoints.enumerated()), id: \.offset) { _, point in
+							LineMark(
+								x: .value("Date", point.date),
+								y: .value(yLabel, point.value)
+							)
+							.foregroundStyle(.blue)
+						}
+
+						ForEach(Array(chartDataPoints.enumerated()), id: \.offset) { _, point in
+							AreaMark(
+								x: .value("Date", point.date),
+								y: .value(yLabel, point.value)
+							)
+							.foregroundStyle(.blue.opacity(0.06))
+						}
 					}
+
+					trendlineMarks
 
 					if let selected = selectedDataPoint {
 						RuleMark(x: .value("Selected", selected.date))
 							.foregroundStyle(.gray.opacity(0.5))
 							.lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 2]))
-
 						PointMark(
 							x: .value("Date", selected.date),
 							y: .value("Value", selected.value)
@@ -129,8 +242,7 @@ struct MonitorDetailView: View {
 							.gesture(
 								DragGesture(minimumDistance: 0)
 									.onChanged { value in
-										let x = value.location.x
-										if let date: Date = proxy.value(atX: x) {
+										if let date: Date = proxy.value(atX: value.location.x) {
 											selectedDataPoint = closestDataPoint(to: date)
 										}
 									}
@@ -144,12 +256,81 @@ struct MonitorDetailView: View {
 		}
 	}
 
-	private func closestDataPoint(to date: Date) -> (date: Date, value: Double)? {
-		guard !dataPoints.isEmpty else { return nil }
-		return dataPoints.min(by: {
-			abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date))
-		})
+	private var yLabel: String {
+		sampleType.unit.isEmpty ? "Value" : sampleType.unit
 	}
+
+	@ViewBuilder
+	private var selectedDataOverlay: some View {
+		if let selected = selectedDataPoint {
+			HStack(spacing: 8) {
+				Text(selected.date, style: .date)
+					.font(.caption)
+					.foregroundStyle(.secondary)
+				Spacer()
+				Text(formatValue(selected.value))
+					.font(.headline)
+			}
+			.padding(.horizontal, 4)
+		}
+	}
+
+	// MARK: - Trendline
+
+	@ChartContentBuilder
+	private var trendlineMarks: some ChartContent {
+		if showTrendline, let trend = computeTrendline() {
+			LineMark(
+				x: .value("Date", trend.startDate),
+				y: .value("Trend", trend.startValue),
+				series: .value("Series", "trend")
+			)
+			.foregroundStyle(.orange.opacity(0.7))
+			.lineStyle(StrokeStyle(lineWidth: 1.5, dash: [6, 3]))
+
+			LineMark(
+				x: .value("Date", trend.endDate),
+				y: .value("Trend", trend.endValue),
+				series: .value("Series", "trend")
+			)
+			.foregroundStyle(.orange.opacity(0.7))
+			.lineStyle(StrokeStyle(lineWidth: 1.5, dash: [6, 3]))
+		}
+	}
+
+	private var showTrendline: Bool {
+		(selectedTimeRange == .month || selectedTimeRange == .threeMonths) &&
+		(sampleType.aggregation == .cumulative || sampleType.aggregation == .average) &&
+		chartDataPoints.count >= 7
+	}
+
+	private func computeTrendline() -> (startDate: Date, startValue: Double, endDate: Date, endValue: Double)? {
+		let points = chartDataPoints
+		guard points.count >= 7 else { return nil }
+
+		let refDate = points[0].date
+		let xs = points.map { $0.date.timeIntervalSince(refDate) }
+		let ys = points.map { $0.value }
+		let n = Double(points.count)
+
+		let sumX = xs.reduce(0, +)
+		let sumY = ys.reduce(0, +)
+		let sumXY = zip(xs, ys).reduce(0.0) { $0 + $1.0 * $1.1 }
+		let sumX2 = xs.reduce(0.0) { $0 + $1 * $1 }
+
+		let denom = n * sumX2 - sumX * sumX
+		guard abs(denom) > 0.001 else { return nil }
+
+		let slope = (n * sumXY - sumX * sumY) / denom
+		let intercept = (sumY - slope * sumX) / n
+
+		let startVal = intercept + slope * xs.first!
+		let endVal = intercept + slope * xs.last!
+
+		return (startDate: points.first!.date, startValue: startVal, endDate: points.last!.date, endValue: endVal)
+	}
+
+	// MARK: - Category Data
 
 	@ViewBuilder
 	private var categoryDataSection: some View {
@@ -182,76 +363,96 @@ struct MonitorDetailView: View {
 		}
 	}
 
-	@ViewBuilder
-	private var insightSection: some View {
-		if let insightText = insight?.insight {
-			VStack(alignment: .leading, spacing: 8) {
-				Label("AI Insight", systemImage: "sparkles")
-					.font(.headline)
-					.foregroundStyle(.purple)
-				Text(insightText)
-					.font(.subheadline)
-					.padding()
-					.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-			}
-		}
-	}
+	// MARK: - Data List
 
 	@ViewBuilder
 	private var dataListSection: some View {
-		if !dataPoints.isEmpty {
+		if !chartDataPoints.isEmpty {
 			VStack(alignment: .leading, spacing: 8) {
 				Text("Recent Readings")
 					.font(.headline)
 
-				ForEach(Array(dataPoints.prefix(20).enumerated()), id: \.offset) { _, point in
+				ForEach(Array(chartDataPoints.prefix(20).enumerated()), id: \.offset) { _, point in
 					HStack {
 						Text(point.date, style: .date)
 							.font(.subheadline)
 						Spacer()
-						if sampleType.unit == "%" {
-							Text("\(String(format: "%.1f", point.value * 100))%")
-								.font(.subheadline)
-								.foregroundStyle(.secondary)
-						} else {
-							Text("\(point.value, specifier: "%.1f") \(sampleType.unit)")
-								.font(.subheadline)
-								.foregroundStyle(.secondary)
-						}
+						Text(formatValue(point.value))
+							.font(.subheadline)
+							.foregroundStyle(.secondary)
 					}
 				}
 			}
 		}
 	}
 
+	// MARK: - Helpers
+
+	private func formatValue(_ value: Double) -> String {
+		if sampleType.unit == "%" {
+			let display = value <= 1.0 ? value * 100 : value
+			return "\(String(format: "%.1f", display))%"
+		}
+		if value == floor(value) {
+			return "\(Int(value)) \(sampleType.unit)"
+		}
+		return "\(String(format: "%.1f", value)) \(sampleType.unit)"
+	}
+
+	private func colorFor(_ status: HealthStatus) -> Color {
+		switch status {
+		case .normal: return .green
+		case .low: return .yellow
+		case .high: return .red
+		}
+	}
+
+	private func closestDataPoint(to date: Date) -> (date: Date, value: Double)? {
+		guard !chartDataPoints.isEmpty else { return nil }
+		return chartDataPoints.min(by: {
+			abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date))
+		})
+	}
+
+	// MARK: - Data Loading
+
 	private func loadData() async {
 		isLoading = true
 		let start = Calendar.current.date(byAdding: .day, value: -selectedTimeRange.days, to: Date()) ?? Date()
 
 		if let quantityTypeId = sampleType.quantityTypeId, let unit = sampleType.hkUnit {
-			dataPoints = (try? await healthKitService.fetchQuantitySamples(
-				type: quantityTypeId,
-				unit: unit,
-				start: start
+			rawDataPoints = (try? await healthKitService.fetchQuantitySamples(
+				type: quantityTypeId, unit: unit, start: start
 			)) ?? []
+
+			if useAggregatedData {
+				dailyDataPoints = (try? await healthKitService.fetchDailyStatistics(
+					type: quantityTypeId, unit: unit, start: start,
+					aggregation: sampleType.aggregation
+				)) ?? []
+			} else {
+				dailyDataPoints = []
+			}
 		} else if let categoryTypeId = sampleType.categoryTypeId {
 			categoryPoints = (try? await healthKitService.fetchCategorySamples(
-				type: categoryTypeId,
-				start: start
+				type: categoryTypeId, start: start
 			)) ?? []
-		}
-
-		if !dataPoints.isEmpty {
-			let formatter = ISO8601DateFormatter()
-			let monitorData = dataPoints.prefix(14).map { point in
-				MonitorDataPoint(
-					date: formatter.string(from: point.date),
-					value: point.value
-				)
-			}
-			insight = try? await healthService.getMonitorInsight(sampleType: sampleType.id, data: monitorData)
 		}
 
 		isLoading = false
+	}
+
+	private func runAnalysis() async {
+		isAnalyzing = true
+		let formatter = ISO8601DateFormatter()
+		let points = chartDataPoints.map { point in
+			MonitorDataPoint(date: formatter.string(from: point.date), value: point.value)
+		}
+		analysis = try? await healthService.getMonitorAnalysis(
+			sampleType: sampleType.id,
+			data: points,
+			timeRange: selectedTimeRange.rawValue
+		)
+		isAnalyzing = false
 	}
 }

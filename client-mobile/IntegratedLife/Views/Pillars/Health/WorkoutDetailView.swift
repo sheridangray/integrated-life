@@ -72,47 +72,53 @@ struct WorkoutDetailView: View {
 	}
 
 	private func exercisesSection(_ workout: Workout) -> some View {
-		VStack(alignment: .leading, spacing: 12) {
+		VStack(alignment: .leading, spacing: 16) {
 			Text("Exercises")
 				.font(.headline)
 
 			if let exercises = workout.exercises {
-				ForEach(Array(exercises.sorted(by: { $0.order < $1.order }).enumerated()), id: \.element.id) { index, exercise in
-					HStack(spacing: 12) {
-						Text("\(index + 1)")
-							.font(.caption)
-							.fontWeight(.bold)
-							.foregroundStyle(.white)
-							.frame(width: 24, height: 24)
-							.background(loggedExerciseIds.contains(exercise.exerciseId) ? .green : .blue, in: Circle())
+				VStack(spacing: 10) {
+					ForEach(Array(exercises.sorted(by: { $0.order < $1.order }).enumerated()), id: \.element.id) { index, exercise in
+						let isLogged = loggedExerciseIds.contains(exercise.exerciseId)
+						HStack(spacing: 14) {
+							Text("\(index + 1)")
+								.font(.subheadline)
+								.fontWeight(.bold)
+								.foregroundStyle(.white)
+								.frame(width: 28, height: 28)
+								.background(isLogged ? .green : .blue, in: Circle())
 
-						NavigationLink(value: HealthNavDestination.exerciseDetail(exercise.exerciseId)) {
-							VStack(alignment: .leading) {
-								Text(exercise.name ?? exercise.exerciseId)
-									.font(.body)
-									.foregroundStyle(.primary)
-								if let sets = exercise.defaultSets, let reps = exercise.defaultReps {
-									Text("\(sets) sets x \(reps) reps")
-										.font(.caption)
-										.foregroundStyle(.secondary)
+							NavigationLink(value: HealthNavDestination.exerciseDetail(exercise.exerciseId)) {
+								VStack(alignment: .leading, spacing: 3) {
+									Text(exercise.name ?? exercise.exerciseId)
+										.font(.body)
+										.fontWeight(.medium)
+										.foregroundStyle(.primary)
+									if let sets = exercise.defaultSets, let reps = exercise.defaultReps {
+										Text("\(sets) sets x \(reps) reps")
+											.font(.caption)
+											.foregroundStyle(.secondary)
+									}
 								}
 							}
-						}
 
-						Spacer()
+							Spacer()
 
-						if loggedExerciseIds.contains(exercise.exerciseId) {
-							Image(systemName: "checkmark.circle.fill")
-								.foregroundStyle(.green)
-						}
+							if isLogged {
+								Image(systemName: "checkmark.circle.fill")
+									.foregroundStyle(.green)
+							}
 
-						Button("Start") {
-							Task { await startExercise(exercise) }
+							Button("Start") {
+								Task { await startExercise(exercise) }
+							}
+							.buttonStyle(.bordered)
+							.controlSize(.small)
 						}
-						.buttonStyle(.bordered)
-						.controlSize(.small)
+						.padding(.horizontal, 14)
+						.padding(.vertical, 12)
+						.background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
 					}
-					.padding(.vertical, 4)
 				}
 			}
 		}

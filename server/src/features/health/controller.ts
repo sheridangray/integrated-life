@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import type { AuthenticatedRequest } from '../../middleware/auth'
+import { User } from '../../models/User'
 import * as healthService from './service'
 import * as healthAI from './ai'
 import {
@@ -279,6 +280,34 @@ export async function getMonitorInsight(req: AuthenticatedRequest, res: Response
 
 	const data = req.body?.data as Array<{ date: string; value: number }> | undefined
 	const insight = await healthAI.getMonitorInsight(req.params.sampleType, data ?? [])
+	if (!insight) {
+		return res.json({ insight: null, generatedAt: null })
+	}
+	return res.json(insight)
+}
+
+export async function getMonitorAnalysis(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const { data, timeRange } = req.body as {
+		data?: Array<{ date: string; value: number }>
+		timeRange?: string
+	}
+
+	const user = await User.findById(req.user.userId).exec()
+	const userProfile = user ? { gender: user.gender, dateOfBirth: user.dateOfBirth } : undefined
+
+	const insight = await healthAI.getMonitorAnalysis(
+		req.params.sampleType,
+		data ?? [],
+		timeRange ?? '7D',
+		userProfile
+	)
 	if (!insight) {
 		return res.json({ insight: null, generatedAt: null })
 	}

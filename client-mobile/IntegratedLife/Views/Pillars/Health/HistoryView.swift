@@ -77,10 +77,14 @@ struct HistoryView: View {
 		var result: [HistoryDisplayItem] = []
 		for item in history.items {
 			if item.type == "workout" {
-				let childExercises = history.items.filter { exercise in
-					exercise.type == "exercise" &&
-					(item.exerciseLogIds ?? []).contains(exercise.id)
-				}
+				let logIds = item.exerciseLogIds ?? []
+				let childExercises = history.items
+					.filter { exercise in
+						exercise.type == "exercise" && logIds.contains(exercise.id)
+					}
+					.sorted { a, b in
+						(logIds.firstIndex(of: a.id) ?? 0) < (logIds.firstIndex(of: b.id) ?? 0)
+					}
 				result.append(HistoryDisplayItem(item: item, childExercises: childExercises))
 			} else if !workoutExerciseIds.contains(item.id) {
 				result.append(HistoryDisplayItem(item: item, childExercises: []))

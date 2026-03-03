@@ -103,6 +103,74 @@ final class HealthKitService: ObservableObject {
 		}
 	}
 
+	// MARK: - Daily Aggregated Statistics
+
+	func fetchDailyStatistics(
+		type: HKQuantityTypeIdentifier,
+		unit: HKUnit,
+		start: Date,
+		end: Date = Date(),
+		aggregation: AggregationStrategy
+	) async throws -> [(date: Date, value: Double, min: Double?, max: Double?)] {
+		guard let quantityType = HKQuantityType.quantityType(forIdentifier: type) else { return [] }
+
+		let calendar = Calendar.current
+		let anchorDate = calendar.startOfDay(for: start)
+		let interval = DateComponents(day: 1)
+
+		let options: HKStatisticsOptions
+		switch aggregation {
+		case .cumulative:
+			options = .cumulativeSum
+		case .average:
+			options = [.discreteAverage, .discreteMin, .discreteMax]
+		default:
+			return []
+		}
+
+		let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+
+		return try await withCheckedThrowingContinuation { continuation in
+			let query = HKStatisticsCollectionQuery(
+				quantityType: quantityType,
+				quantitySamplePredicate: predicate,
+				options: options,
+				anchorDate: anchorDate,
+				intervalComponents: interval
+			)
+
+			query.initialResultsHandler = { _, collection, error in
+				if let error {
+					continuation.resume(throwing: error)
+					return
+				}
+
+				var results: [(date: Date, value: Double, min: Double?, max: Double?)] = []
+				collection?.enumerateStatistics(from: start, to: end) { stats, _ in
+					let value: Double?
+					switch aggregation {
+					case .cumulative:
+						value = stats.sumQuantity()?.doubleValue(for: unit)
+					case .average:
+						value = stats.averageQuantity()?.doubleValue(for: unit)
+					default:
+						value = nil
+					}
+
+					guard let value, value > 0 else { return }
+
+					let minVal = stats.minimumQuantity()?.doubleValue(for: unit)
+					let maxVal = stats.maximumQuantity()?.doubleValue(for: unit)
+					results.append((date: stats.startDate, value: value, min: minVal, max: maxVal))
+				}
+
+				continuation.resume(returning: results)
+			}
+
+			healthStore.execute(query)
+		}
+	}
+
 	// MARK: - Read Category Samples
 
 	func fetchCategorySamples(

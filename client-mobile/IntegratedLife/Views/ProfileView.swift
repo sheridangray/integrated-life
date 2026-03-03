@@ -5,6 +5,13 @@ struct ProfileView: View {
 	@ObservedObject var healthKitService: HealthKitService
 	@StateObject private var notificationState = NotificationState()
 
+	@State private var selectedGender: String = ""
+	@State private var selectedDOB: Date = Calendar.current.date(byAdding: .year, value: -30, to: Date()) ?? Date()
+	@State private var hasDOB = false
+	@State private var isProfileLoaded = false
+
+	private let genderOptions = ["female", "male", "other"]
+
 	var body: some View {
 		NavigationStack {
 			List {
@@ -22,6 +29,34 @@ struct ProfileView: View {
 
 					Button("Sign out", role: .destructive) {
 						authState.signOut()
+					}
+				}
+
+				Section("Personal Info") {
+					Picker("Gender", selection: $selectedGender) {
+						Text("Not set").tag("")
+						ForEach(genderOptions, id: \.self) { option in
+							Text(option.capitalized).tag(option)
+						}
+					}
+					.onChange(of: selectedGender) {
+						guard isProfileLoaded else { return }
+						Task { await authState.updateProfile(gender: selectedGender.isEmpty ? nil : selectedGender, dateOfBirth: nil) }
+					}
+
+					if hasDOB {
+						DatePicker("Date of Birth", selection: $selectedDOB, in: ...Date(), displayedComponents: .date)
+							.onChange(of: selectedDOB) {
+								guard isProfileLoaded else { return }
+								let formatter = ISO8601DateFormatter()
+								Task { await authState.updateProfile(gender: nil, dateOfBirth: formatter.string(from: selectedDOB)) }
+							}
+					} else {
+						Button("Set Date of Birth") {
+							hasDOB = true
+							let formatter = ISO8601DateFormatter()
+							Task { await authState.updateProfile(gender: nil, dateOfBirth: formatter.string(from: selectedDOB)) }
+						}
 					}
 				}
 
@@ -58,6 +93,18 @@ struct ProfileView: View {
 			#endif
 			}
 			.navigationTitle("Profile")
+			.onAppear {
+				guard !isProfileLoaded, let user = authState.user else { return }
+				selectedGender = user.gender ?? ""
+				if let dob = user.dateOfBirth {
+					let formatter = ISO8601DateFormatter()
+					if let date = formatter.date(from: dob) {
+						selectedDOB = date
+						hasDOB = true
+					}
+				}
+				isProfileLoaded = true
+			}
 		}
 	}
 }

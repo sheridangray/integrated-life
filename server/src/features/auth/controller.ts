@@ -50,6 +50,57 @@ export async function me(req: AuthenticatedRequest, res: Response) {
 		id: user._id.toString(),
 		email: user.email,
 		name: user.name,
-		avatarUrl: user.avatarUrl ?? null
+		avatarUrl: user.avatarUrl ?? null,
+		gender: user.gender ?? null,
+		dateOfBirth: user.dateOfBirth?.toISOString() ?? null
+	})
+}
+
+export async function updateProfile(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: (req as Request & { id?: string }).id
+		})
+	}
+
+	const { gender, dateOfBirth } = req.body as { gender?: string; dateOfBirth?: string }
+
+	const update: Record<string, unknown> = {}
+	if (gender !== undefined) {
+		if (!['female', 'male', 'other'].includes(gender)) {
+			return res.status(400).json({
+				error: { code: 'VALIDATION_ERROR', message: 'Gender must be female, male, or other' },
+				requestId: (req as Request & { id?: string }).id
+			})
+		}
+		update.gender = gender
+	}
+	if (dateOfBirth !== undefined) {
+		const parsed = new Date(dateOfBirth)
+		if (isNaN(parsed.getTime())) {
+			return res.status(400).json({
+				error: { code: 'VALIDATION_ERROR', message: 'Invalid date of birth' },
+				requestId: (req as Request & { id?: string }).id
+			})
+		}
+		update.dateOfBirth = parsed
+	}
+
+	const user = await User.findByIdAndUpdate(req.user.userId, update, { new: true }).exec()
+	if (!user) {
+		return res.status(404).json({
+			error: { code: 'NOT_FOUND', message: 'User not found' },
+			requestId: (req as Request & { id?: string }).id
+		})
+	}
+
+	return res.json({
+		id: user._id.toString(),
+		email: user.email,
+		name: user.name,
+		avatarUrl: user.avatarUrl ?? null,
+		gender: user.gender ?? null,
+		dateOfBirth: user.dateOfBirth?.toISOString() ?? null
 	})
 }
