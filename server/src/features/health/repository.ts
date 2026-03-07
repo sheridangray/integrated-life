@@ -173,9 +173,22 @@ export async function findWorkoutLogById(
 ): Promise<WorkoutLogDocument | null> {
 	if (!mongoose.isValidObjectId(logId)) return null
 	return WorkoutLog.findOne({ _id: logId, userId })
-		.populate('exerciseLogIds')
+		.populate({ path: 'exerciseLogIds', populate: { path: 'exerciseId' } })
 		.populate('workoutId')
 		.exec()
+}
+
+export async function updateWorkoutLogInsight(
+	userId: string,
+	logId: string,
+	insight: Record<string, unknown>
+): Promise<boolean> {
+	if (!mongoose.isValidObjectId(logId)) return false
+	const result = await WorkoutLog.updateOne(
+		{ _id: logId, userId },
+		{ $set: { workoutInsight: insight } }
+	).exec()
+	return result.modifiedCount > 0
 }
 
 // --- History ---

@@ -4,6 +4,7 @@ struct WorkoutSummaryData: Identifiable {
 	let id = UUID()
 	let workoutName: String
 	let exerciseLogIds: [String]
+	let workoutLogId: String
 }
 
 struct WorkoutDetailView: View {
@@ -71,7 +72,8 @@ struct WorkoutDetailView: View {
 		}) { data in
 			WorkoutSummaryView(
 				workoutName: data.workoutName,
-				exerciseLogIds: data.exerciseLogIds
+				exerciseLogIds: data.exerciseLogIds,
+				workoutLogId: data.workoutLogId
 			)
 		}
 	}
@@ -218,11 +220,12 @@ struct WorkoutDetailView: View {
 		)
 
 		do {
-			_ = try await healthService.logWorkout(request: request)
+			let log = try await healthService.logWorkout(request: request)
 			try? await HealthKitService.shared.saveWorkout(start: start, end: end)
 			workoutSummaryData = WorkoutSummaryData(
 				workoutName: workout?.name ?? "Workout",
-				exerciseLogIds: session.exerciseLogIds
+				exerciseLogIds: session.exerciseLogIds,
+				workoutLogId: log.id
 			)
 		} catch {}
 		isSaving = false

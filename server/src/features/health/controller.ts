@@ -295,7 +295,10 @@ export async function getWorkoutInsight(req: AuthenticatedRequest, res: Response
 		})
 	}
 
-	const { exerciseLogIds } = req.body as { exerciseLogIds?: string[] }
+	const { exerciseLogIds, workoutLogId } = req.body as {
+		exerciseLogIds?: string[]
+		workoutLogId?: string
+	}
 	if (!exerciseLogIds || !Array.isArray(exerciseLogIds) || exerciseLogIds.length === 0) {
 		logger.warn('Workout insight request missing exerciseLogIds', {
 			body: JSON.stringify(req.body),
@@ -315,6 +318,11 @@ export async function getWorkoutInsight(req: AuthenticatedRequest, res: Response
 		})
 		return res.json({ exerciseInsights: [], overallInsight: null, generatedAt: null })
 	}
+
+	if (workoutLogId) {
+		await healthService.saveWorkoutInsight(req.user.userId, workoutLogId, insight)
+	}
+
 	return res.json(insight)
 }
 

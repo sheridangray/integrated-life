@@ -106,6 +106,10 @@ final class HealthService {
 		try await api.get(path: "/v1/history/\(type)/\(id)", token: try await token(), as: ExerciseLog.self)
 	}
 
+	func fetchWorkoutHistoryDetail(id: String) async throws -> WorkoutHistoryDetail {
+		try await api.get(path: "/v1/history/workout/\(id)", token: try await token(), as: WorkoutHistoryDetail.self)
+	}
+
 	// MARK: - AI Insights
 
 	func getExerciseInsight(exerciseId: String) async throws -> AIInsight {
@@ -126,8 +130,8 @@ final class HealthService {
 		return try await api.post(path: "/v1/health/insights/monitor/\(sampleType)/analyze", body: request, token: try await token(), as: AIInsight.self)
 	}
 
-	func getWorkoutInsight(exerciseLogIds: [String]) async throws -> WorkoutInsightResponse {
-		let request = WorkoutInsightRequest(exerciseLogIds: exerciseLogIds)
+	func getWorkoutInsight(exerciseLogIds: [String], workoutLogId: String? = nil) async throws -> WorkoutInsightResponse {
+		let request = WorkoutInsightRequest(exerciseLogIds: exerciseLogIds, workoutLogId: workoutLogId)
 		return try await api.post(path: "/v1/health/insights/workout", body: request, token: try await token(), as: WorkoutInsightResponse.self)
 	}
 }
@@ -152,4 +156,5 @@ struct MonitorAnalysisRequest: Codable {
 
 struct WorkoutInsightRequest: Codable {
 	let exerciseLogIds: [String]
+	let workoutLogId: String?
 }

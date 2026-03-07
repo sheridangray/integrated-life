@@ -302,6 +302,14 @@ export async function getHistory(
 	}
 }
 
+export async function saveWorkoutInsight(
+	userId: string,
+	workoutLogId: string,
+	insight: Record<string, unknown>
+) {
+	await repo.updateWorkoutLogInsight(userId, workoutLogId, insight)
+}
+
 export async function getHistoryDetail(userId: string, type: string, id: string) {
 	if (type === 'exercise') {
 		const log = await repo.findExerciseLogById(userId, id)
@@ -322,15 +330,33 @@ export async function getHistoryDetail(userId: string, type: string, id: string)
 	if (type === 'workout') {
 		const log = await repo.findWorkoutLogById(userId, id)
 		if (!log) throw new AppError('Workout log not found', 404)
+
+		const populatedLogs = log.exerciseLogIds as unknown as Array<{
+			_id: { toString(): string }
+			exerciseId: { _id: { toString(): string }; name: string } | string
+			date: string
+			resistanceType: string
+			sets: unknown[]
+			notes?: string
+		}>
+
 		return {
 			type: 'workout',
 			id: log._id.toString(),
-			workoutId: log.workoutId.toString(),
+			workoutName: (log.workoutId as unknown as { name: string })?.name ?? 'Workout',
 			date: log.date,
 			startTime: log.startTime,
 			endTime: log.endTime,
-			exerciseLogIds: log.exerciseLogIds.map((eid) => eid.toString()),
-			completedAll: log.completedAll
+			completedAll: log.completedAll,
+			exercises: populatedLogs.map((el) => ({
+				id: el._id.toString(),
+				exerciseName: typeof el.exerciseId === 'object' ? el.exerciseId.name : 'Exercise',
+				date: el.date,
+				resistanceType: el.resistanceType,
+				sets: el.sets,
+				notes: el.notes ?? null
+			})),
+			workoutInsight: log.workoutInsight ?? null
 		}
 	}
 

@@ -86,12 +86,21 @@ function mockWorkoutLogDoc(overrides: Record<string, unknown> = {}) {
 	return {
 		_id: { toString: () => 'wlog-id-1' },
 		userId: { toString: () => 'user-1' },
-		workoutId: { toString: () => 'w-id-1' },
+		workoutId: { toString: () => 'w-id-1', name: 'Push Day' },
 		date: '2026-02-16',
 		startTime: '09:00',
 		endTime: '10:00',
-		exerciseLogIds: [{ toString: () => 'log-id-1' }],
+		exerciseLogIds: [{
+			_id: { toString: () => 'log-id-1' },
+			exerciseId: { _id: { toString: () => 'ex-1' }, name: 'Bench Press' },
+			date: '2026-02-16',
+			resistanceType: 'Weights (Free)',
+			sets: [{ setNumber: 1, weight: 135, reps: 10 }],
+			notes: null,
+			toString: () => 'log-id-1',
+		}],
 		completedAll: true,
+		workoutInsight: null,
 		...overrides,
 	}
 }
@@ -448,7 +457,15 @@ describe('getHistoryDetail', () => {
 
 		const result = await service.getHistoryDetail('user-1', 'workout', 'wlog-id-1')
 
-		expect(result).toEqual(expect.objectContaining({ type: 'workout', id: 'wlog-id-1' }))
+		expect(result).toEqual(expect.objectContaining({
+			type: 'workout',
+			id: 'wlog-id-1',
+			workoutName: 'Push Day',
+			completedAll: true,
+			exercises: expect.arrayContaining([
+				expect.objectContaining({ id: 'log-id-1', exerciseName: 'Bench Press' })
+			]),
+		}))
 	})
 
 	it('throws 404 when exercise log not found', async () => {

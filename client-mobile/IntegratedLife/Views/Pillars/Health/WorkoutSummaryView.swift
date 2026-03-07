@@ -3,6 +3,7 @@ import SwiftUI
 struct WorkoutSummaryView: View {
 	let workoutName: String
 	let exerciseLogIds: [String]
+	let workoutLogId: String
 
 	@Environment(\.dismiss) private var dismiss
 
@@ -164,7 +165,10 @@ struct WorkoutSummaryView: View {
 		isLoading = true
 		error = nil
 		do {
-			workoutInsight = try await healthService.getWorkoutInsight(exerciseLogIds: exerciseLogIds)
+			workoutInsight = try await healthService.getWorkoutInsight(
+				exerciseLogIds: exerciseLogIds,
+				workoutLogId: workoutLogId
+			)
 		} catch {
 			self.error = error.localizedDescription
 		}

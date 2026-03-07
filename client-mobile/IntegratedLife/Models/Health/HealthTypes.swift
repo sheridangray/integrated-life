@@ -89,3 +89,24 @@ struct ExerciseInsightItem: Codable, Identifiable {
 
 	var id: String { exerciseId }
 }
+
+struct WorkoutHistoryDetail: Codable {
+	let type: String
+	let id: String
+	let workoutName: String
+	let date: String
+	let startTime: String
+	let endTime: String
+	let completedAll: Bool
+	let exercises: [WorkoutHistoryExercise]
+	let workoutInsight: WorkoutInsightResponse?
+}
+
+struct WorkoutHistoryExercise: Codable, Identifiable {
+	let id: String
+	let exerciseName: String
+	let date: String
+	let resistanceType: String
+	let sets: [ExerciseSet]
+	let notes: String?
+}

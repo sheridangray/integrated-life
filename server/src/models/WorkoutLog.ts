@@ -1,5 +1,11 @@
 import mongoose, { Schema, Document, Model } from 'mongoose'
 
+export type WorkoutInsightData = {
+	exerciseInsights: Array<{ exerciseId: string; exerciseName: string; insight: string }>
+	overallInsight: string
+	generatedAt: string
+}
+
 export type WorkoutLogDocument = Document & {
 	userId: mongoose.Types.ObjectId
 	workoutId: mongoose.Types.ObjectId
@@ -8,6 +14,7 @@ export type WorkoutLogDocument = Document & {
 	endTime: string
 	exerciseLogIds: mongoose.Types.ObjectId[]
 	completedAll: boolean
+	workoutInsight?: WorkoutInsightData
 	createdAt: Date
 	updatedAt: Date
 }
@@ -20,7 +27,8 @@ const workoutLogSchema = new Schema<WorkoutLogDocument>(
 		startTime: { type: String, required: true },
 		endTime: { type: String, required: true },
 		exerciseLogIds: [{ type: Schema.Types.ObjectId, ref: 'ExerciseLog' }],
-		completedAll: { type: Boolean, default: false }
+		completedAll: { type: Boolean, default: false },
+		workoutInsight: { type: Schema.Types.Mixed }
 	},
 	{ timestamps: true }
 )
