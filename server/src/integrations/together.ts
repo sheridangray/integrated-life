@@ -17,7 +17,8 @@ function getClient(): Together | null {
 
 export async function chatCompletion(
 	systemPrompt: string,
-	userMessage: string
+	userMessage: string,
+	options?: { maxTokens?: number }
 ): Promise<string | null> {
 	const together = getClient()
 	if (!together) return null
@@ -29,7 +30,7 @@ export async function chatCompletion(
 				{ role: 'system', content: systemPrompt },
 				{ role: 'user', content: userMessage }
 			],
-			max_tokens: 300,
+			max_tokens: options?.maxTokens ?? 300,
 			temperature: 0.7
 		})
 

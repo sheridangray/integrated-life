@@ -18,13 +18,15 @@ struct WorkoutSummaryView: View {
 				VStack(alignment: .leading, spacing: 20) {
 					completionHeader
 
-					if isLoading {
-						loadingSection
-					} else if let error {
-						errorSection(error)
-					} else if let workoutInsight {
-						insightsContent(workoutInsight)
-					}
+				if isLoading {
+					loadingSection
+				} else if let error {
+					errorSection(error)
+				} else if let workoutInsight, hasInsightContent(workoutInsight) {
+					insightsContent(workoutInsight)
+				} else {
+					unavailableSection
+				}
 				}
 				.padding()
 			}
@@ -83,6 +85,24 @@ struct WorkoutSummaryView: View {
 		}
 		.frame(maxWidth: .infinity)
 		.padding(.vertical, 20)
+	}
+
+	private var unavailableSection: some View {
+		VStack(spacing: 8) {
+			Text("AI insights aren't available right now")
+				.font(.subheadline)
+				.foregroundStyle(.secondary)
+			Button("Retry") {
+				Task { await loadInsight() }
+			}
+			.buttonStyle(.bordered)
+		}
+		.frame(maxWidth: .infinity)
+		.padding(.vertical, 20)
+	}
+
+	private func hasInsightContent(_ insight: WorkoutInsightResponse) -> Bool {
+		!insight.exerciseInsights.isEmpty || insight.overallInsight != nil
 	}
 
 	private func insightsContent(_ insight: WorkoutInsightResponse) -> some View {

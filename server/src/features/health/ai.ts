@@ -1,4 +1,5 @@
 import { chatCompletion } from '../../integrations/together'
+import { logger } from '../../lib/logger'
 import * as repo from './repository'
 import type { AIInsight, WorkoutInsight } from './types'
 
@@ -237,12 +238,19 @@ ${exerciseSummaries.map((e) => `- ${e.summary}`).join('\n')}
 
 Provide per-exercise insights and an overall workout assessment. Return valid JSON matching the specified format. Use the exerciseId values provided: ${exerciseSummaries.map((e) => e.exerciseId).join(', ')}`
 
-	const response = await chatCompletion(WORKOUT_SUMMARY_SYSTEM_PROMPT, userMessage)
-	if (!response) return null
+	const maxTokens = 150 + exerciseSummaries.length * 100
+	const response = await chatCompletion(WORKOUT_SUMMARY_SYSTEM_PROMPT, userMessage, { maxTokens })
+	if (!response) {
+		logger.warn('Workout insight chatCompletion returned null', { exerciseCount: exerciseSummaries.length })
+		return null
+	}
 
 	try {
 		const jsonMatch = response.match(/\{[\s\S]*\}/)
-		if (!jsonMatch) return null
+		if (!jsonMatch) {
+			logger.warn('Workout insight response had no JSON', { response: response.slice(0, 500) })
+			return null
+		}
 
 		const parsed = JSON.parse(jsonMatch[0]) as {
 			exercises: Array<{ exerciseId: string; insight: string }>
@@ -261,7 +269,11 @@ Provide per-exercise insights and an overall workout assessment. Return valid JS
 			overallInsight: parsed.overall,
 			generatedAt: new Date().toISOString()
 		}
-	} catch {
+	} catch (err) {
+		logger.warn('Workout insight JSON parse failed', {
+			error: (err as Error).message,
+			response: response.slice(0, 500)
+		})
 		return null
 	}
 }
