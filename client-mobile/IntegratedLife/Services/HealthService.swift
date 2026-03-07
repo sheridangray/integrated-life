@@ -125,6 +125,11 @@ final class HealthService {
 		let request = MonitorAnalysisRequest(data: data, timeRange: timeRange)
 		return try await api.post(path: "/v1/health/insights/monitor/\(sampleType)/analyze", body: request, token: try await token(), as: AIInsight.self)
 	}
+
+	func getWorkoutInsight(exerciseLogIds: [String]) async throws -> WorkoutInsightResponse {
+		let request = WorkoutInsightRequest(exerciseLogIds: exerciseLogIds)
+		return try await api.post(path: "/v1/health/insights/workout", body: request, token: try await token(), as: WorkoutInsightResponse.self)
+	}
 }
 
 struct FavoriteResponse: Codable {
@@ -143,4 +148,8 @@ struct MonitorInsightRequest: Codable {
 struct MonitorAnalysisRequest: Codable {
 	let data: [MonitorDataPoint]
 	let timeRange: String
+}
+
+struct WorkoutInsightRequest: Codable {
+	let exerciseLogIds: [String]
 }

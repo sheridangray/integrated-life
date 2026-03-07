@@ -60,6 +60,7 @@
 		9DC80FDFCE35BA8297082CD0 /* ContributorDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A78B0F4E40BBC472820159CF /* ContributorDetailView.swift */; };
 		A06D3A0767E95EC7D4B790D0 /* MonitorDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A797A6F8CC6AD67E519A5D9 /* MonitorDetailView.swift */; };
 		AE0019C690B5C45A2106DAB9 /* HealthKitDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE22672B8A005BFF69D4413D /* HealthKitDataTypes.swift */; };
+		AE0019C690B5C45A2106DAC0 /* HealthKitDataTypeMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE22672B8A005BFF69D4413E /* HealthKitDataTypeMetadata.swift */; };
 		B13C2ECC114862E8D026CFCE /* HealthPillarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 482D08FF7231CA7FAF17C482 /* HealthPillarView.swift */; };
 		B2960A4821258EAC41412559 /* WorkoutLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18103C8DA7DFD94F7F258A3 /* WorkoutLog.swift */; };
 		BA0AFBB8E53C222BBBD9E3F4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDBE1D4DCD0716314753933D /* ContentView.swift */; };
@@ -78,6 +79,8 @@
 		F32DDE56C2AEA2FF0BB30AA5 /* HealthKitIntegrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 952C811DD97A65436093967C /* HealthKitIntegrationView.swift */; };
 		F4175675B4BE13D0614D5843 /* IntegrationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D9DB39F45C52D374DF0293A /* IntegrationsView.swift */; };
 		F770B53826A3E79E1BE45FDF /* PillarsOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 931D1968BC86A3D09146DD4E /* PillarsOverviewView.swift */; };
+		AA11BB22CC33DD44EE55FF0B /* WorkoutSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF0C /* WorkoutSession.swift */; };
+		AA11BB22CC33DD44EE55FF0D /* WorkoutSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF0E /* WorkoutSummaryView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -140,6 +143,7 @@
 		C15EAB6BE9BBEB1E6F6DFFB1 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		CB1ECC5828ACDF51388DFC72 /* NotificationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationState.swift; sourceTree = "<group>"; };
 		CE22672B8A005BFF69D4413D /* HealthKitDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitDataTypes.swift; sourceTree = "<group>"; };
+		CE22672B8A005BFF69D4413E /* HealthKitDataTypeMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitDataTypeMetadata.swift; sourceTree = "<group>"; };
 		CF5332ACF6A1987ED117D708 /* SleepState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepState.swift; sourceTree = "<group>"; };
 		D495646162D0FF25F6CEDFCB /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
 		D96E88729B10F91889D99A3E /* WorkoutDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailView.swift; sourceTree = "<group>"; };
@@ -154,6 +158,8 @@
 		F0F52383F471281EB99FAA85 /* AuthState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthState.swift; sourceTree = "<group>"; };
 		F4B4B8225CEE2204942368A6 /* MonitorGatingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorGatingView.swift; sourceTree = "<group>"; };
 		FDBE1D4DCD0716314753933D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF0C /* WorkoutSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSession.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF0E /* WorkoutSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSummaryView.swift; sourceTree = "<group>"; };
 		"TEMP_05C58F87-92B6-4407-A23A-F9BF8EE09EF3" /* Config.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.Release.xcconfig; sourceTree = "<group>"; };
 		"TEMP_7BF0EBEE-14BE-4AB9-8E8C-86C11F18E3CD" /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -184,10 +190,12 @@
 				B3E5DA665D4FBDB0DA727173 /* Exercise.swift */,
 				33C417B2CCF9A1AB9B9C8303 /* ExerciseLog.swift */,
 				CE22672B8A005BFF69D4413D /* HealthKitDataTypes.swift */,
+				CE22672B8A005BFF69D4413E /* HealthKitDataTypeMetadata.swift */,
 				79FE69BAAFD3C74E703AD21B /* HealthTypes.swift */,
 				E9B3B4C00F42968A571709D6 /* HistoryItem.swift */,
 				EB957B44064BF54C4C6C5DA1 /* Workout.swift */,
 				A18103C8DA7DFD94F7F258A3 /* WorkoutLog.swift */,
+				AA11BB22CC33DD44EE55FF0C /* WorkoutSession.swift */,
 			);
 			path = Health;
 			sourceTree = "<group>";
@@ -399,6 +407,7 @@
 				411018643E9E366A566D94AC /* MonitorListView.swift */,
 				D96E88729B10F91889D99A3E /* WorkoutDetailView.swift */,
 				321124BDF58808A3877BA209 /* WorkoutListView.swift */,
+				AA11BB22CC33DD44EE55FF0E /* WorkoutSummaryView.swift */,
 			);
 			path = Health;
 			sourceTree = "<group>";
@@ -500,6 +509,7 @@
 				6B0F5AA426897D9092F3FA47 /* ExerciseListView.swift in Sources */,
 				6B391D0BD111C5865C8982AF /* ExerciseLog.swift in Sources */,
 				AE0019C690B5C45A2106DAB9 /* HealthKitDataTypes.swift in Sources */,
+				AE0019C690B5C45A2106DAC0 /* HealthKitDataTypeMetadata.swift in Sources */,
 				F32DDE56C2AEA2FF0BB30AA5 /* HealthKitIntegrationView.swift in Sources */,
 				BF4C3C13433BF5B565987724 /* HealthKitService.swift in Sources */,
 				B13C2ECC114862E8D026CFCE /* HealthPillarView.swift in Sources */,
@@ -553,6 +563,8 @@
 				BB22CC33DD44EE55FF66AA04 /* TimeService.swift in Sources */,
 				BB22CC33DD44EE55FF66AA05 /* TimeState.swift in Sources */,
 				B2960A4821258EAC41412559 /* WorkoutLog.swift in Sources */,
+				AA11BB22CC33DD44EE55FF0B /* WorkoutSession.swift in Sources */,
+				AA11BB22CC33DD44EE55FF0D /* WorkoutSummaryView.swift in Sources */,
 				3551B52CE53322C728F528AF /* WorkoutNotificationScheduler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

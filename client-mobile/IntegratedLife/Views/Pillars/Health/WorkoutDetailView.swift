@@ -1,8 +1,15 @@
 import SwiftUI
 
+struct WorkoutSummaryData: Identifiable {
+	let id = UUID()
+	let workoutName: String
+	let exerciseLogIds: [String]
+}
+
 struct WorkoutDetailView: View {
 	let workoutId: String
 	@Binding var selectedTab: HealthTab
+	@ObservedObject var healthState: HealthState
 
 	@Environment(\.dismiss) private var dismiss
 
@@ -11,12 +18,12 @@ struct WorkoutDetailView: View {
 	@State private var showEditSheet = false
 	@State private var showExerciseLogSheet = false
 	@State private var exerciseToLog: Exercise?
-	@State private var exerciseLogIds: [String] = []
-	@State private var loggedExerciseIds: Set<String> = []
-	@State private var workoutStartTime: Date?
 	@State private var isSaving = false
+	@State private var workoutSummaryData: WorkoutSummaryData?
 
 	private let healthService = HealthService.shared
+
+	private var session: WorkoutSession? { healthState.activeWorkoutSession }
 
 	var body: some View {
 		ScrollView {
@@ -36,6 +43,14 @@ struct WorkoutDetailView: View {
 		.task {
 			await loadWorkout()
 		}
+		.onAppear {
+			ensureSession()
+		}
+		.onDisappear {
+			if workoutSummaryData == nil {
+				clearSessionIfOwned()
+			}
+		}
 		.sheet(isPresented: $showEditSheet) {
 			Task { await loadWorkout() }
 		} content: {
@@ -46,10 +61,34 @@ struct WorkoutDetailView: View {
 		.sheet(isPresented: $showExerciseLogSheet) {
 			if let exerciseToLog {
 				LogExerciseView(exercise: exerciseToLog, workoutId: workoutId) { log in
-					exerciseLogIds.append(log.id)
-					loggedExerciseIds.insert(exerciseToLog.id)
+					session?.recordExerciseLog(exerciseId: exerciseToLog.id, logId: log.id)
 				}
 			}
+		}
+		.sheet(item: $workoutSummaryData, onDismiss: {
+			selectedTab = .history
+			dismiss()
+		}) { data in
+			WorkoutSummaryView(
+				workoutName: data.workoutName,
+				exerciseLogIds: data.exerciseLogIds
+			)
+		}
+	}
+
+	private func ensureSession() {
+		guard let workout else { return }
+		if healthState.activeWorkoutSession?.workoutId != workoutId {
+			healthState.activeWorkoutSession = WorkoutSession(
+				workoutId: workoutId,
+				workoutName: workout.name
+			)
+		}
+	}
+
+	private func clearSessionIfOwned() {
+		if healthState.activeWorkoutSession?.workoutId == workoutId {
+			healthState.activeWorkoutSession = nil
 		}
 	}
 
@@ -79,7 +118,7 @@ struct WorkoutDetailView: View {
 			if let exercises = workout.exercises {
 				VStack(spacing: 10) {
 					ForEach(Array(exercises.sorted(by: { $0.order < $1.order }).enumerated()), id: \.element.id) { index, exercise in
-						let isLogged = loggedExerciseIds.contains(exercise.exerciseId)
+						let isLogged = session?.loggedExerciseIds.contains(exercise.exerciseId) ?? false
 						HStack(spacing: 14) {
 							Text("\(index + 1)")
 								.font(.subheadline)
@@ -132,7 +171,7 @@ struct WorkoutDetailView: View {
 				Label("Finish Workout", systemImage: "checkmark.circle.fill")
 			}
 			.buttonStyle(SuccessButtonStyle())
-			.disabled(exerciseLogIds.isEmpty || isSaving)
+			.disabled(session?.exerciseLogIds.isEmpty != false || isSaving)
 
 			if !workout.isGlobal {
 				Button {
@@ -146,9 +185,7 @@ struct WorkoutDetailView: View {
 	}
 
 	private func startExercise(_ workoutExercise: WorkoutExercise) async {
-		if workoutStartTime == nil {
-			workoutStartTime = Date()
-		}
+		session?.startTime = session?.startTime ?? Date()
 		do {
 			exerciseToLog = try await healthService.fetchExercise(id: workoutExercise.exerciseId)
 			showExerciseLogSheet = true
@@ -159,13 +196,15 @@ struct WorkoutDetailView: View {
 		isLoading = true
 		do {
 			workout = try await healthService.fetchWorkout(id: workoutId)
+			ensureSession()
 		} catch {}
 		isLoading = false
 	}
 
 	private func finishWorkout() async {
+		guard let session else { return }
 		isSaving = true
-		let start = workoutStartTime ?? Date()
+		let start = session.startTime ?? Date()
 		let end = Date()
 		let formatter = ISO8601DateFormatter()
 
@@ -174,15 +213,17 @@ struct WorkoutDetailView: View {
 			date: formatter.string(from: start),
 			startTime: formatter.string(from: start),
 			endTime: formatter.string(from: end),
-			exerciseLogIds: exerciseLogIds,
-			completedAll: loggedExerciseIds.count == (workout?.exercises?.count ?? 0)
+			exerciseLogIds: session.exerciseLogIds,
+			completedAll: session.loggedExerciseIds.count == (workout?.exercises?.count ?? 0)
 		)
 
 		do {
 			_ = try await healthService.logWorkout(request: request)
 			try? await HealthKitService.shared.saveWorkout(start: start, end: end)
-			selectedTab = .history
-			dismiss()
+			workoutSummaryData = WorkoutSummaryData(
+				workoutName: workout?.name ?? "Workout",
+				exerciseLogIds: session.exerciseLogIds
+			)
 		} catch {}
 		isSaving = false
 	}

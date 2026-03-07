@@ -11,10 +11,12 @@ struct MonitorDetailView: View {
 	@State private var dailyDataPoints: [(date: Date, value: Double, min: Double?, max: Double?)] = []
 	@State private var categoryPoints: [(date: Date, value: Int)] = []
 	@State private var analysis: AIInsight?
+	@State private var analysisError: String?
 	@State private var isLoading = true
 	@State private var isAnalyzing = false
 	@State private var selectedTimeRange: TimeRange = .week
 	@State private var selectedDataPoint: (date: Date, value: Double)?
+	@State private var showRecentReadings = false
 
 	private let healthService = HealthService.shared
 
@@ -56,13 +58,13 @@ struct MonitorDetailView: View {
 			VStack(alignment: .leading, spacing: 20) {
 				headerSection
 				timeRangePicker
-				blurbSection
 
 				if sampleType.isCategoryType {
 					categoryDataSection
 				} else {
-					analyzeButton
 					chartSection
+					blurbSection
+					analyzeButton
 					dataListSection
 				}
 			}
@@ -74,6 +76,7 @@ struct MonitorDetailView: View {
 		}
 		.onChange(of: selectedTimeRange) {
 			analysis = nil
+			analysisError = nil
 			Task { await loadData() }
 		}
 	}
@@ -128,18 +131,6 @@ struct MonitorDetailView: View {
 
 	@ViewBuilder
 	private var analyzeButton: some View {
-		if let analysisText = analysis?.insight {
-			VStack(alignment: .leading, spacing: 8) {
-				Label("Analysis", systemImage: "stethoscope")
-					.font(.headline)
-					.foregroundStyle(.purple)
-				Text(analysisText)
-					.font(.subheadline)
-					.padding()
-					.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-			}
-		}
-
 		Button {
 			Task { await runAnalysis() }
 		} label: {
@@ -159,6 +150,28 @@ struct MonitorDetailView: View {
 		.buttonStyle(.bordered)
 		.tint(.purple)
 		.disabled(isAnalyzing || chartDataPoints.isEmpty)
+
+		if let analysisText = analysis?.insight {
+			VStack(alignment: .leading, spacing: 8) {
+				Label("Analysis", systemImage: "stethoscope")
+					.font(.headline)
+					.foregroundStyle(.purple)
+				Text(analysisText)
+					.font(.subheadline)
+					.padding()
+					.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+			}
+		}
+
+		if let error = analysisError {
+			HStack(spacing: 6) {
+				Image(systemName: "exclamationmark.triangle.fill")
+					.foregroundStyle(.orange)
+				Text(error)
+					.font(.caption)
+					.foregroundStyle(.secondary)
+			}
+		}
 	}
 
 	// MARK: - Chart
@@ -260,19 +273,24 @@ struct MonitorDetailView: View {
 		sampleType.unit.isEmpty ? "Value" : sampleType.unit
 	}
 
-	@ViewBuilder
 	private var selectedDataOverlay: some View {
-		if let selected = selectedDataPoint {
-			HStack(spacing: 8) {
+		HStack(spacing: 8) {
+			if let selected = selectedDataPoint {
 				Text(selected.date, style: .date)
 					.font(.caption)
 					.foregroundStyle(.secondary)
 				Spacer()
 				Text(formatValue(selected.value))
 					.font(.headline)
+			} else {
+				Text(" ")
+					.font(.caption)
+				Spacer()
+				Text(" ")
+					.font(.headline)
 			}
-			.padding(.horizontal, 4)
 		}
+		.padding(.horizontal, 4)
 	}
 
 	// MARK: - Trendline
@@ -368,10 +386,7 @@ struct MonitorDetailView: View {
 	@ViewBuilder
 	private var dataListSection: some View {
 		if !chartDataPoints.isEmpty {
-			VStack(alignment: .leading, spacing: 8) {
-				Text("Recent Readings")
-					.font(.headline)
-
+			DisclosureGroup("Recent Readings", isExpanded: $showRecentReadings) {
 				ForEach(Array(chartDataPoints.prefix(20).enumerated()), id: \.offset) { _, point in
 					HStack {
 						Text(point.date, style: .date)
@@ -383,6 +398,7 @@ struct MonitorDetailView: View {
 					}
 				}
 			}
+			.font(.headline)
 		}
 	}
 
@@ -444,15 +460,20 @@ struct MonitorDetailView: View {
 
 	private func runAnalysis() async {
 		isAnalyzing = true
+		analysisError = nil
 		let formatter = ISO8601DateFormatter()
 		let points = chartDataPoints.map { point in
 			MonitorDataPoint(date: formatter.string(from: point.date), value: point.value)
 		}
-		analysis = try? await healthService.getMonitorAnalysis(
-			sampleType: sampleType.id,
-			data: points,
-			timeRange: selectedTimeRange.rawValue
-		)
+		do {
+			analysis = try await healthService.getMonitorAnalysis(
+				sampleType: sampleType.id,
+				data: points,
+				timeRange: selectedTimeRange.rawValue
+			)
+		} catch {
+			analysisError = "Analysis failed: \(error.localizedDescription)"
+		}
 		isAnalyzing = false
 	}
 }

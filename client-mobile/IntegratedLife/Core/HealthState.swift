@@ -9,6 +9,7 @@ final class HealthState: ObservableObject {
 	@Published var history: PaginatedHistory?
 	@Published var isLoading = false
 	@Published var error: String?
+	@Published var activeWorkoutSession: WorkoutSession?
 
 	// MARK: - Exercises
 

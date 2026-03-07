@@ -81,6 +81,17 @@ export async function findExerciseLogById(
 	return ExerciseLog.findOne({ _id: logId, userId }).exec()
 }
 
+export async function findExerciseLogsByIds(
+	userId: string,
+	logIds: string[]
+): Promise<ExerciseLogDocument[]> {
+	const validIds = logIds.filter((id) => mongoose.isValidObjectId(id))
+	if (validIds.length === 0) return []
+	return ExerciseLog.find({ _id: { $in: validIds }, userId })
+		.populate('exerciseId')
+		.exec()
+}
+
 export async function deleteExerciseLog(userId: string, logId: string): Promise<boolean> {
 	if (!mongoose.isValidObjectId(logId)) return false
 	const result = await ExerciseLog.deleteOne({ _id: logId, userId }).exec()

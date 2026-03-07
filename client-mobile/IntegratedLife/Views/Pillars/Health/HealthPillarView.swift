@@ -49,7 +49,7 @@ struct HealthPillarView: View {
 			case .exerciseDetail(let id):
 				ExerciseDetailView(exerciseId: id, healthState: healthState)
 			case .workoutDetail(let id):
-				WorkoutDetailView(workoutId: id, selectedTab: $selectedTab)
+				WorkoutDetailView(workoutId: id, selectedTab: $selectedTab, healthState: healthState)
 			}
 		}
 		.navigationDestination(for: HistoryItem.self) { item in

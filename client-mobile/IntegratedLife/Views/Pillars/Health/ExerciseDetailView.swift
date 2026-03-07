@@ -12,6 +12,9 @@ struct ExerciseDetailView: View {
 
 	private let healthService = HealthService.shared
 
+	private var workoutSession: WorkoutSession? { healthState.activeWorkoutSession }
+	private var isInWorkout: Bool { workoutSession != nil }
+
 	var body: some View {
 		ScrollView {
 			if isLoading {
@@ -35,21 +38,28 @@ struct ExerciseDetailView: View {
 			await loadExercise()
 		}
 		.sheet(isPresented: $showLogSheet, onDismiss: {
-			if savedHistoryItem != nil {
+			if !isInWorkout, savedHistoryItem != nil {
 				showHistoryDetail = true
 			}
 		}) {
 			if let exercise {
-				LogExerciseView(exercise: exercise) { log in
-					savedHistoryItem = HistoryItem(
-						type: "exercise",
-						id: log.id,
-						name: exercise.name,
-						date: log.date,
-						startTime: log.startTime,
-						endTime: log.endTime,
-						exerciseLogIds: nil
-					)
+				LogExerciseView(
+					exercise: exercise,
+					workoutId: workoutSession?.workoutId
+				) { log in
+					if let session = workoutSession {
+						session.recordExerciseLog(exerciseId: exerciseId, logId: log.id)
+					} else {
+						savedHistoryItem = HistoryItem(
+							type: "exercise",
+							id: log.id,
+							name: exercise.name,
+							date: log.date,
+							startTime: log.startTime,
+							endTime: log.endTime,
+							exerciseLogIds: nil
+						)
+					}
 				}
 			}
 		}
@@ -84,6 +94,13 @@ struct ExerciseDetailView: View {
 						.padding(.vertical, 4)
 						.background(.quaternary, in: Capsule())
 				}
+			}
+
+			if isInWorkout {
+				Label("Part of active workout", systemImage: "figure.run")
+					.font(.caption)
+					.foregroundStyle(.blue)
+					.padding(.top, 4)
 			}
 		}
 	}
@@ -131,7 +148,10 @@ struct ExerciseDetailView: View {
 			Button {
 				showLogSheet = true
 			} label: {
-				Label("Log Exercise", systemImage: "plus.circle")
+				Label(
+					isInWorkout ? "Log Exercise (Workout)" : "Log Exercise",
+					systemImage: "plus.circle"
+				)
 			}
 			.buttonStyle(PrimaryButtonStyle())
 

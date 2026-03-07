@@ -1,6 +1,6 @@
 import { chatCompletion } from '../../integrations/together'
 import * as repo from './repository'
-import type { AIInsight } from './types'
+import type { AIInsight, WorkoutInsight } from './types'
 
 const HEALTH_COACH_SYSTEM_PROMPT = `You are an AI Health Coach for the Integrated Life app. You provide brief, actionable insights about exercise performance, trends, and health data.
 
@@ -187,4 +187,81 @@ Analyze this data thoroughly. Provide insights on the trend, whether the values 
 	if (!insight) return null
 
 	return { insight, generatedAt: new Date().toISOString() }
+}
+
+const WORKOUT_SUMMARY_SYSTEM_PROMPT = `You are an AI Health Coach providing a post-workout summary for the Integrated Life app.
+
+Rules:
+- Provide a brief per-exercise insight (1 sentence each) followed by an overall workout assessment (2-3 sentences)
+- Be encouraging but honest about performance
+- Reference specific numbers (weights, reps, durations) when available
+- Highlight improvements, consistency, or areas to focus on next time
+- Never give medical advice
+- Use a warm, supportive tone
+- Output valid JSON only, with no extra text
+
+Output format:
+{"exercises":[{"exerciseId":"...","insight":"..."}],"overall":"..."}`
+
+export async function getWorkoutInsight(
+	userId: string,
+	exerciseLogIds: string[]
+): Promise<WorkoutInsight | null> {
+	if (exerciseLogIds.length === 0) return null
+
+	const logs = await repo.findExerciseLogsByIds(userId, exerciseLogIds)
+	if (logs.length === 0) return null
+
+	const exerciseSummaries = logs.map((log) => {
+		const exercise = log.exerciseId as unknown as { _id: { toString(): string }; name: string }
+		const setsSummary = log.sets
+			.map((s) => {
+				const parts: string[] = []
+				if (s.weight) parts.push(`${s.weight}lbs`)
+				if (s.reps) parts.push(`${s.reps} reps`)
+				if (s.minutes || s.seconds) parts.push(`${s.minutes ?? 0}m${s.seconds ?? 0}s`)
+				return parts.join(' x ')
+			})
+			.join(', ')
+
+		return {
+			exerciseId: exercise._id.toString(),
+			exerciseName: exercise.name,
+			summary: `${exercise.name}: ${setsSummary}${log.notes ? ` (Note: ${log.notes})` : ''}`
+		}
+	})
+
+	const userMessage = `Workout just completed with ${exerciseSummaries.length} exercise(s):
+
+${exerciseSummaries.map((e) => `- ${e.summary}`).join('\n')}
+
+Provide per-exercise insights and an overall workout assessment. Return valid JSON matching the specified format. Use the exerciseId values provided: ${exerciseSummaries.map((e) => e.exerciseId).join(', ')}`
+
+	const response = await chatCompletion(WORKOUT_SUMMARY_SYSTEM_PROMPT, userMessage)
+	if (!response) return null
+
+	try {
+		const jsonMatch = response.match(/\{[\s\S]*\}/)
+		if (!jsonMatch) return null
+
+		const parsed = JSON.parse(jsonMatch[0]) as {
+			exercises: Array<{ exerciseId: string; insight: string }>
+			overall: string
+		}
+
+		return {
+			exerciseInsights: parsed.exercises.map((e) => {
+				const matched = exerciseSummaries.find((s) => s.exerciseId === e.exerciseId)
+				return {
+					exerciseId: e.exerciseId,
+					exerciseName: matched?.exerciseName ?? 'Exercise',
+					insight: e.insight
+				}
+			}),
+			overallInsight: parsed.overall,
+			generatedAt: new Date().toISOString()
+		}
+	} catch {
+		return null
+	}
 }

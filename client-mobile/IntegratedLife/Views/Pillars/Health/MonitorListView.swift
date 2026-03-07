@@ -7,7 +7,8 @@ struct MonitorListView: View {
 
 	@State private var latestValues: [String: Double] = [:]
 	@State private var latestFormatted: [String: String] = [:]
-	@State private var previousValues: [String: Double] = [:]
+	@State private var currentPeriodAvg: [String: Double] = [:]
+	@State private var previousPeriodAvg: [String: Double] = [:]
 	@State private var typesWithData: Set<String> = []
 	@State private var showUntrackedTypes = false
 	@State private var isLoaded = false
@@ -100,25 +101,26 @@ struct MonitorListView: View {
 		}
 	}
 
+	private func formatDelta(_ diff: Double, unit: String) -> String {
+		if unit == "%" {
+			return String(format: "%.1f%%", abs(diff) * 100)
+		} else if abs(diff) >= 1 {
+			return "\(Int(abs(diff)))"
+		} else {
+			return String(format: "%.1f", abs(diff))
+		}
+	}
+
 	@ViewBuilder
 	private func deltaLabel(for dataType: HealthKitDataType) -> some View {
-		if let current = latestValues[dataType.id], let previous = previousValues[dataType.id], previous > 0 {
+		if let current = currentPeriodAvg[dataType.id], let previous = previousPeriodAvg[dataType.id], previous > 0 {
 			let diff = current - previous
-			let absDiff: String
-			if dataType.unit == "%" {
-				absDiff = String(format: "%.1f%%", abs(diff) * 100)
-			} else if abs(diff) >= 1 {
-				absDiff = "\(Int(abs(diff)))"
-			} else {
-				absDiff = String(format: "%.1f", abs(diff))
-			}
-
 			if abs(diff) > 0.01 {
 				let isImprovement = dataType.lowerIsBetter ? diff < 0 : diff > 0
 				HStack(spacing: 2) {
 					Image(systemName: diff > 0 ? "arrow.up" : "arrow.down")
 						.font(.system(size: 8))
-					Text(absDiff)
+					Text("\(formatDelta(diff, unit: dataType.unit)) 7d avg vs prior")
 						.font(.caption2)
 				}
 				.foregroundStyle(isImprovement ? .green : .red)
@@ -154,12 +156,12 @@ struct MonitorListView: View {
 					}
 
 					let avg = samples.reduce(0.0) { $0 + $1.value } / Double(samples.count)
+					currentPeriodAvg[dataType.id] = avg
 					if let priorSamples = try? await healthKitService.fetchQuantitySamples(
 						type: quantityTypeId, unit: unit, start: fourteenDaysAgo, end: sevenDaysAgo
 					), !priorSamples.isEmpty {
 						let priorAvg = priorSamples.reduce(0.0) { $0 + $1.value } / Double(priorSamples.count)
-						latestValues[dataType.id] = avg
-						previousValues[dataType.id] = priorAvg
+						previousPeriodAvg[dataType.id] = priorAvg
 					}
 				}
 			} else if dataType.categoryTypeId != nil {

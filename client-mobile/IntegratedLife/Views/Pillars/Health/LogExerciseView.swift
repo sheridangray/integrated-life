@@ -18,9 +18,13 @@ struct LogExerciseView: View {
 	@State private var lastLog: ExerciseLog?
 	@State private var isSaving = false
 	@State private var isLoadingContext = true
+	@State private var postSaveInsight: AIInsight?
+	@State private var isLoadingPostSaveInsight = false
+	@State private var savedLog: ExerciseLog?
 
 	private let healthService = HealthService.shared
 	private let healthKitService = HealthKitService.shared
+	private var isInWorkout: Bool { workoutId != nil }
 
 	init(exercise: Exercise, workoutId: String? = nil, onComplete: ((ExerciseLog) -> Void)? = nil) {
 		self.exercise = exercise
@@ -32,24 +36,34 @@ struct LogExerciseView: View {
 	var body: some View {
 		NavigationStack {
 			Form {
-				insightSection
-				lastSessionSection
-				setsSection
-				notesSection
-				dateTimeSection
-				resistanceSection
+				if savedLog != nil {
+					postSaveSection
+				} else {
+					insightSection
+					lastSessionSection
+					setsSection
+					notesSection
+					dateTimeSection
+					resistanceSection
+				}
 			}
-			.navigationTitle("Log \(exercise.name)")
+			.navigationTitle(savedLog != nil ? "Logged!" : "Log \(exercise.name)")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel") { dismiss() }
-				}
-				ToolbarItem(placement: .confirmationAction) {
-					Button("Finish") {
-						Task { await saveLog() }
+				if savedLog != nil {
+					ToolbarItem(placement: .confirmationAction) {
+						Button("Done") { dismiss() }
 					}
-					.disabled(isSaving)
+				} else {
+					ToolbarItem(placement: .cancellationAction) {
+						Button("Cancel") { dismiss() }
+					}
+					ToolbarItem(placement: .confirmationAction) {
+						Button("Finish") {
+							Task { await saveLog() }
+						}
+						.disabled(isSaving)
+					}
 				}
 			}
 			.task {
@@ -99,6 +113,42 @@ struct LogExerciseView: View {
 	private var insightSection: some View {
 		if let insightText = insight?.insight {
 			Section("AI Insight") {
+				HStack(alignment: .top, spacing: 8) {
+					Image(systemName: "sparkles")
+						.foregroundStyle(.purple)
+					Text(insightText)
+						.font(.subheadline)
+				}
+				.padding(.vertical, 4)
+			}
+		}
+	}
+
+	@ViewBuilder
+	private var postSaveSection: some View {
+		Section {
+			HStack(spacing: 8) {
+				Image(systemName: "checkmark.circle.fill")
+					.foregroundStyle(.green)
+				Text("\(exercise.name) logged successfully")
+					.font(.headline)
+			}
+			.padding(.vertical, 4)
+		}
+
+		if isLoadingPostSaveInsight {
+			Section("AI Feedback") {
+				HStack(spacing: 8) {
+					ProgressView()
+						.controlSize(.small)
+					Text("Generating feedback...")
+						.font(.subheadline)
+						.foregroundStyle(.secondary)
+				}
+				.padding(.vertical, 4)
+			}
+		} else if let insightText = postSaveInsight?.insight {
+			Section("AI Feedback") {
 				HStack(alignment: .top, spacing: 8) {
 					Image(systemName: "sparkles")
 						.foregroundStyle(.purple)
@@ -364,10 +414,22 @@ struct LogExerciseView: View {
 			let log = try await healthService.logExercise(exerciseId: exercise.id, request: request)
 			try? await healthKitService.saveWorkout(start: startTime, end: resolvedEndTime)
 			onComplete?(log)
-			dismiss()
+
+			if isInWorkout {
+				dismiss()
+			} else {
+				savedLog = log
+				await loadPostSaveInsight()
+			}
 		} catch {
 			isSaving = false
 		}
+	}
+
+	private func loadPostSaveInsight() async {
+		isLoadingPostSaveInsight = true
+		postSaveInsight = try? await healthService.getExerciseInsight(exerciseId: exercise.id)
+		isLoadingPostSaveInsight = false
 	}
 }
 

@@ -28,6 +28,16 @@ export type {
 	AIInsight
 }
 
+export type WorkoutInsight = {
+	exerciseInsights: Array<{
+		exerciseId: string
+		exerciseName: string
+		insight: string
+	}>
+	overallInsight: string
+	generatedAt: string
+}
+
 export type PaginatedResult<T> = {
 	items: T[]
 	total: number

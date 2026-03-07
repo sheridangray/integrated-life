@@ -75,3 +75,17 @@ struct AIInsight: Codable {
 	let insight: String?
 	let generatedAt: String?
 }
+
+struct WorkoutInsightResponse: Codable {
+	let exerciseInsights: [ExerciseInsightItem]
+	let overallInsight: String?
+	let generatedAt: String?
+}
+
+struct ExerciseInsightItem: Codable, Identifiable {
+	let exerciseId: String
+	let exerciseName: String
+	let insight: String
+
+	var id: String { exerciseId }
+}

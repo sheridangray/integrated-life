@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import type { AuthenticatedRequest } from '../../middleware/auth'
+import { logger } from '../../lib/logger'
 import { User } from '../../models/User'
 import * as healthService from './service'
 import * as healthAI from './ai'
@@ -282,6 +283,37 @@ export async function getMonitorInsight(req: AuthenticatedRequest, res: Response
 	const insight = await healthAI.getMonitorInsight(req.params.sampleType, data ?? [])
 	if (!insight) {
 		return res.json({ insight: null, generatedAt: null })
+	}
+	return res.json(insight)
+}
+
+export async function getWorkoutInsight(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const { exerciseLogIds } = req.body as { exerciseLogIds?: string[] }
+	if (!exerciseLogIds || !Array.isArray(exerciseLogIds) || exerciseLogIds.length === 0) {
+		logger.warn('Workout insight request missing exerciseLogIds', {
+			body: JSON.stringify(req.body),
+			requestId: requestId(req)
+		})
+		return res.status(400).json({
+			error: { code: 'VALIDATION_ERROR', message: 'exerciseLogIds array is required' },
+			requestId: requestId(req)
+		})
+	}
+
+	const insight = await healthAI.getWorkoutInsight(req.user.userId, exerciseLogIds)
+	if (!insight) {
+		logger.warn('Workout insight returned null', {
+			exerciseLogCount: exerciseLogIds.length,
+			requestId: requestId(req)
+		})
+		return res.json({ exerciseInsights: [], overallInsight: null, generatedAt: null })
 	}
 	return res.json(insight)
 }
