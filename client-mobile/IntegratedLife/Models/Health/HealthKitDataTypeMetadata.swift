@@ -78,6 +78,57 @@ extension HealthKitDataType {
 		"environmentalAudioExposure": "Environmental sound levels measure ambient noise in decibels. Prolonged exposure above 80 dB can damage hearing over time. WHO recommends keeping levels below 70 dB.",
 		"headphoneAudioExposure": "Headphone audio levels track the volume of sound delivered through your headphones. Levels above 80 dB for extended periods can cause hearing damage. Keep levels below 75 dB for safe listening.",
 		"handwashingEvent": "Handwashing events are detected by Apple Watch. Regular handwashing for 20+ seconds is one of the most effective ways to prevent the spread of illness.",
+		// Body Composition
+		"bodyMass": "Body weight from your scale. Tracking weight over time helps identify trends in body composition. Day-to-day fluctuations of 1-3 lbs are normal due to hydration and food intake.",
+		"bodyMassIndex": "BMI is a ratio of weight to height (kg/m²). While imperfect for athletes, it's a useful population-level screening tool. Normal range is 18.5-24.9.",
+		"bodyFatPercentage": "Body fat percentage measures the proportion of your body composed of fat tissue. Healthy ranges vary by age and gender. Essential fat is 2-5% for men and 10-13% for women.",
+		"leanBodyMass": "Lean body mass is everything except fat — muscle, bone, organs, and water. Increasing lean mass improves metabolic health and functional strength.",
+		"height": "Your standing height. Recorded by HealthKit and used to derive metrics like BMI and FFMI.",
+		"fatMass": "Fat mass is the absolute weight of body fat, derived from body weight and body fat percentage. Tracking absolute fat mass alongside lean mass gives a clearer picture than body fat % alone.",
+		"ffmi": "Fat-Free Mass Index normalizes lean body mass for height (like BMI but for muscle). An FFMI of 18-20 is average for men; 20-25 indicates significant muscular development.",
+		"estimatedBodyWater": "Estimated body water percentage, derived from lean body mass (lean tissue is approximately 73% water). Typical values are 45-65% of total body weight.",
+		"estimatedBoneMass": "Estimated bone mass based on lean body mass and gender (roughly 12-15% of lean mass). This is an approximation — a DEXA scan provides precise measurements.",
+		"estimatedMuscleMass": "Estimated muscle mass, calculated as lean body mass minus estimated bone mass. This represents the soft lean tissue you build through strength training.",
+		// Nutrition
+		"dietaryEnergyConsumed": "Total calories consumed from food and beverages. Daily needs vary by activity level, typically 1,800-2,500 kcal for adults.",
+		"dietaryProtein": "Protein supports muscle repair and growth. A common target is 0.7-1.0 g per pound of body weight for active individuals.",
+		"dietaryFatTotal": "Total dietary fat provides essential fatty acids and supports hormone production. Recommended intake is 20-35% of total calories.",
+		"dietaryCarbohydrates": "Carbohydrates are the body's primary energy source. Recommended intake is 45-65% of total calories.",
+		"dietaryFiber": "Dietary fiber supports digestive health and satiety. The recommended daily intake is 25-30g for adults.",
+		"dietarySugar": "Total sugar intake including natural and added sugars. The WHO recommends limiting added sugars to less than 25g per day.",
+		"dietarySodium": "Sodium is essential for fluid balance but excess intake raises blood pressure risk. The recommended limit is 2,300 mg per day.",
+		"dietaryWater": "Water intake from beverages and food. A common guideline is 8 cups (about 2,000 mL) per day, though needs vary by activity and climate.",
+		"dietaryFatSaturated": "Saturated fat should be limited to less than 10% of total calories. High intake is associated with increased cardiovascular risk.",
+		"dietaryFatMonounsaturated": "Monounsaturated fats (found in olive oil, avocados, nuts) are heart-healthy and should be a primary fat source.",
+		"dietaryFatPolyunsaturated": "Polyunsaturated fats (omega-3 and omega-6) are essential fats that support brain function and reduce inflammation.",
+		"dietaryCholesterol": "Dietary cholesterol has less impact on blood cholesterol than once believed, but limiting intake to 300 mg/day is still commonly recommended.",
+		"dietaryVitaminA": "Vitamin A supports vision, immune function, and skin health. Recommended daily intake is 700-900 mcg.",
+		"dietaryVitaminB6": "Vitamin B6 is involved in protein metabolism and cognitive development. Recommended daily intake is 1.3-1.7 mg.",
+		"dietaryVitaminB12": "Vitamin B12 is essential for nerve function and red blood cell formation. Recommended daily intake is 2.4 mcg.",
+		"dietaryVitaminC": "Vitamin C is an antioxidant that supports immune function and collagen synthesis. Recommended daily intake is 75-90 mg.",
+		"dietaryVitaminD": "Vitamin D supports calcium absorption and bone health. Many people are deficient. Recommended intake is 15-20 mcg (600-800 IU).",
+		"dietaryVitaminE": "Vitamin E is an antioxidant that protects cells from damage. Recommended daily intake is 15 mg.",
+		"dietaryVitaminK": "Vitamin K is essential for blood clotting and bone metabolism. Recommended daily intake is 90-120 mcg.",
+		"dietaryThiamin": "Thiamin (B1) helps convert nutrients into energy. Recommended daily intake is 1.1-1.2 mg.",
+		"dietaryRiboflavin": "Riboflavin (B2) is important for energy production and cellular function. Recommended daily intake is 1.1-1.3 mg.",
+		"dietaryNiacin": "Niacin (B3) supports energy metabolism and DNA repair. Recommended daily intake is 14-16 mg.",
+		"dietaryFolate": "Folate is crucial for DNA synthesis and cell division. Recommended daily intake is 400 mcg, higher during pregnancy.",
+		"dietaryPantothenicAcid": "Pantothenic acid (B5) is involved in energy metabolism. Recommended daily intake is 5 mg.",
+		"dietaryBiotin": "Biotin supports hair, skin, and nail health and is involved in energy metabolism. Recommended daily intake is 30 mcg.",
+		"dietaryCalcium": "Calcium is essential for bone health, muscle function, and nerve signaling. Recommended daily intake is 1,000-1,200 mg.",
+		"dietaryIron": "Iron is essential for oxygen transport in blood. Recommended daily intake is 8-18 mg, higher for menstruating women.",
+		"dietaryMagnesium": "Magnesium supports muscle and nerve function, blood sugar control, and bone health. Recommended daily intake is 310-420 mg.",
+		"dietaryManganese": "Manganese supports bone formation and metabolism. Recommended daily intake is 1.8-2.3 mg.",
+		"dietaryPhosphorus": "Phosphorus works with calcium for bone health and supports energy production. Recommended daily intake is 700 mg.",
+		"dietaryPotassium": "Potassium helps regulate fluid balance and blood pressure. Recommended daily intake is 2,600-3,400 mg.",
+		"dietaryZinc": "Zinc supports immune function, wound healing, and protein synthesis. Recommended daily intake is 8-11 mg.",
+		"dietarySelenium": "Selenium is an antioxidant that supports thyroid function. Recommended daily intake is 55 mcg.",
+		"dietaryCopper": "Copper supports iron metabolism and connective tissue formation. Recommended daily intake is 0.9 mg.",
+		"dietaryChromium": "Chromium enhances insulin action and supports blood sugar regulation. Recommended daily intake is 20-35 mcg.",
+		"dietaryMolybdenum": "Molybdenum supports enzyme function in amino acid metabolism. Recommended daily intake is 45 mcg.",
+		"dietaryChloride": "Chloride works with sodium to maintain fluid balance and support digestion. Recommended daily intake is 2,300 mg.",
+		"dietaryIodine": "Iodine is essential for thyroid hormone production. Recommended daily intake is 150 mcg.",
+		"dietaryCaffeine": "Caffeine is a stimulant that can improve alertness and performance. Most adults can safely consume up to 400 mg per day.",
 	]
 
 	// MARK: - Static Ranges (not gender/age dependent)
@@ -98,6 +149,15 @@ extension HealthKitDataType {
 		"headphoneAudioExposure": HealthRange(low: 0, high: 75, lowLabel: "Quiet", highLabel: "Risk of hearing damage", normalLabel: "Safe"),
 		"bodyTemperature": HealthRange(low: 97.0, high: 99.5, lowLabel: "Below normal", highLabel: "Elevated — possible fever", normalLabel: "Normal"),
 		"wristTemperature": HealthRange(low: -1.0, high: 1.0, lowLabel: "Below baseline", highLabel: "Above baseline", normalLabel: "Within baseline"),
+		// Body Composition
+		"bodyMassIndex": HealthRange(low: 18.5, high: 24.9, lowLabel: "Underweight", highLabel: "Overweight", normalLabel: "Normal"),
+		// Nutrition
+		"dietaryEnergyConsumed": HealthRange(low: 1200, high: 3500, lowLabel: "Very low intake", highLabel: "High intake", normalLabel: "Normal intake"),
+		"dietaryFiber": HealthRange(low: 20, high: 50, lowLabel: "Below recommended", highLabel: "High", normalLabel: "On target"),
+		"dietarySugar": HealthRange(low: 0, high: 50, lowLabel: "Low", highLabel: "Excessive", normalLabel: "Moderate"),
+		"dietarySodium": HealthRange(low: 500, high: 2300, lowLabel: "Low", highLabel: "Exceeds daily limit", normalLabel: "Within limit"),
+		"dietaryCholesterol": HealthRange(low: 0, high: 300, lowLabel: "Low", highLabel: "Above recommended", normalLabel: "Within limit"),
+		"dietaryCaffeine": HealthRange(low: 0, high: 400, lowLabel: "Low", highLabel: "Excessive", normalLabel: "Moderate"),
 	]
 
 	// MARK: - Personalized Ranges (gender/age dependent)
@@ -155,6 +215,38 @@ extension HealthKitDataType {
 			let low: Double = ageVal > 65 ? 1.8 : 2.3
 			let high: Double = ageVal > 65 ? 3.5 : 4.0
 			return HealthRange(low: low, high: high, lowLabel: "Below average", highLabel: "Above average", normalLabel: "Normal")
+		},
+		"bodyFatPercentage": { gender, _ in
+			let isFemale = gender == "female"
+			return HealthRange(
+				low: isFemale ? 16 : 6,
+				high: isFemale ? 30 : 20,
+				lowLabel: "Very lean", highLabel: "Above healthy range", normalLabel: "Healthy"
+			)
+		},
+		"ffmi": { gender, _ in
+			let isFemale = gender == "female"
+			return HealthRange(
+				low: isFemale ? 14 : 17,
+				high: isFemale ? 20 : 25,
+				lowLabel: "Below average", highLabel: "Advanced muscular development", normalLabel: "Normal"
+			)
+		},
+		"estimatedBodyWater": { gender, _ in
+			let isFemale = gender == "female"
+			return HealthRange(
+				low: isFemale ? 45 : 50,
+				high: isFemale ? 60 : 65,
+				lowLabel: "Below typical", highLabel: "Above typical", normalLabel: "Normal"
+			)
+		},
+		"dietaryProtein": { gender, _ in
+			let isFemale = gender == "female"
+			return HealthRange(
+				low: isFemale ? 40 : 50,
+				high: isFemale ? 150 : 200,
+				lowLabel: "Below recommended", highLabel: "Very high", normalLabel: "On target"
+			)
 		},
 	]
 }

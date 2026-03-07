@@ -32,8 +32,18 @@ historyRoutes.get('/export', asyncHandler(controller.exportHistory))
 historyRoutes.get('/:type/:id', asyncHandler(controller.getHistoryDetail))
 historyRoutes.delete('/:type/:id', asyncHandler(controller.deleteHistoryItem))
 
-// --- AI Insights ---
+// --- Health Sample Sync ---
 healthInsightRoutes.use(authMiddleware)
+healthInsightRoutes.post('/monitor/sync', asyncHandler(controller.syncMonitorData))
+healthInsightRoutes.get('/monitor/samples', asyncHandler(controller.getMonitorSamples))
+healthInsightRoutes.get('/monitor/latest', asyncHandler(controller.getMonitorLatest))
+
+// --- Health Reports ---
+healthInsightRoutes.post('/insights/report', asyncHandler(controller.generateReport))
+healthInsightRoutes.get('/insights/reports', asyncHandler(controller.listReports))
+healthInsightRoutes.get('/insights/reports/:id', asyncHandler(controller.getReport))
+
+// --- AI Insights ---
 healthInsightRoutes.get('/insights/exercise/:exerciseId', asyncHandler(controller.getExerciseInsight))
 healthInsightRoutes.get('/insights/summary', asyncHandler(controller.getHistorySummary))
 healthInsightRoutes.post('/insights/monitor/:sampleType', asyncHandler(controller.getMonitorInsight))

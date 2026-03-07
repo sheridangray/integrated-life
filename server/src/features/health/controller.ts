@@ -239,6 +239,66 @@ export async function exportHistory(req: AuthenticatedRequest, res: Response) {
 	return res.send(csv)
 }
 
+// --- Health Sample Sync ---
+
+export async function syncMonitorData(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const { samples } = req.body as {
+		samples?: Array<{ sampleType: string; date: string; value: number; unit: string; source?: string }>
+	}
+	if (!samples || !Array.isArray(samples) || samples.length === 0) {
+		return res.status(400).json({
+			error: { code: 'VALIDATION_ERROR', message: 'samples array is required' },
+			requestId: requestId(req)
+		})
+	}
+
+	const result = await healthService.syncHealthSamples(req.user.userId, samples)
+	return res.json(result)
+}
+
+export async function getMonitorSamples(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const { sampleType, start, end } = req.query as {
+		sampleType?: string
+		start?: string
+		end?: string
+	}
+	if (!sampleType || !start || !end) {
+		return res.status(400).json({
+			error: { code: 'VALIDATION_ERROR', message: 'sampleType, start, and end are required' },
+			requestId: requestId(req)
+		})
+	}
+
+	const samples = await healthService.getHealthSamples(req.user.userId, sampleType, start, end)
+	return res.json(samples)
+}
+
+export async function getMonitorLatest(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const latest = await healthService.getLatestHealthSamples(req.user.userId)
+	return res.json(latest)
+}
+
 // --- AI Insights ---
 
 export async function getExerciseInsight(req: AuthenticatedRequest, res: Response) {
@@ -324,6 +384,50 @@ export async function getWorkoutInsight(req: AuthenticatedRequest, res: Response
 	}
 
 	return res.json(insight)
+}
+
+// --- Health Reports ---
+
+export async function generateReport(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const { periodStart, periodEnd } = req.body as {
+		periodStart?: string
+		periodEnd?: string
+	}
+
+	const report = await healthService.generateReport(req.user.userId, 'on_demand', periodStart, periodEnd)
+	return res.status(201).json(report)
+}
+
+export async function listReports(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const { since } = req.query as { since?: string }
+	const reports = await healthService.listReports(req.user.userId, since)
+	return res.json(reports)
+}
+
+export async function getReport(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const report = await healthService.getReport(req.user.userId, req.params.id)
+	return res.json(report)
 }
 
 export async function getMonitorAnalysis(req: AuthenticatedRequest, res: Response) {

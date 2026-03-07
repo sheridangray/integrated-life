@@ -1,5 +1,7 @@
 import { AppError } from '../../lib/errors'
+import { User } from '../../models/User'
 import * as repo from './repository'
+import * as healthAI from './ai'
 import type { PaginatedResult, HistoryItem } from './types'
 
 // --- Exercises ---
@@ -361,6 +363,143 @@ export async function getHistoryDetail(userId: string, type: string, id: string)
 	}
 
 	throw new AppError('Invalid history type', 400)
+}
+
+// --- Health Samples ---
+
+export async function syncHealthSamples(
+	userId: string,
+	samples: Array<{ sampleType: string; date: string; value: number; unit: string; source?: string }>
+) {
+	const count = await repo.upsertHealthSamples(userId, samples)
+	return { synced: count }
+}
+
+export async function getHealthSamples(
+	userId: string,
+	sampleType: string,
+	start: string,
+	end: string
+) {
+	const samples = await repo.findHealthSamples(
+		userId,
+		sampleType,
+		new Date(start),
+		new Date(end)
+	)
+	return samples.map((s) => ({
+		id: s._id.toString(),
+		sampleType: s.sampleType,
+		date: s.date.toISOString(),
+		value: s.value,
+		unit: s.unit,
+		source: s.source ?? null
+	}))
+}
+
+export async function getLatestHealthSamples(userId: string) {
+	const samples = await repo.findLatestHealthSamples(userId)
+	return samples.map((s) => ({
+		sampleType: s.sampleType,
+		date: s.date.toISOString(),
+		value: s.value,
+		unit: s.unit
+	}))
+}
+
+// --- Health Reports ---
+
+export async function generateReport(
+	userId: string,
+	type: 'weekly' | 'on_demand',
+	periodStart?: string,
+	periodEnd?: string
+) {
+	const end = periodEnd ? new Date(periodEnd) : new Date()
+	const start = periodStart ? new Date(periodStart) : new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000)
+	const priorStart = new Date(start.getTime() - (end.getTime() - start.getTime()))
+
+	const [currentSamples, priorSamples] = await Promise.all([
+		repo.findHealthSamplesByUser(userId, start, end),
+		repo.findHealthSamplesByUser(userId, priorStart, start)
+	])
+
+	if (currentSamples.length === 0) {
+		throw new AppError('No health data available for the selected period', 400)
+	}
+
+	const groupByType = (samples: typeof currentSamples) => {
+		const grouped: Record<string, Array<{ date: string; value: number }>> = {}
+		for (const s of samples) {
+			if (!grouped[s.sampleType]) grouped[s.sampleType] = []
+			grouped[s.sampleType].push({ date: s.date.toISOString(), value: s.value })
+		}
+		return grouped
+	}
+
+	const user = await User.findById(userId).exec()
+	const userProfile = user ? { gender: user.gender, dateOfBirth: user.dateOfBirth } : undefined
+
+	const reportText = await healthAI.getComprehensiveReport(
+		groupByType(currentSamples),
+		groupByType(priorSamples),
+		start.toISOString().split('T')[0],
+		end.toISOString().split('T')[0],
+		userProfile
+	)
+
+	if (!reportText) {
+		throw new AppError('Failed to generate report', 500)
+	}
+
+	const metrics = [...new Set(currentSamples.map((s) => s.sampleType))]
+	const report = await repo.createHealthReport({
+		userId,
+		type,
+		periodStart: start,
+		periodEnd: end,
+		report: reportText,
+		metrics
+	})
+
+	return {
+		id: report._id.toString(),
+		type: report.type,
+		periodStart: report.periodStart.toISOString(),
+		periodEnd: report.periodEnd.toISOString(),
+		report: report.report,
+		metrics: report.metrics,
+		generatedAt: report.generatedAt.toISOString()
+	}
+}
+
+export async function listReports(userId: string, since?: string) {
+	const sinceDate = since ? new Date(since) : undefined
+	const reports = await repo.findHealthReports(userId, sinceDate)
+	return reports.map((r) => ({
+		id: r._id.toString(),
+		type: r.type,
+		periodStart: r.periodStart.toISOString(),
+		periodEnd: r.periodEnd.toISOString(),
+		report: r.report,
+		metrics: r.metrics,
+		generatedAt: r.generatedAt.toISOString()
+	}))
+}
+
+export async function getReport(userId: string, reportId: string) {
+	const report = await repo.findHealthReportById(userId, reportId)
+	if (!report) throw new AppError('Report not found', 404)
+
+	return {
+		id: report._id.toString(),
+		type: report.type,
+		periodStart: report.periodStart.toISOString(),
+		periodEnd: report.periodEnd.toISOString(),
+		report: report.report,
+		metrics: report.metrics,
+		generatedAt: report.generatedAt.toISOString()
+	}
 }
 
 export async function exportHistoryCsv(userId: string): Promise<string> {

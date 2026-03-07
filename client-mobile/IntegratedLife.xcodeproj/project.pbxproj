@@ -81,6 +81,10 @@
 		F770B53826A3E79E1BE45FDF /* PillarsOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 931D1968BC86A3D09146DD4E /* PillarsOverviewView.swift */; };
 		AA11BB22CC33DD44EE55FF0B /* WorkoutSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF0C /* WorkoutSession.swift */; };
 		AA11BB22CC33DD44EE55FF0D /* WorkoutSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF0E /* WorkoutSummaryView.swift */; };
+		CC11AA22BB33DD44EE55FF01 /* HealthReportListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC11AA22BB33DD44EE55FF05 /* HealthReportListView.swift */; };
+		CC11AA22BB33DD44EE55FF02 /* HealthReportDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC11AA22BB33DD44EE55FF06 /* HealthReportDetailView.swift */; };
+		CC11AA22BB33DD44EE55FF03 /* HistoricalSyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC11AA22BB33DD44EE55FF07 /* HistoricalSyncView.swift */; };
+		CC11AA22BB33DD44EE55FF04 /* MonitorSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC11AA22BB33DD44EE55FF08 /* MonitorSyncService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -162,6 +166,10 @@
 		AA11BB22CC33DD44EE55FF0E /* WorkoutSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSummaryView.swift; sourceTree = "<group>"; };
 		"TEMP_05C58F87-92B6-4407-A23A-F9BF8EE09EF3" /* Config.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.Release.xcconfig; sourceTree = "<group>"; };
 		"TEMP_7BF0EBEE-14BE-4AB9-8E8C-86C11F18E3CD" /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
+		CC11AA22BB33DD44EE55FF05 /* HealthReportListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthReportListView.swift; sourceTree = "<group>"; };
+		CC11AA22BB33DD44EE55FF06 /* HealthReportDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthReportDetailView.swift; sourceTree = "<group>"; };
+		CC11AA22BB33DD44EE55FF07 /* HistoricalSyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoricalSyncView.swift; sourceTree = "<group>"; };
+		CC11AA22BB33DD44EE55FF08 /* MonitorSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorSyncService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -267,6 +275,7 @@
 				C1066D582A8CA878662BA08B /* AuthService.swift */,
 				D495646162D0FF25F6CEDFCB /* HealthKitService.swift */,
 				E6F4A822689FB3C3C7858115 /* HealthService.swift */,
+				CC11AA22BB33DD44EE55FF08 /* MonitorSyncService.swift */,
 				C15EAB6BE9BBEB1E6F6DFFB1 /* NotificationService.swift */,
 				DD8EFADE838E4DFF2DEFAC83 /* SleepDataAggregator.swift */,
 				53B009C0A0EDB4E3494101AB /* SleepDisplayService.swift */,
@@ -399,6 +408,9 @@
 				19A394AA426B648265B38C49 /* ExerciseDetailView.swift */,
 				B997A48D5E4A1EA972A6613B /* ExerciseListView.swift */,
 				482D08FF7231CA7FAF17C482 /* HealthPillarView.swift */,
+				CC11AA22BB33DD44EE55FF05 /* HealthReportListView.swift */,
+				CC11AA22BB33DD44EE55FF06 /* HealthReportDetailView.swift */,
+				CC11AA22BB33DD44EE55FF07 /* HistoricalSyncView.swift */,
 				6177222E1971743C39FB8D38 /* HistoryDetailView.swift */,
 				298F71C47455C5239FFFAF88 /* HistoryView.swift */,
 				2CE5252CD57F97DD65967F72 /* LogExerciseView.swift */,
@@ -513,6 +525,10 @@
 				F32DDE56C2AEA2FF0BB30AA5 /* HealthKitIntegrationView.swift in Sources */,
 				BF4C3C13433BF5B565987724 /* HealthKitService.swift in Sources */,
 				B13C2ECC114862E8D026CFCE /* HealthPillarView.swift in Sources */,
+				CC11AA22BB33DD44EE55FF01 /* HealthReportListView.swift in Sources */,
+				CC11AA22BB33DD44EE55FF02 /* HealthReportDetailView.swift in Sources */,
+				CC11AA22BB33DD44EE55FF03 /* HistoricalSyncView.swift in Sources */,
+				CC11AA22BB33DD44EE55FF04 /* MonitorSyncService.swift in Sources */,
 				17AEE95DDE2B99F70E26BD3C /* HealthService.swift in Sources */,
 				86B5050DE9DD615453B1C976 /* HealthState.swift in Sources */,
 				E5540BD1E986484C4B735191 /* HealthTypes.swift in Sources */,

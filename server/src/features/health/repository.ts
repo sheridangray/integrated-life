@@ -4,6 +4,8 @@ import { Workout, WorkoutDocument } from '../../models/Workout'
 import { ExerciseLog, ExerciseLogDocument } from '../../models/ExerciseLog'
 import { WorkoutLog, WorkoutLogDocument } from '../../models/WorkoutLog'
 import { UserFavoriteExercise } from '../../models/UserFavoriteExercise'
+import { HealthSample, HealthSampleDocument } from '../../models/HealthSample'
+import { HealthReport, HealthReportDocument } from '../../models/HealthReport'
 
 // --- Exercises ---
 
@@ -249,4 +251,106 @@ export async function findRecentExerciseLogs(userId: string, days: number): Prom
 		.sort({ date: -1 })
 		.populate('exerciseId')
 		.exec()
+}
+
+// --- Health Samples ---
+
+export async function upsertHealthSamples(
+	userId: string,
+	samples: Array<{ sampleType: string; date: string; value: number; unit: string; source?: string }>
+): Promise<number> {
+	if (samples.length === 0) return 0
+
+	const ops = samples.map((s) => ({
+		updateOne: {
+			filter: { userId, sampleType: s.sampleType, date: new Date(s.date) },
+			update: { $set: { value: s.value, unit: s.unit, source: s.source } },
+			upsert: true
+		}
+	}))
+
+	const result = await HealthSample.bulkWrite(ops, { ordered: false })
+	return result.upsertedCount + result.modifiedCount
+}
+
+export async function findHealthSamples(
+	userId: string,
+	sampleType: string,
+	start: Date,
+	end: Date
+): Promise<HealthSampleDocument[]> {
+	return HealthSample.find({
+		userId,
+		sampleType,
+		date: { $gte: start, $lte: end }
+	})
+		.sort({ date: -1 })
+		.exec()
+}
+
+export async function findLatestHealthSamples(
+	userId: string
+): Promise<HealthSampleDocument[]> {
+	return HealthSample.aggregate([
+		{ $match: { userId: new mongoose.Types.ObjectId(userId) } },
+		{ $sort: { date: -1 } },
+		{ $group: { _id: '$sampleType', doc: { $first: '$$ROOT' } } },
+		{ $replaceRoot: { newRoot: '$doc' } }
+	]).exec()
+}
+
+export async function findHealthSamplesByUser(
+	userId: string,
+	start: Date,
+	end: Date
+): Promise<HealthSampleDocument[]> {
+	return HealthSample.find({
+		userId,
+		date: { $gte: start, $lte: end }
+	})
+		.sort({ sampleType: 1, date: -1 })
+		.exec()
+}
+
+export async function findDistinctSampleTypes(userId: string): Promise<string[]> {
+	return HealthSample.distinct('sampleType', { userId }).exec()
+}
+
+// --- Health Reports ---
+
+export async function createHealthReport(data: {
+	userId: string
+	type: 'weekly' | 'on_demand'
+	periodStart: Date
+	periodEnd: Date
+	report: string
+	metrics: string[]
+}): Promise<HealthReportDocument> {
+	return HealthReport.create({ ...data, generatedAt: new Date() })
+}
+
+export async function findHealthReports(
+	userId: string,
+	since?: Date
+): Promise<HealthReportDocument[]> {
+	const query: Record<string, unknown> = { userId }
+	if (since) {
+		query.generatedAt = { $gt: since }
+	}
+	return HealthReport.find(query).sort({ generatedAt: -1 }).limit(50).exec()
+}
+
+export async function findHealthReportById(
+	userId: string,
+	reportId: string
+): Promise<HealthReportDocument | null> {
+	if (!mongoose.isValidObjectId(reportId)) return null
+	return HealthReport.findOne({ _id: reportId, userId }).exec()
+}
+
+export async function findUsersWithRecentSamples(since: Date): Promise<string[]> {
+	const userIds = await HealthSample.distinct('userId', {
+		date: { $gte: since }
+	}).exec()
+	return userIds.map((id) => id.toString())
 }

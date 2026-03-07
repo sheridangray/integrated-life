@@ -134,6 +134,30 @@ final class HealthService {
 		let request = WorkoutInsightRequest(exerciseLogIds: exerciseLogIds, workoutLogId: workoutLogId)
 		return try await api.post(path: "/v1/health/insights/workout", body: request, token: try await token(), as: WorkoutInsightResponse.self)
 	}
+
+	// MARK: - Monitor Sync
+
+	func syncMonitorData(samples: [MonitorSyncSample]) async throws -> MonitorSyncResponse {
+		let request = MonitorSyncRequest(samples: samples)
+		return try await api.post(path: "/v1/health/monitor/sync", body: request, token: try await token(), as: MonitorSyncResponse.self)
+	}
+
+	// MARK: - Health Reports
+
+	func generateReport(periodStart: String? = nil, periodEnd: String? = nil) async throws -> HealthReport {
+		let request = GenerateReportRequest(periodStart: periodStart, periodEnd: periodEnd)
+		return try await api.post(path: "/v1/health/insights/report", body: request, token: try await token(), as: HealthReport.self)
+	}
+
+	func fetchReports(since: String? = nil) async throws -> [HealthReport] {
+		var query = ""
+		if let since { query = "?since=\(since)" }
+		return try await api.get(path: "/v1/health/insights/reports\(query)", token: try await token(), as: [HealthReport].self)
+	}
+
+	func fetchReport(id: String) async throws -> HealthReport {
+		try await api.get(path: "/v1/health/insights/reports/\(id)", token: try await token(), as: HealthReport.self)
+	}
 }
 
 struct FavoriteResponse: Codable {
@@ -157,4 +181,35 @@ struct MonitorAnalysisRequest: Codable {
 struct WorkoutInsightRequest: Codable {
 	let exerciseLogIds: [String]
 	let workoutLogId: String?
+}
+
+struct MonitorSyncSample: Codable {
+	let sampleType: String
+	let date: String
+	let value: Double
+	let unit: String
+	let source: String?
+}
+
+struct MonitorSyncRequest: Codable {
+	let samples: [MonitorSyncSample]
+}
+
+struct MonitorSyncResponse: Codable {
+	let synced: Int
+}
+
+struct GenerateReportRequest: Codable {
+	let periodStart: String?
+	let periodEnd: String?
+}
+
+struct HealthReport: Codable, Identifiable, Hashable {
+	let id: String
+	let type: String
+	let periodStart: String
+	let periodEnd: String
+	let report: String
+	let metrics: [String]
+	let generatedAt: String
 }

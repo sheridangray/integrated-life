@@ -30,6 +30,15 @@ struct MonitorListView: View {
 
 	var body: some View {
 		List {
+			Section {
+				NavigationLink(value: HealthNavDestination.healthReports) {
+					Label("Health Reports", systemImage: "doc.text.magnifyingglass")
+				}
+				NavigationLink(value: HealthNavDestination.historicalSync) {
+					Label("Sync Historical Data", systemImage: "arrow.triangle.2.circlepath")
+				}
+			}
+
 			ForEach(typesGroupedWithData, id: \.category) { group in
 				Section {
 					ForEach(group.types) { dataType in
@@ -141,7 +150,7 @@ struct MonitorListView: View {
 		let sevenDaysAgo = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
 		let fourteenDaysAgo = Calendar.current.date(byAdding: .day, value: -14, to: now) ?? now
 
-		for dataType in monitorableTypes {
+		for dataType in monitorableTypes where !dataType.isDerived {
 			if let quantityTypeId = dataType.quantityTypeId, let unit = dataType.hkUnit {
 				if let samples = try? await healthKitService.fetchQuantitySamples(
 					type: quantityTypeId, unit: unit, start: sevenDaysAgo
@@ -174,6 +183,30 @@ struct MonitorListView: View {
 			}
 		}
 
+		computeDerivedValues()
 		isLoaded = true
+	}
+
+	private func computeDerivedValues() {
+		let gender = user?.gender
+		for dataType in monitorableTypes where dataType.isDerived {
+			guard let derivation = dataType.derivation else { continue }
+			guard let sources = dataType.derivedFrom else { continue }
+			let allSourcesPresent = sources.allSatisfy { latestValues[$0] != nil }
+			guard allSourcesPresent else { continue }
+
+			if let value = derivation(latestValues, gender) {
+				latestValues[dataType.id] = value
+				typesWithData.insert(dataType.id)
+
+				if dataType.unit == "%" {
+					latestFormatted[dataType.id] = "\(String(format: "%.1f", value * 100))%"
+				} else if dataType.unit == "kg/m²" {
+					latestFormatted[dataType.id] = String(format: "%.1f %@", value, dataType.unit)
+				} else {
+					latestFormatted[dataType.id] = "\(Int(value)) \(dataType.unit)"
+				}
+			}
+		}
 	}
 }

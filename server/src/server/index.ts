@@ -4,6 +4,7 @@ import { logger } from '../lib/logger'
 import { createApp } from './app'
 import { errorHandler } from '../middleware/errorHandler'
 import { seedHealthData } from '../seeds/health'
+import { initializeJobs } from '../jobs'
 
 async function start() {
 	await mongoose.connect(env.MONGODB_URI)
@@ -13,6 +14,8 @@ async function start() {
 
 	const app = createApp()
 	app.use(errorHandler)
+
+	initializeJobs()
 
 	app.listen(env.PORT, () => {
 		logger.info(`Server listening on port ${env.PORT}`)

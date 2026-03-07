@@ -4,8 +4,10 @@ import HealthKit
 // MARK: - Categories
 
 enum HealthKitCategory: String, CaseIterable, Identifiable {
+	case bodyComposition = "Body Composition"
 	case cardiovascular = "Cardiovascular"
 	case activityMovement = "Activity & Movement"
+	case nutrition = "Nutrition"
 	case sleepRecovery = "Sleep & Recovery"
 	case stressMindfulness = "Stress & Mindfulness"
 	case environmentSafety = "Environment & Safety"
@@ -14,8 +16,10 @@ enum HealthKitCategory: String, CaseIterable, Identifiable {
 
 	var icon: String {
 		switch self {
+		case .bodyComposition: return "figure.arms.open"
 		case .cardiovascular: return "heart.fill"
 		case .activityMovement: return "figure.run"
+		case .nutrition: return "fork.knife"
 		case .sleepRecovery: return "bed.double.fill"
 		case .stressMindfulness: return "brain.head.profile"
 		case .environmentSafety: return "ear.fill"
@@ -34,6 +38,8 @@ enum AggregationStrategy {
 
 // MARK: - Data Type
 
+typealias DerivedComputation = (_ values: [String: Double], _ gender: String?) -> Double?
+
 struct HealthKitDataType: Identifiable, Hashable {
 	let id: String
 	let name: String
@@ -45,6 +51,8 @@ struct HealthKitDataType: Identifiable, Hashable {
 	let hkUnit: HKUnit?
 	let aggregation: AggregationStrategy
 	let lowerIsBetter: Bool
+	let derivedFrom: [String]?
+	let derivation: DerivedComputation?
 
 	init(
 		id: String, name: String, icon: String, unit: String,
@@ -53,12 +61,15 @@ struct HealthKitDataType: Identifiable, Hashable {
 		categoryTypeId: HKCategoryTypeIdentifier? = nil,
 		hkUnit: HKUnit? = nil,
 		aggregation: AggregationStrategy = .average,
-		lowerIsBetter: Bool = false
+		lowerIsBetter: Bool = false,
+		derivedFrom: [String]? = nil,
+		derivation: DerivedComputation? = nil
 	) {
 		self.id = id; self.name = name; self.icon = icon; self.unit = unit
 		self.category = category; self.quantityTypeId = quantityTypeId
 		self.categoryTypeId = categoryTypeId; self.hkUnit = hkUnit
 		self.aggregation = aggregation; self.lowerIsBetter = lowerIsBetter
+		self.derivedFrom = derivedFrom; self.derivation = derivation
 	}
 
 	var hkObjectType: HKObjectType? {
@@ -73,6 +84,7 @@ struct HealthKitDataType: Identifiable, Hashable {
 
 	var isQuantityType: Bool { quantityTypeId != nil }
 	var isCategoryType: Bool { categoryTypeId != nil }
+	var isDerived: Bool { derivedFrom != nil }
 
 	static func == (lhs: HealthKitDataType, rhs: HealthKitDataType) -> Bool {
 		lhs.id == rhs.id
@@ -89,8 +101,10 @@ extension HealthKitDataType {
 
 	static let catalog: [HealthKitDataType] = {
 		var types: [HealthKitDataType] = []
+		types.append(contentsOf: bodyCompositionTypes)
 		types.append(contentsOf: cardiovascularTypes)
 		types.append(contentsOf: activityMovementTypes)
+		types.append(contentsOf: nutritionTypes)
 		types.append(contentsOf: sleepRecoveryTypes)
 		types.append(contentsOf: stressMindfulnessTypes)
 		types.append(contentsOf: environmentSafetyTypes)
@@ -117,7 +131,7 @@ extension HealthKitDataType {
 	}
 
 	static var monitorableTypes: [HealthKitDataType] {
-		catalog.filter { $0.quantityTypeId != nil || $0.categoryTypeId != nil }
+		catalog.filter { $0.quantityTypeId != nil || $0.categoryTypeId != nil || $0.isDerived }
 	}
 
 	// MARK: - ECG (special type, not fetchable via standard queries)
@@ -125,6 +139,86 @@ extension HealthKitDataType {
 	private static var ecgType: HKObjectType? {
 		HKObjectType.electrocardiogramType()
 	}
+
+	// MARK: - Body Composition
+
+	private static let bodyCompositionTypes: [HealthKitDataType] = [
+		HealthKitDataType(
+			id: "bodyMass", name: "Body Weight", icon: "scalemass.fill", unit: "lb",
+			category: .bodyComposition, quantityTypeId: .bodyMass,
+			hkUnit: .pound(), aggregation: .sparse
+		),
+		HealthKitDataType(
+			id: "bodyMassIndex", name: "BMI", icon: "number.square.fill", unit: "kg/m²",
+			category: .bodyComposition, quantityTypeId: .bodyMassIndex,
+			hkUnit: .count(), aggregation: .sparse
+		),
+		HealthKitDataType(
+			id: "bodyFatPercentage", name: "Body Fat", icon: "percent", unit: "%",
+			category: .bodyComposition, quantityTypeId: .bodyFatPercentage,
+			hkUnit: .percent(), aggregation: .sparse, lowerIsBetter: true
+		),
+		HealthKitDataType(
+			id: "leanBodyMass", name: "Lean Body Mass", icon: "figure.strengthtraining.traditional", unit: "lb",
+			category: .bodyComposition, quantityTypeId: .leanBodyMass,
+			hkUnit: .pound(), aggregation: .sparse
+		),
+		HealthKitDataType(
+			id: "height", name: "Height", icon: "ruler.fill", unit: "in",
+			category: .bodyComposition, quantityTypeId: .height,
+			hkUnit: .inch(), aggregation: .sparse
+		),
+		HealthKitDataType(
+			id: "fatMass", name: "Fat Mass", icon: "scalemass", unit: "lb",
+			category: .bodyComposition, aggregation: .sparse, lowerIsBetter: true,
+			derivedFrom: ["bodyMass", "bodyFatPercentage"],
+			derivation: { values, _ in
+				guard let mass = values["bodyMass"], let fatPct = values["bodyFatPercentage"] else { return nil }
+				let pct = fatPct <= 1.0 ? fatPct : fatPct / 100.0
+				return mass * pct
+			}
+		),
+		HealthKitDataType(
+			id: "ffmi", name: "FFMI", icon: "figure.strengthtraining.functional", unit: "kg/m²",
+			category: .bodyComposition, aggregation: .sparse,
+			derivedFrom: ["leanBodyMass", "height"],
+			derivation: { values, _ in
+				guard let lbmLb = values["leanBodyMass"], let heightIn = values["height"], heightIn > 0 else { return nil }
+				let lbmKg = lbmLb * 0.453592
+				let heightM = heightIn * 0.0254
+				return lbmKg / (heightM * heightM)
+			}
+		),
+		HealthKitDataType(
+			id: "estimatedBodyWater", name: "Est. Body Water", icon: "drop.triangle.fill", unit: "%",
+			category: .bodyComposition, aggregation: .sparse,
+			derivedFrom: ["leanBodyMass", "bodyMass"],
+			derivation: { values, _ in
+				guard let lbm = values["leanBodyMass"], let mass = values["bodyMass"], mass > 0 else { return nil }
+				return (lbm * 0.73) / mass
+			}
+		),
+		HealthKitDataType(
+			id: "estimatedBoneMass", name: "Est. Bone Mass", icon: "figure.stand", unit: "lb",
+			category: .bodyComposition, aggregation: .sparse,
+			derivedFrom: ["leanBodyMass"],
+			derivation: { values, gender in
+				guard let lbm = values["leanBodyMass"] else { return nil }
+				let factor = gender == "female" ? 0.12 : 0.15
+				return lbm * factor
+			}
+		),
+		HealthKitDataType(
+			id: "estimatedMuscleMass", name: "Est. Muscle Mass", icon: "figure.highintensity.intervaltraining", unit: "lb",
+			category: .bodyComposition, aggregation: .sparse,
+			derivedFrom: ["leanBodyMass"],
+			derivation: { values, gender in
+				guard let lbm = values["leanBodyMass"] else { return nil }
+				let boneFactor = gender == "female" ? 0.12 : 0.15
+				return lbm * (1.0 - boneFactor)
+			}
+		),
+	]
 
 	// MARK: - Cardiovascular
 
@@ -274,6 +368,206 @@ extension HealthKitDataType {
 			id: "swimmingStrokeCount", name: "Swimming Strokes", icon: "figure.pool.swim", unit: "strokes",
 			category: .activityMovement, quantityTypeId: .swimmingStrokeCount,
 			hkUnit: .count(), aggregation: .cumulative
+		),
+	]
+
+	// MARK: - Nutrition
+
+	private static let nutritionTypes: [HealthKitDataType] = [
+		HealthKitDataType(
+			id: "dietaryEnergyConsumed", name: "Calories Consumed", icon: "flame.fill", unit: "kcal",
+			category: .nutrition, quantityTypeId: .dietaryEnergyConsumed,
+			hkUnit: .kilocalorie(), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryProtein", name: "Protein", icon: "fish.fill", unit: "g",
+			category: .nutrition, quantityTypeId: .dietaryProtein,
+			hkUnit: .gram(), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryFatTotal", name: "Total Fat", icon: "drop.fill", unit: "g",
+			category: .nutrition, quantityTypeId: .dietaryFatTotal,
+			hkUnit: .gram(), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryCarbohydrates", name: "Carbohydrates", icon: "leaf.fill", unit: "g",
+			category: .nutrition, quantityTypeId: .dietaryCarbohydrates,
+			hkUnit: .gram(), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryFiber", name: "Fiber", icon: "leaf", unit: "g",
+			category: .nutrition, quantityTypeId: .dietaryFiber,
+			hkUnit: .gram(), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietarySugar", name: "Sugar", icon: "cube.fill", unit: "g",
+			category: .nutrition, quantityTypeId: .dietarySugar,
+			hkUnit: .gram(), aggregation: .cumulative, lowerIsBetter: true
+		),
+		HealthKitDataType(
+			id: "dietarySodium", name: "Sodium", icon: "circle.grid.cross.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietarySodium,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative, lowerIsBetter: true
+		),
+		HealthKitDataType(
+			id: "dietaryWater", name: "Water", icon: "drop.fill", unit: "mL",
+			category: .nutrition, quantityTypeId: .dietaryWater,
+			hkUnit: .literUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryFatSaturated", name: "Saturated Fat", icon: "drop.halffull", unit: "g",
+			category: .nutrition, quantityTypeId: .dietaryFatSaturated,
+			hkUnit: .gram(), aggregation: .cumulative, lowerIsBetter: true
+		),
+		HealthKitDataType(
+			id: "dietaryFatMonounsaturated", name: "Monounsaturated Fat", icon: "drop", unit: "g",
+			category: .nutrition, quantityTypeId: .dietaryFatMonounsaturated,
+			hkUnit: .gram(), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryFatPolyunsaturated", name: "Polyunsaturated Fat", icon: "drop", unit: "g",
+			category: .nutrition, quantityTypeId: .dietaryFatPolyunsaturated,
+			hkUnit: .gram(), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryCholesterol", name: "Cholesterol", icon: "circle.grid.2x2.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryCholesterol,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative, lowerIsBetter: true
+		),
+		HealthKitDataType(
+			id: "dietaryVitaminA", name: "Vitamin A", icon: "pill.fill", unit: "mcg",
+			category: .nutrition, quantityTypeId: .dietaryVitaminA,
+			hkUnit: .gramUnit(with: .micro), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryVitaminB6", name: "Vitamin B6", icon: "pill.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryVitaminB6,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryVitaminB12", name: "Vitamin B12", icon: "pill.fill", unit: "mcg",
+			category: .nutrition, quantityTypeId: .dietaryVitaminB12,
+			hkUnit: .gramUnit(with: .micro), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryVitaminC", name: "Vitamin C", icon: "pill.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryVitaminC,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryVitaminD", name: "Vitamin D", icon: "sun.max.fill", unit: "mcg",
+			category: .nutrition, quantityTypeId: .dietaryVitaminD,
+			hkUnit: .gramUnit(with: .micro), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryVitaminE", name: "Vitamin E", icon: "pill.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryVitaminE,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryVitaminK", name: "Vitamin K", icon: "pill.fill", unit: "mcg",
+			category: .nutrition, quantityTypeId: .dietaryVitaminK,
+			hkUnit: .gramUnit(with: .micro), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryThiamin", name: "Thiamin (B1)", icon: "pill.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryThiamin,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryRiboflavin", name: "Riboflavin (B2)", icon: "pill.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryRiboflavin,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryNiacin", name: "Niacin (B3)", icon: "pill.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryNiacin,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryFolate", name: "Folate", icon: "pill.fill", unit: "mcg",
+			category: .nutrition, quantityTypeId: .dietaryFolate,
+			hkUnit: .gramUnit(with: .micro), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryPantothenicAcid", name: "Pantothenic Acid (B5)", icon: "pill.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryPantothenicAcid,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryBiotin", name: "Biotin", icon: "pill.fill", unit: "mcg",
+			category: .nutrition, quantityTypeId: .dietaryBiotin,
+			hkUnit: .gramUnit(with: .micro), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryCalcium", name: "Calcium", icon: "circle.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryCalcium,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryIron", name: "Iron", icon: "circle.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryIron,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryMagnesium", name: "Magnesium", icon: "circle.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryMagnesium,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryManganese", name: "Manganese", icon: "circle.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryManganese,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryPhosphorus", name: "Phosphorus", icon: "circle.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryPhosphorus,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryPotassium", name: "Potassium", icon: "circle.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryPotassium,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryZinc", name: "Zinc", icon: "circle.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryZinc,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietarySelenium", name: "Selenium", icon: "circle.fill", unit: "mcg",
+			category: .nutrition, quantityTypeId: .dietarySelenium,
+			hkUnit: .gramUnit(with: .micro), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryCopper", name: "Copper", icon: "circle.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryCopper,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryChromium", name: "Chromium", icon: "circle.fill", unit: "mcg",
+			category: .nutrition, quantityTypeId: .dietaryChromium,
+			hkUnit: .gramUnit(with: .micro), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryMolybdenum", name: "Molybdenum", icon: "circle.fill", unit: "mcg",
+			category: .nutrition, quantityTypeId: .dietaryMolybdenum,
+			hkUnit: .gramUnit(with: .micro), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryChloride", name: "Chloride", icon: "circle.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryChloride,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryIodine", name: "Iodine", icon: "circle.fill", unit: "mcg",
+			category: .nutrition, quantityTypeId: .dietaryIodine,
+			hkUnit: .gramUnit(with: .micro), aggregation: .cumulative
+		),
+		HealthKitDataType(
+			id: "dietaryCaffeine", name: "Caffeine", icon: "cup.and.saucer.fill", unit: "mg",
+			category: .nutrition, quantityTypeId: .dietaryCaffeine,
+			hkUnit: .gramUnit(with: .milli), aggregation: .cumulative
 		),
 	]
 

@@ -12,6 +12,8 @@ enum HealthTab: String, CaseIterable, Identifiable {
 enum HealthNavDestination: Hashable {
 	case exerciseDetail(String)
 	case workoutDetail(String)
+	case healthReports
+	case historicalSync
 }
 
 struct HealthPillarView: View {
@@ -50,6 +52,10 @@ struct HealthPillarView: View {
 				ExerciseDetailView(exerciseId: id, healthState: healthState)
 			case .workoutDetail(let id):
 				WorkoutDetailView(workoutId: id, selectedTab: $selectedTab, healthState: healthState)
+			case .healthReports:
+				HealthReportListView()
+			case .historicalSync:
+				HistoricalSyncView()
 			}
 		}
 		.navigationDestination(for: HistoryItem.self) { item in
@@ -58,15 +64,22 @@ struct HealthPillarView: View {
 		.navigationDestination(for: HealthKitDataType.self) { dataType in
 			MonitorDetailView(sampleType: dataType, healthKitService: healthKitService)
 		}
+		.navigationDestination(for: HealthReport.self) { report in
+			HealthReportDetailView(report: report)
+		}
 	}
 }
 
 private struct MonitorTabContent: View {
 	@ObservedObject var healthKitService: HealthKitService
+	@ObservedObject private var syncService = MonitorSyncService.shared
 
 	var body: some View {
 		if healthKitService.isAuthorized {
 			MonitorListView(healthKitService: healthKitService)
+				.task {
+					await syncService.syncIfNeeded()
+				}
 		} else {
 			MonitorGatingView(healthKitService: healthKitService)
 		}
