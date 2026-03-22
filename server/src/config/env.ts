@@ -15,7 +15,13 @@ const envSchema = z.object({
 	API_URL: z.string().url().optional().default('http://localhost:3001'),
 	WEB_URL: z.string().url().optional().default('http://localhost:3000'),
 	MOBILE_BUNDLE_ID: z.string().optional().default('com.integratedlife.app'),
-	TOGETHER_AI_API_KEY: z.string().optional().default('')
+	TOGETHER_AI_API_KEY: z.string().optional().default(''),
+	/** APNs .p8 key — optional; when set with KEY_ID and TEAM_ID, server sends remote pushes */
+	APNS_KEY_ID: z.string().optional(),
+	APNS_TEAM_ID: z.string().optional(),
+	APNS_KEY_PATH: z.string().optional(),
+	/** Set to "true" to force sandbox (development) APNs even in production NODE_ENV */
+	APNS_USE_SANDBOX: z.string().optional()
 })
 
 export type Env = z.infer<typeof envSchema>

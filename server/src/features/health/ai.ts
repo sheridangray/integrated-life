@@ -243,26 +243,29 @@ Analyze this data thoroughly. Provide insights on the trend, whether the values 
 
 const COMPREHENSIVE_REPORT_SYSTEM_PROMPT = `You are a medically-trained health analyst generating a comprehensive weekly health report for the Integrated Life app.
 
-You are analyzing Apple HealthKit data across multiple health domains: cardiovascular, activity, body composition, nutrition, sleep, and more.
+You are analyzing data across multiple health domains: cardiovascular metrics, activity, body composition, nutrition, sleep, and exercise/workout activity.
 
 Structure your report with these sections using markdown:
 ## Overview
-A 2-3 sentence summary of the week's health picture.
+A 2-3 sentence summary of the week's health picture, including both biometrics and training activity.
 
 ## Key Observations
 Bullet points highlighting the most notable findings from the past week.
 
+## Training Activity
+Summarize workout sessions and individual exercises performed during the period. Highlight volume, frequency, body part coverage, and notable performance (weights, reps, durations). Note any gaps in muscle group training.
+
 ## Trends & Patterns
-Analyze long-term trends across metrics. Compare this week's averages to the prior period. Note improvements, declines, or stability.
+Analyze long-term trends across metrics. Compare this week's averages to the prior period. Note improvements, declines, or stability. Connect training patterns to biometric trends where supported.
 
 ## Cross-Metric Correlations
-Identify relationships between different metrics (e.g., sleep quality vs resting HR, nutrition vs energy levels, body composition vs activity). Only include correlations supported by the data.
+Identify relationships between different metrics (e.g., sleep quality vs resting HR, nutrition vs energy levels, body composition vs activity, training volume vs recovery markers). Only include correlations supported by the data.
 
 ## Concerns & Flags
 Flag any values outside healthy ranges, sudden changes, or patterns that warrant attention. Be specific about which metrics and values are concerning.
 
 ## Recommendations
-Provide 3-5 specific, actionable recommendations based on the data. Prioritize by impact.
+Provide 3-5 specific, actionable recommendations based on the data. Prioritize by impact. Include training suggestions when relevant.
 
 Rules:
 - Reference specific numbers and date ranges
@@ -273,12 +276,35 @@ Rules:
 - If data is limited, acknowledge that and adjust analysis accordingly
 - Use a knowledgeable but approachable tone`
 
+export type WorkoutSummaryForReport = {
+	date: string
+	workoutName: string
+	startTime: string
+	endTime: string
+	completedAll: boolean
+	exercises: Array<{
+		exerciseName: string
+		bodyParts: string[]
+		sets: Array<{ weight?: number; reps?: number; minutes?: number; seconds?: number }>
+	}>
+}
+
+export type StandaloneExerciseForReport = {
+	date: string
+	exerciseName: string
+	bodyParts: string[]
+	resistanceType: string
+	sets: Array<{ weight?: number; reps?: number; minutes?: number; seconds?: number }>
+}
+
 export async function getComprehensiveReport(
 	allSamples: Record<string, Array<{ date: string; value: number }>>,
 	priorSamples: Record<string, Array<{ date: string; value: number }>>,
 	periodStart: string,
 	periodEnd: string,
-	userProfile?: { gender?: string; dateOfBirth?: Date }
+	userProfile?: { gender?: string; dateOfBirth?: Date },
+	workouts?: WorkoutSummaryForReport[],
+	standaloneExercises?: StandaloneExerciseForReport[]
 ): Promise<string | null> {
 	const metricSections: string[] = []
 
@@ -306,7 +332,11 @@ export async function getComprehensiveReport(
 		metricSections.push(section)
 	}
 
-	if (metricSections.length === 0) return null
+	const hasMetrics = metricSections.length > 0
+	const hasWorkouts = workouts && workouts.length > 0
+	const hasStandalone = standaloneExercises && standaloneExercises.length > 0
+
+	if (!hasMetrics && !hasWorkouts && !hasStandalone) return null
 
 	let profileContext = ''
 	if (userProfile?.gender || userProfile?.dateOfBirth) {
@@ -319,15 +349,48 @@ export async function getComprehensiveReport(
 		profileContext = `\nUser profile: ${parts.join(', ')}`
 	}
 
-	const userMessage = `Report period: ${periodStart} to ${periodEnd}${profileContext}
+	let workoutSection = ''
+	if (hasWorkouts) {
+		const workoutLines = workouts!.map((w) => {
+			const exerciseLines = w.exercises.map((e) => {
+				const setDetails = e.sets.map((s) => {
+					const parts: string[] = []
+					if (s.weight) parts.push(`${s.weight}lbs`)
+					if (s.reps) parts.push(`${s.reps} reps`)
+					if (s.minutes || s.seconds) parts.push(`${s.minutes ?? 0}m${s.seconds ?? 0}s`)
+					return parts.join(' x ') || 'completed'
+				}).join(', ')
+				return `    - ${e.exerciseName} [${e.bodyParts.join(', ')}]: ${setDetails}`
+			}).join('\n')
+			return `  ${w.date} | ${w.workoutName} (${w.startTime}–${w.endTime}, ${w.completedAll ? 'all exercises completed' : 'partial'})\n${exerciseLines}`
+		}).join('\n\n')
+		workoutSection = `\n\n## Workout Sessions (${workouts!.length} total)\n${workoutLines}`
+	}
 
-Health data across ${Object.keys(allSamples).length} metrics:
+	let standaloneSection = ''
+	if (hasStandalone) {
+		const lines = standaloneExercises!.map((e) => {
+			const setDetails = e.sets.map((s) => {
+				const parts: string[] = []
+				if (s.weight) parts.push(`${s.weight}lbs`)
+				if (s.reps) parts.push(`${s.reps} reps`)
+				if (s.minutes || s.seconds) parts.push(`${s.minutes ?? 0}m${s.seconds ?? 0}s`)
+				return parts.join(' x ') || 'completed'
+			}).join(', ')
+			return `  ${e.date} | ${e.exerciseName} (${e.resistanceType}) [${e.bodyParts.join(', ')}]: ${setDetails}`
+		}).join('\n')
+		standaloneSection = `\n\n## Individual Exercises (${standaloneExercises!.length} logged outside workouts)\n${lines}`
+	}
 
-${metricSections.join('\n\n')}
+	const metricsBlock = hasMetrics
+		? `\nHealth data across ${Object.keys(allSamples).length} metrics:\n\n${metricSections.join('\n\n')}`
+		: ''
+
+	const userMessage = `Report period: ${periodStart} to ${periodEnd}${profileContext}${metricsBlock}${workoutSection}${standaloneSection}
 
 Generate a comprehensive health report analyzing all this data together.`
 
-	return chatCompletion(COMPREHENSIVE_REPORT_SYSTEM_PROMPT, userMessage, { maxTokens: 2000 })
+	return chatCompletion(COMPREHENSIVE_REPORT_SYSTEM_PROMPT, userMessage, { maxTokens: 2500 })
 }
 
 const WORKOUT_SUMMARY_SYSTEM_PROMPT = `You are an AI Health Coach providing a post-workout summary for the Integrated Life app.

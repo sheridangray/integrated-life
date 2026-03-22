@@ -39,6 +39,7 @@ final class AuthState: ObservableObject {
 		do {
 			let user = try await authService.fetchCurrentUser()
 			self.user = user
+			await PushTokenRegistration.syncWithServerIfPossible()
 		} catch {
 			authService.clearTokens()
 		}
@@ -52,6 +53,7 @@ final class AuthState: ObservableObject {
 			expiresIn: response.expiresIn
 		)
 		user = response.user
+		await PushTokenRegistration.syncWithServerIfPossible()
 	}
 
 	func signOut() {

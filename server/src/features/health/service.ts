@@ -1,4 +1,6 @@
 import { AppError } from '../../lib/errors'
+import * as apns from '../../integrations/apns'
+import { logger } from '../../lib/logger'
 import { User } from '../../models/User'
 import * as repo from './repository'
 import * as healthAI from './ai'
@@ -407,6 +409,44 @@ export async function getLatestHealthSamples(userId: string) {
 	}))
 }
 
+// --- Push (APNs) ---
+
+export async function registerIosPushDeviceToken(userId: string, deviceTokenHex: string) {
+	const normalized = deviceTokenHex.trim().toLowerCase().replace(/\s/g, '')
+	if (!/^[0-9a-f]{64,256}$/.test(normalized)) {
+		throw new AppError('Invalid device token', 400)
+	}
+
+	const found = await User.findById(userId).exec()
+	if (!found) throw new AppError('User not found', 404)
+
+	const existing = found.iosPushDeviceTokens ?? []
+	const merged = [normalized, ...existing.filter((t) => t !== normalized)].slice(0, 8)
+	await User.findByIdAndUpdate(userId, { $set: { iosPushDeviceTokens: merged } })
+	return { registered: true as const }
+}
+
+async function sendHealthReportPushNotification(
+	userId: string,
+	reportId: string,
+	type: 'weekly' | 'on_demand',
+	periodStart: Date,
+	periodEnd: Date
+) {
+	if (!apns.isApnsConfigured()) return
+
+	const u = await User.findById(userId).select('iosPushDeviceTokens').lean()
+	const tokens = u?.iosPushDeviceTokens ?? []
+	if (tokens.length === 0) return
+
+	const fmt = (d: Date) => d.toISOString().split('T')[0]
+	await apns.sendApnsAlertToMany(tokens, {
+		title: type === 'weekly' ? 'Weekly Health Report Ready' : 'Health Report Ready',
+		body: `Your health report for ${fmt(periodStart)} to ${fmt(periodEnd)} is ready to view.`,
+		data: { reportId, reportType: type }
+	})
+}
+
 // --- Health Reports ---
 
 export async function generateReport(
@@ -419,12 +459,15 @@ export async function generateReport(
 	const start = periodStart ? new Date(periodStart) : new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000)
 	const priorStart = new Date(start.getTime() - (end.getTime() - start.getTime()))
 
-	const [currentSamples, priorSamples] = await Promise.all([
+	const [currentSamples, priorSamples, workoutLogs, allExerciseLogs] = await Promise.all([
 		repo.findHealthSamplesByUser(userId, start, end),
-		repo.findHealthSamplesByUser(userId, priorStart, start)
+		repo.findHealthSamplesByUser(userId, priorStart, start),
+		repo.findWorkoutLogsByDateRange(userId, start, end),
+		repo.findExerciseLogsByDateRange(userId, start, end)
 	])
 
-	if (currentSamples.length === 0) {
+	const hasData = currentSamples.length > 0 || workoutLogs.length > 0 || allExerciseLogs.length > 0
+	if (!hasData) {
 		throw new AppError('No health data available for the selected period', 400)
 	}
 
@@ -437,6 +480,52 @@ export async function generateReport(
 		return grouped
 	}
 
+	const workoutExerciseLogIds = new Set(
+		workoutLogs.flatMap((wl) => wl.exerciseLogIds.map((id) => id.toString()))
+	)
+
+	const workouts: healthAI.WorkoutSummaryForReport[] = workoutLogs.map((wl) => {
+		const populated = wl.exerciseLogIds as unknown as Array<{
+			exerciseId: { name: string; bodyParts: string[] } | string
+			sets: Array<{ weight?: number; reps?: number; minutes?: number; seconds?: number }>
+		}>
+
+		return {
+			date: wl.date,
+			workoutName: (wl.workoutId as unknown as { name: string })?.name ?? 'Workout',
+			startTime: wl.startTime,
+			endTime: wl.endTime,
+			completedAll: wl.completedAll,
+			exercises: populated.map((el) => {
+				const exercise = typeof el.exerciseId === 'object' ? el.exerciseId : null
+				return {
+					exerciseName: exercise?.name ?? 'Exercise',
+					bodyParts: exercise?.bodyParts ?? [],
+					sets: el.sets.map((s) => ({
+						weight: s.weight, reps: s.reps,
+						minutes: s.minutes, seconds: s.seconds
+					}))
+				}
+			})
+		}
+	})
+
+	const standaloneExercises: healthAI.StandaloneExerciseForReport[] = allExerciseLogs
+		.filter((el) => !workoutExerciseLogIds.has(el._id.toString()))
+		.map((el) => {
+			const exercise = el.exerciseId as unknown as { name: string; bodyParts: string[] } | null
+			return {
+				date: el.date,
+				exerciseName: exercise?.name ?? 'Exercise',
+				bodyParts: exercise?.bodyParts ?? [],
+				resistanceType: el.resistanceType,
+				sets: el.sets.map((s) => ({
+					weight: s.weight, reps: s.reps,
+					minutes: s.minutes, seconds: s.seconds
+				}))
+			}
+		})
+
 	const user = await User.findById(userId).exec()
 	const userProfile = user ? { gender: user.gender, dateOfBirth: user.dateOfBirth } : undefined
 
@@ -445,7 +534,9 @@ export async function generateReport(
 		groupByType(priorSamples),
 		start.toISOString().split('T')[0],
 		end.toISOString().split('T')[0],
-		userProfile
+		userProfile,
+		workouts,
+		standaloneExercises
 	)
 
 	if (!reportText) {
@@ -453,6 +544,9 @@ export async function generateReport(
 	}
 
 	const metrics = [...new Set(currentSamples.map((s) => s.sampleType))]
+	if (workouts.length > 0) metrics.push('workouts')
+	if (standaloneExercises.length > 0) metrics.push('standalone_exercises')
+
 	const report = await repo.createHealthReport({
 		userId,
 		type,
@@ -462,8 +556,13 @@ export async function generateReport(
 		metrics
 	})
 
+	const reportId = report._id.toString()
+	void sendHealthReportPushNotification(userId, reportId, type, start, end).catch((err) => {
+		logger.error('Health report APNs failed', { error: (err as Error).message, userId })
+	})
+
 	return {
-		id: report._id.toString(),
+		id: reportId,
 		type: report.type,
 		periodStart: report.periodStart.toISOString(),
 		periodEnd: report.periodEnd.toISOString(),

@@ -78,6 +78,7 @@ private struct MonitorTabContent: View {
 		if healthKitService.isAuthorized {
 			MonitorListView(healthKitService: healthKitService)
 				.task {
+					try? await healthKitService.requestAuthorization()
 					await syncService.syncIfNeeded()
 				}
 		} else {

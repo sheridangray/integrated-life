@@ -7,6 +7,8 @@ export type UserDocument = Document & {
 	avatarUrl?: string
 	gender?: 'female' | 'male' | 'other'
 	dateOfBirth?: Date
+	/** Hex APNs device tokens (most recent first), max ~8 */
+	iosPushDeviceTokens?: string[]
 	createdAt: Date
 	updatedAt: Date
 }
@@ -18,7 +20,8 @@ const userSchema = new Schema<UserDocument>(
 		name: { type: String, required: true },
 		avatarUrl: { type: String },
 		gender: { type: String, enum: ['female', 'male', 'other'] },
-		dateOfBirth: { type: Date }
+		dateOfBirth: { type: Date },
+		iosPushDeviceTokens: { type: [String], default: [] }
 	},
 	{ timestamps: true }
 )

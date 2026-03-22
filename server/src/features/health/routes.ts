@@ -34,6 +34,7 @@ historyRoutes.delete('/:type/:id', asyncHandler(controller.deleteHistoryItem))
 
 // --- Health Sample Sync ---
 healthInsightRoutes.use(authMiddleware)
+healthInsightRoutes.post('/push/register', asyncHandler(controller.registerIosPushDevice))
 healthInsightRoutes.post('/monitor/sync', asyncHandler(controller.syncMonitorData))
 healthInsightRoutes.get('/monitor/samples', asyncHandler(controller.getMonitorSamples))
 healthInsightRoutes.get('/monitor/latest', asyncHandler(controller.getMonitorLatest))

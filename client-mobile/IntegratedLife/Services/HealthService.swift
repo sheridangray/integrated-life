@@ -135,6 +135,19 @@ final class HealthService {
 		return try await api.post(path: "/v1/health/insights/workout", body: request, token: try await token(), as: WorkoutInsightResponse.self)
 	}
 
+	// MARK: - Push (APNs)
+
+	func registerPushDeviceToken(hex: String) async throws {
+		struct Body: Encodable {
+			let deviceToken: String
+		}
+		struct Response: Decodable {
+			let registered: Bool
+		}
+		let body = Body(deviceToken: hex)
+		_ = try await api.post(path: "/v1/health/push/register", body: body, token: try await token(), as: Response.self)
+	}
+
 	// MARK: - Monitor Sync
 
 	func syncMonitorData(samples: [MonitorSyncSample]) async throws -> MonitorSyncResponse {

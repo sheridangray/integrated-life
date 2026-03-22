@@ -243,10 +243,11 @@ struct MonitorDetailView: View {
 						.symbolSize(60)
 					}
 				}
-				.frame(height: 200)
-				.chartXAxis {
-					AxisMarks(values: .automatic(desiredCount: 5))
-				}
+			.frame(height: 200)
+			.chartYScale(domain: yAxisDomain)
+			.chartXAxis {
+				AxisMarks(values: .automatic(desiredCount: 5))
+			}
 				.chartOverlay { proxy in
 					GeometryReader { _ in
 						Rectangle()
@@ -271,6 +272,33 @@ struct MonitorDetailView: View {
 
 	private var yLabel: String {
 		sampleType.unit.isEmpty ? "Value" : sampleType.unit
+	}
+
+	private var yAxisDomain: ClosedRange<Double> {
+		if sampleType.aggregation == .cumulative {
+			let maxVal = chartDataPoints.map(\.value).max() ?? 1
+			return 0...maxVal * 1.05
+		}
+
+		var allValues = chartDataPoints.map(\.value)
+		if useAggregatedData && sampleType.aggregation == .average {
+			allValues += dailyDataPoints.compactMap(\.min)
+			allValues += dailyDataPoints.compactMap(\.max)
+		}
+
+		guard let minVal = allValues.min(), let maxVal = allValues.max() else {
+			return 0...1
+		}
+
+		if minVal == maxVal {
+			let center = minVal
+			let offset = max(center * 0.1, 1)
+			return (center - offset)...(center + offset)
+		}
+
+		let range = maxVal - minVal
+		let padding = range * 0.15
+		return (minVal - padding)...(maxVal + padding)
 	}
 
 	private var selectedDataOverlay: some View {

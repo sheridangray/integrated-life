@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { z } from 'zod'
 import type { AuthenticatedRequest } from '../../middleware/auth'
 import { logger } from '../../lib/logger'
 import { User } from '../../models/User'
@@ -384,6 +385,30 @@ export async function getWorkoutInsight(req: AuthenticatedRequest, res: Response
 	}
 
 	return res.json(insight)
+}
+
+const registerIosPushBody = z.object({
+	deviceToken: z.string().min(64).max(512).regex(/^[0-9a-fA-F\s]+$/u)
+})
+
+// --- Push ---
+
+export async function registerIosPushDevice(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const parsed = registerIosPushBody.safeParse(req.body)
+	if (!parsed.success) {
+		return validationError(res, req, parsed.error)
+	}
+
+	const normalized = parsed.data.deviceToken.replace(/\s/g, '')
+	const result = await healthService.registerIosPushDeviceToken(req.user.userId, normalized)
+	return res.json(result)
 }
 
 // --- Health Reports ---

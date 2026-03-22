@@ -85,6 +85,7 @@
 		CC11AA22BB33DD44EE55FF02 /* HealthReportDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC11AA22BB33DD44EE55FF06 /* HealthReportDetailView.swift */; };
 		CC11AA22BB33DD44EE55FF03 /* HistoricalSyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC11AA22BB33DD44EE55FF07 /* HistoricalSyncView.swift */; };
 		CC11AA22BB33DD44EE55FF04 /* MonitorSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC11AA22BB33DD44EE55FF08 /* MonitorSyncService.swift */; };
+		EE11AA22BB33CC44DD55EE01 /* PushTokenRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11AA22BB33CC44DD55EE02 /* PushTokenRegistration.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -170,6 +171,8 @@
 		CC11AA22BB33DD44EE55FF06 /* HealthReportDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthReportDetailView.swift; sourceTree = "<group>"; };
 		CC11AA22BB33DD44EE55FF07 /* HistoricalSyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoricalSyncView.swift; sourceTree = "<group>"; };
 		CC11AA22BB33DD44EE55FF08 /* MonitorSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorSyncService.swift; sourceTree = "<group>"; };
+		EE11AA22BB33CC44DD55EE02 /* PushTokenRegistration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushTokenRegistration.swift; sourceTree = "<group>"; };
+		EE11AA22BB33CC44DD55EE03 /* IntegratedLife.Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = IntegratedLife.Release.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -246,6 +249,7 @@
 				FDBE1D4DCD0716314753933D /* ContentView.swift */,
 				AC33410902D65442CDACFBB3 /* Info.plist */,
 				7077E42EE103DEB387E10E10 /* IntegratedLife.entitlements */,
+				EE11AA22BB33CC44DD55EE03 /* IntegratedLife.Release.entitlements */,
 				25A53EA7CACB338D769EC0CA /* IntegratedLifeApp.swift */,
 			);
 			path = IntegratedLife;
@@ -313,6 +317,7 @@
 				81D3CE6F7E8870B6BBE0F815 /* HealthState.swift */,
 				4337BD9A8D2718A41D95C07E /* KeychainService.swift */,
 				CB1ECC5828ACDF51388DFC72 /* NotificationState.swift */,
+				EE11AA22BB33CC44DD55EE02 /* PushTokenRegistration.swift */,
 				F0E1DCC29BA4887B37749993 /* SleepDisplayState.swift */,
 				CF5332ACF6A1987ED117D708 /* SleepState.swift */,
 				AA11BB22CC33DD44EE55FF05 /* TimeState.swift */,
@@ -548,6 +553,7 @@
 				09391CBAAB593834F9DEC218 /* NotificationService.swift in Sources */,
 				D2EA4337BB1D635A54A18D67 /* NotificationSettingsView.swift in Sources */,
 				5236E1FE991234A6241A5C29 /* NotificationState.swift in Sources */,
+				EE11AA22BB33CC44DD55EE01 /* PushTokenRegistration.swift in Sources */,
 				F770B53826A3E79E1BE45FDF /* PillarsOverviewView.swift in Sources */,
 				E18F2E9BBAF71DAFF62D6650 /* ProfileView.swift in Sources */,
 				7E8F5EE92B091077BF159766 /* RecurrenceExpander.swift in Sources */,
@@ -676,7 +682,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = IntegratedLife/IntegratedLife.entitlements;
+				CODE_SIGN_ENTITLEMENTS = IntegratedLife/IntegratedLife.Release.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 29XGJ7H3RU;

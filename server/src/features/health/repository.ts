@@ -253,6 +253,35 @@ export async function findRecentExerciseLogs(userId: string, days: number): Prom
 		.exec()
 }
 
+// --- Workout/Exercise Logs by Date Range ---
+
+export async function findWorkoutLogsByDateRange(
+	userId: string,
+	start: Date,
+	end: Date
+): Promise<WorkoutLogDocument[]> {
+	const startStr = start.toISOString().split('T')[0]
+	const endStr = end.toISOString().split('T')[0]
+	return WorkoutLog.find({ userId, date: { $gte: startStr, $lte: endStr } })
+		.sort({ date: -1 })
+		.populate('workoutId')
+		.populate({ path: 'exerciseLogIds', populate: { path: 'exerciseId' } })
+		.exec()
+}
+
+export async function findExerciseLogsByDateRange(
+	userId: string,
+	start: Date,
+	end: Date
+): Promise<ExerciseLogDocument[]> {
+	const startStr = start.toISOString().split('T')[0]
+	const endStr = end.toISOString().split('T')[0]
+	return ExerciseLog.find({ userId, date: { $gte: startStr, $lte: endStr } })
+		.sort({ date: -1 })
+		.populate('exerciseId')
+		.exec()
+}
+
 // --- Health Samples ---
 
 export async function upsertHealthSamples(

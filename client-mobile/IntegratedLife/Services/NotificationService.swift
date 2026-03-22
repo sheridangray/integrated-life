@@ -1,5 +1,6 @@
 import Foundation
 import os.log
+import UIKit
 import UserNotifications
 
 private let notificationLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.integratedlife.app", category: "Notifications")
@@ -15,21 +16,29 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
 
     // MARK: - Setup
 
-    func configure() {
-        center.delegate = self
-        let categories = Set(NotificationCategory.allCases.map(\.unCategory))
-        center.setNotificationCategories(categories)
-        notificationLog.info("Configured notification center with \(categories.count) categories")
-    }
+	func configure() {
+		center.delegate = self
+		let categories = Set(NotificationCategory.allCases.map(\.unCategory))
+		center.setNotificationCategories(categories)
+		notificationLog.info("Configured notification center with \(categories.count) categories")
+		DispatchQueue.main.async {
+			UIApplication.shared.registerForRemoteNotifications()
+		}
+	}
 
     // MARK: - Authorization
 
     func requestAuthorization() async -> Bool {
-        do {
-            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
-            notificationLog.info("Notification permission requested: granted=\(granted)")
-            return granted
-        } catch {
+		do {
+			let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+			notificationLog.info("Notification permission requested: granted=\(granted)")
+			if granted {
+				await MainActor.run {
+					UIApplication.shared.registerForRemoteNotifications()
+				}
+			}
+			return granted
+		} catch {
             notificationLog.error("Notification permission request failed: \(error.localizedDescription)")
             return false
         }
@@ -89,7 +98,7 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
         notificationLog.info("Will present notification: \(notification.request.identifier)")
-        return [.banner, .sound]
+		return [.banner, .sound, .list]
     }
 
     func userNotificationCenter(
