@@ -15,6 +15,7 @@ struct DebugMenuView: View {
 	@State private var resultMessage: String?
 	@State private var errorMessage: String?
 	@State private var notificationDebugOutput: String?
+	@State private var isSendingRemoteTestPush = false
 
 	var body: some View {
 		List {
@@ -148,10 +149,56 @@ struct DebugMenuView: View {
 
 	private var notificationDebugSection: some View {
 		Section("Notifications") {
-			Button("Test Notification (5s)") {
-				Task { await fireTestNotification() }
+			Text("Local = on-device schedule. Remote = API sends APNs to registered tokens (same path as real report pushes).")
+				.font(.caption)
+				.foregroundStyle(.secondary)
+
+			Button("Local: workout-style (5s)") {
+				Task { await scheduleLocalTestNotification(
+					category: .workoutReminder,
+					title: "Workout Today",
+					body: "Push Day - 6 exercises scheduled today",
+					delaySeconds: 5
+				) }
 			}
 			.buttonStyle(PrimaryButtonStyle())
+
+			Button("Local: health-report-style (5s)") {
+				Task { await scheduleLocalTestNotification(
+					category: .healthReport,
+					title: "Weekly Health Report Ready",
+					body: "Your health report for Mar 1 – Mar 7 is ready to view.",
+					delaySeconds: 5
+				) }
+			}
+			.buttonStyle(PrimaryButtonStyle())
+
+			Button {
+				Task { await sendRemoteTestPush() }
+			} label: {
+				HStack {
+					Spacer()
+					if isSendingRemoteTestPush {
+						ProgressView()
+							.padding(.trailing, 6)
+					}
+					Text("Remote: APNs test (via server)")
+					Spacer()
+				}
+			}
+			.buttonStyle(PrimaryButtonStyle())
+			.disabled(isSendingRemoteTestPush)
+
+			Button("Re-register device token with API") {
+				Task { @MainActor in
+					let hasToken = UserDefaults.standard.string(forKey: "apns.deviceTokenHex") != nil
+					await PushTokenRegistration.syncWithServerIfPossible()
+					notificationDebugOutput = hasToken
+						? "Token sync requested (check server / try Remote APNs test)."
+						: "No APNs token yet — allow notifications and open the app once so the device token is received."
+				}
+			}
+			.buttonStyle(SecondaryButtonStyle())
 
 			Button("Print Scheduled Dates") {
 				Task { await printScheduledDates() }
@@ -176,44 +223,72 @@ struct DebugMenuView: View {
 					.frame(maxWidth: .infinity, alignment: .leading)
 					.background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
 			}
+
+			Text("Weekly cron: Sunday 09:00 in the server timezone (Render is often UTC, not your local 9 AM).")
+				.font(.caption2)
+				.foregroundStyle(.tertiary)
 		}
 	}
 
-	private func fireTestNotification() async {
-		debugLog.info("Test Notification (5s) tapped")
-
+	private func ensureNotificationPermission() async -> Bool {
 		let status = await NotificationService.shared.authorizationStatus()
-		debugLog.info("Current notification permission: \(String(describing: status))")
-
 		if status != .authorized && status != .provisional {
-			debugLog.info("Permission not granted, requesting...")
 			let granted = await NotificationService.shared.requestAuthorization()
 			if !granted {
-				debugLog.error("Permission denied by user")
 				notificationDebugOutput = "Notifications are disabled. Enable in Settings to test."
-				return
+				return false
 			}
 		}
+		return true
+	}
+
+	private func scheduleLocalTestNotification(
+		category: NotificationCategory,
+		title: String,
+		body: String,
+		delaySeconds: TimeInterval
+	) async {
+		guard await ensureNotificationPermission() else { return }
 
 		let calendar = Calendar.current
-		let fireDate = Date().addingTimeInterval(5)
+		let fireDate = Date().addingTimeInterval(delaySeconds)
 		let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: fireDate)
-		let identifier = "debug-test-\(Int(Date().timeIntervalSince1970))"
-		debugLog.info("Scheduling test notification id=\(identifier) for \(fireDate)")
+		let identifier = "debug-local-\(category.rawValue)-\(Int(Date().timeIntervalSince1970))"
 
 		do {
 			try await NotificationService.shared.schedule(
 				identifier: identifier,
-				category: .workoutReminder,
-				title: "Workout Today",
-				body: "Push Day - 6 exercises scheduled today",
+				category: category,
+				title: title,
+				body: body,
 				dateComponents: components
 			)
-			debugLog.info("Test notification scheduled successfully")
-			notificationDebugOutput = "Notification scheduled for 5 seconds from now. Banner should appear (or check Notification Center if app is in background)."
+			notificationDebugOutput = "Local notification scheduled for \(Int(delaySeconds))s. Background the app or lock the phone to see the banner."
 		} catch {
-			debugLog.error("Failed to schedule test notification: \(error.localizedDescription)")
-			notificationDebugOutput = "Error: \(error.localizedDescription)"
+			notificationDebugOutput = "Local schedule error: \(error.localizedDescription)"
+		}
+	}
+
+	private func sendRemoteTestPush() async {
+		isSendingRemoteTestPush = true
+		defer { isSendingRemoteTestPush = false }
+
+		do {
+			let result = try await HealthService.shared.sendTestApnsPush()
+			notificationDebugOutput = "Remote APNs: delivered to \(result.sent) of \(result.attempted) token(s). Put app in background; if 0 delivered, check server logs and APNS_USE_SANDBOX vs build type."
+		} catch {
+			let message: String
+			if let api = error as? APIError {
+				switch api {
+				case .serverError(let msg):
+					message = msg
+				default:
+					message = error.localizedDescription
+				}
+			} else {
+				message = error.localizedDescription
+			}
+			notificationDebugOutput = "Remote APNs failed: \(message)"
 		}
 	}
 

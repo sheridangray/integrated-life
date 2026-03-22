@@ -411,6 +411,18 @@ export async function registerIosPushDevice(req: AuthenticatedRequest, res: Resp
 	return res.json(result)
 }
 
+export async function testApnsPush(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const result = await healthService.sendTestApnsPushToUser(req.user.userId)
+	return res.json(result)
+}
+
 // --- Health Reports ---
 
 export async function generateReport(req: AuthenticatedRequest, res: Response) {

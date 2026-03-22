@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit'
 import swaggerUi from 'swagger-ui-express'
 import { env } from '../config'
 import { requestId } from '../middleware/requestId'
+import { notFoundHandler } from '../middleware/notFound'
 import { errorHandler } from '../middleware/errorHandler'
 import { authRoutes } from '../features/auth/routes'
 import { exerciseRoutes, workoutRoutes, historyRoutes, healthInsightRoutes } from '../features/health/routes'
@@ -49,6 +50,8 @@ export function createApp() {
 	app.use('/v1/health', healthInsightRoutes)
 	app.use('/v1/sleep', sleepRoutes)
 	app.use('/v1/time', timeRoutes)
+
+	app.use(notFoundHandler)
 
 	return app
 }

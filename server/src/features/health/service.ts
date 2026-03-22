@@ -426,6 +426,34 @@ export async function registerIosPushDeviceToken(userId: string, deviceTokenHex:
 	return { registered: true as const }
 }
 
+/** Debug / iterative testing: send an alert push to all tokens for this user. */
+export async function sendTestApnsPushToUser(userId: string) {
+	if (!apns.isApnsConfigured()) {
+		throw new AppError(
+			'APNs is not configured (set APNS_KEY_ID, APNS_TEAM_ID, APNS_KEY_PATH on the server)',
+			503
+		)
+	}
+
+	const u = await User.findById(userId).select('iosPushDeviceTokens').lean()
+	const tokens = u?.iosPushDeviceTokens ?? []
+	if (tokens.length === 0) {
+		throw new AppError(
+			'No device tokens on file. Open the app signed in, allow notifications, bring app to foreground once, then try again.',
+			400
+		)
+	}
+
+	const sent = await apns.sendApnsAlertToMany(tokens, {
+		title: 'Integrated Life — test push',
+		body: 'APNs path is working. This was sent from the debug API.',
+		data: { type: 'debug_push_test' }
+	})
+
+	logger.info('Test APNs push', { userId, sent, attempted: tokens.length })
+	return { sent, attempted: tokens.length }
+}
+
 async function sendHealthReportPushNotification(
 	userId: string,
 	reportId: string,

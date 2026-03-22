@@ -148,6 +148,11 @@ final class HealthService {
 		_ = try await api.post(path: "/v1/health/push/register", body: body, token: try await token(), as: Response.self)
 	}
 
+	func sendTestApnsPush() async throws -> TestPushResponse {
+		struct Empty: Encodable {}
+		return try await api.post(path: "/v1/health/push/test", body: Empty(), token: try await token(), as: TestPushResponse.self)
+	}
+
 	// MARK: - Monitor Sync
 
 	func syncMonitorData(samples: [MonitorSyncSample]) async throws -> MonitorSyncResponse {
@@ -171,6 +176,11 @@ final class HealthService {
 	func fetchReport(id: String) async throws -> HealthReport {
 		try await api.get(path: "/v1/health/insights/reports/\(id)", token: try await token(), as: HealthReport.self)
 	}
+}
+
+struct TestPushResponse: Codable {
+	let sent: Int
+	let attempted: Int
 }
 
 struct FavoriteResponse: Codable {

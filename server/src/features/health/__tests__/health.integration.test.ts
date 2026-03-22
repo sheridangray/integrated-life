@@ -407,6 +407,24 @@ describe('Health integration tests', () => {
 		})
 	})
 
+	describe('POST /v1/health/push/test', () => {
+		it('returns 401 without auth', async () => {
+			await request(app).post('/v1/health/push/test').send({}).expect(401)
+		})
+
+		it('is registered (returns JSON error, not HTML 404)', async () => {
+			const res = await request(app)
+				.post('/v1/health/push/test')
+				.set('Authorization', `Bearer ${accessToken}`)
+				.send({})
+
+			expect(res.status).not.toBe(404)
+			expect(res.headers['content-type']).toMatch(/json/)
+			expect(res.body).toHaveProperty('error')
+			expect(res.body.error).toHaveProperty('message')
+		})
+	})
+
 	// --- AI Insights ---
 
 	describe('GET /v1/health/insights/exercise/:exerciseId', () => {

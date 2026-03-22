@@ -45,7 +45,9 @@ final class APIClient {
 			if let errorBody = try? JSONDecoder().decode(APIErrorBody.self, from: data) {
 				throw APIError.serverError(errorBody.error.message)
 			}
-			throw APIError.serverError(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode))
+			let statusHint = "HTTP \(httpResponse.statusCode)"
+			let detail = HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)
+			throw APIError.serverError("\(statusHint): \(detail)")
 		}
 	}
 
@@ -85,7 +87,9 @@ final class APIClient {
 			if let errorBody = try? JSONDecoder().decode(APIErrorBody.self, from: data) {
 				throw APIError.serverError(errorBody.error.message)
 			}
-			throw APIError.serverError(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode))
+			let statusHint = "HTTP \(httpResponse.statusCode)"
+			let detail = HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)
+			throw APIError.serverError("\(statusHint): \(detail)")
 		}
 
 		return try JSONDecoder().decode(T.self, from: data)
