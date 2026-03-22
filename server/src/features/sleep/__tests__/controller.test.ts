@@ -19,13 +19,14 @@ function createMockReq(
 		userId?: string
 	} = {}
 ): AuthenticatedRequest {
+	const userId = overrides.userId ?? 'user123'
 	return {
 		body: overrides.body ?? {},
 		params: overrides.params ?? {},
 		query: overrides.query ?? {},
 		headers: {},
 		id: 'req-test-123',
-		userId: overrides.userId ?? 'user123',
+		user: { userId, email: 'test@example.com' },
 	} as unknown as AuthenticatedRequest
 }
 

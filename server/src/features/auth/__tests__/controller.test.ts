@@ -188,6 +188,8 @@ describe('me controller', () => {
 			email: 'test@example.com',
 			name: 'Test User',
 			avatarUrl: 'https://example.com/avatar.png',
+			gender: null,
+			dateOfBirth: null,
 		})
 	})
 
