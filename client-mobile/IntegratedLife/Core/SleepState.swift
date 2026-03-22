@@ -5,8 +5,6 @@ final class SleepState: ObservableObject {
     private let sleepService = SleepService.shared
     private let aggregator = SleepDataAggregator()
 
-    private static let syncedDatesKey = "SleepState.syncedDates"
-
     @Published var todayScore: SleepScoreResponse?
     @Published var history: [SleepScoreResponse] = []
     @Published var isLoading = false
@@ -44,8 +42,8 @@ final class SleepState: ObservableObject {
 
         do {
             let availableDates = try await aggregator.availableSleepDates(maxDays: 90)
-            let syncedSet = loadSyncedDates()
-            let unsyncedDates = availableDates.filter { !syncedSet.contains(dateKey($0)) }
+            var syncedSet = SleepNightSyncCoordinator.loadSyncedDateKeys()
+            let unsyncedDates = availableDates.filter { !syncedSet.contains(SleepNightSyncCoordinator.dateKey(for: $0)) }
 
             if !unsyncedDates.isEmpty {
                 syncProgress = "Syncing 0/\(unsyncedDates.count) nights..."
@@ -53,20 +51,25 @@ final class SleepState: ObservableObject {
 
                 for (index, date) in unsyncedDates.enumerated() {
                     syncProgress = "Syncing \(index + 1)/\(unsyncedDates.count) nights..."
+                    let key = SleepNightSyncCoordinator.dateKey(for: date)
                     do {
-                        if let metrics = try await aggregator.aggregateNight(for: date) {
-                            let score = try await sleepService.submitNightlyMetrics(metrics)
-                            if dateKey(date) == dateKey(Date()) {
+                        if let score = try await SleepNightSyncCoordinator.syncSingleNight(
+                            wakeDate: date,
+                            aggregator: aggregator,
+                            sleepService: sleepService
+                        ) {
+                            if key == SleepNightSyncCoordinator.dateKey(for: Date()) {
                                 todayScore = score
                             }
                         }
-                        newlySynced.append(dateKey(date))
+                        newlySynced.append(key)
                     } catch {
-                        print("[SleepSync] Failed to sync \(dateKey(date)): \(error.localizedDescription)")
+                        print("[SleepSync] Failed to sync \(key): \(error.localizedDescription)")
                     }
                 }
 
-                saveSyncedDates(syncedSet.union(newlySynced))
+                syncedSet.formUnion(newlySynced)
+                SleepNightSyncCoordinator.saveSyncedDateKeys(syncedSet)
                 syncProgress = nil
             }
 
@@ -79,23 +82,5 @@ final class SleepState: ObservableObject {
 
         syncProgress = nil
         isSyncing = false
-    }
-
-    // MARK: - Synced dates tracking
-
-    private func dateKey(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        f.timeZone = Calendar.current.timeZone
-        return f.string(from: date)
-    }
-
-    private func loadSyncedDates() -> Set<String> {
-        let array = UserDefaults.standard.stringArray(forKey: Self.syncedDatesKey) ?? []
-        return Set(array)
-    }
-
-    private func saveSyncedDates(_ dates: Set<String>) {
-        UserDefaults.standard.set(Array(dates), forKey: Self.syncedDatesKey)
     }
 }

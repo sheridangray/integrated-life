@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		09391CBAAB593834F9DEC218 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15EAB6BE9BBEB1E6F6DFFB1 /* NotificationService.swift */; };
 		0B7EDC37D36B9983A08B4B89 /* SleepService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FE4419510561EC8B7F4511B /* SleepService.swift */; };
+		D4E5F6071829ABCD4012345AB /* SleepNightSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6071829ABCD4012345AA /* SleepNightSyncCoordinator.swift */; };
+		E5E6F6071829ABCD4012345AB /* SleepScoresBackgroundDeliveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E6F6071829ABCD4012345AA /* SleepScoresBackgroundDeliveryService.swift */; };
+		F6F7F8071829ABCD4012345AB /* AppNavigationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6F7F8071829ABCD4012345AA /* AppNavigationState.swift */; };
 		0C56B71BD1E48F111AC323F1 /* AppStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF327EF018A9E554180E1A70 /* AppStyles.swift */; };
 		0D8CF0B3FA1209BBA6EB4103 /* NotificationCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6DF7817DC127893228954F4 /* NotificationCategory.swift */; };
 		100DFB1320AC07CE46531FD0 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20FDE70F3F72C04E0F5E4D8F /* APIClient.swift */; };
@@ -102,6 +105,9 @@
 		370100519CF6CBB09AE89CC4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3D9DB39F45C52D374DF0293A /* IntegrationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationsView.swift; sourceTree = "<group>"; };
 		3FE4419510561EC8B7F4511B /* SleepService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepService.swift; sourceTree = "<group>"; };
+		D4E5F6071829ABCD4012345AA /* SleepNightSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepNightSyncCoordinator.swift; sourceTree = "<group>"; };
+		E5E6F6071829ABCD4012345AA /* SleepScoresBackgroundDeliveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepScoresBackgroundDeliveryService.swift; sourceTree = "<group>"; };
+		F6F7F8071829ABCD4012345AA /* AppNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigationState.swift; sourceTree = "<group>"; };
 		411018643E9E366A566D94AC /* MonitorListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorListView.swift; sourceTree = "<group>"; };
 		4337BD9A8D2718A41D95C07E /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		443DA3D610A51821A929F31C /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
@@ -275,6 +281,8 @@
 				DD8EFADE838E4DFF2DEFAC83 /* SleepDataAggregator.swift */,
 				53B009C0A0EDB4E3494101AB /* SleepDisplayService.swift */,
 				3FE4419510561EC8B7F4511B /* SleepService.swift */,
+				D4E5F6071829ABCD4012345AA /* SleepNightSyncCoordinator.swift */,
+				E5E6F6071829ABCD4012345AA /* SleepScoresBackgroundDeliveryService.swift */,
 				AA11BB22CC33DD44EE55FF04 /* TimeService.swift */,
 				B699E7C3B2402A6CCAD09C29 /* WorkoutNotificationScheduler.swift */,
 			);
@@ -293,6 +301,7 @@
 		70332C737E315C148C28ADEC /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				F6F7F8071829ABCD4012345AA /* AppNavigationState.swift */,
 				F0F52383F471281EB99FAA85 /* AuthState.swift */,
 				55FA62FF8843E4A55C4EDBB5 /* Config.swift */,
 				81D3CE6F7E8870B6BBE0F815 /* HealthState.swift */,
@@ -519,6 +528,7 @@
 				100DFB1320AC07CE46531FD0 /* APIClient.swift in Sources */,
 				0C56B71BD1E48F111AC323F1 /* AppStyles.swift in Sources */,
 				3A220E104316E9595BD437A2 /* AuthService.swift in Sources */,
+				F6F7F8071829ABCD4012345AB /* AppNavigationState.swift in Sources */,
 				8B4E04014BBC80166CA12C23 /* AuthState.swift in Sources */,
 				9424A7936B56F387B699B8A2 /* BackfillConfig.swift in Sources */,
 				6FF7662C5F2AC056370B862A /* Config.swift in Sources */,
@@ -574,6 +584,8 @@
 				9511B5A64934E147D866A4CB /* SleepModels.swift in Sources */,
 				33AA7DCA47473FE75B1890F2 /* SleepPillarView.swift in Sources */,
 				0B7EDC37D36B9983A08B4B89 /* SleepService.swift in Sources */,
+				D4E5F6071829ABCD4012345AB /* SleepNightSyncCoordinator.swift in Sources */,
+				E5E6F6071829ABCD4012345AB /* SleepScoresBackgroundDeliveryService.swift in Sources */,
 				97115EA0B4A786996B737CFE /* SleepStageBarView.swift in Sources */,
 				5B83338996ACC16331A8C565 /* SleepState.swift in Sources */,
 				8636470B2F5D379E5ED9B20A /* Workout.swift in Sources */,

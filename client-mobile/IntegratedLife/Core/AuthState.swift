@@ -59,6 +59,7 @@ final class AuthState: ObservableObject {
 	func signOut() {
 		authService.clearTokens()
 		user = nil
+		SleepScoresBackgroundDeliveryService.shared.stop()
 	}
 
 	func updateProfile(gender: String?, dateOfBirth: String?) async {

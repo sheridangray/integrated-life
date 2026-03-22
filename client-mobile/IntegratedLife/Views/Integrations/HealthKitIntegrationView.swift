@@ -125,5 +125,6 @@ struct HealthKitIntegrationView: View {
 		isRequesting = true
 		try? await healthKitService.requestAuthorization()
 		isRequesting = false
+		SleepScoresBackgroundDeliveryService.shared.syncRegistrationWithUserPreference()
 	}
 }

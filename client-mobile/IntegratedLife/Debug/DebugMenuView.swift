@@ -33,6 +33,25 @@ struct DebugMenuView: View {
 
 			notificationDebugSection
 
+			Section("Sleep scores (debug)") {
+				Button("Simulate deep link: Pillars → Sleep") {
+					AppNavigationState.shared.openSleepPillar()
+				}
+				.buttonStyle(SecondaryButtonStyle())
+
+				Button("Run morning sleep scores pipeline now") {
+					Task {
+						await SleepScoresBackgroundDeliveryService.shared.runPipelineNowForDebug()
+						notificationDebugOutput = "Pipeline finished. If scores exist, a notification may appear in ~1s (allow notifications)."
+					}
+				}
+				.buttonStyle(SecondaryButtonStyle())
+
+				Text("Pipeline uses the same logic as HealthKit background delivery (sync night → API → local notification).")
+					.font(.caption)
+					.foregroundStyle(.secondary)
+			}
+
 			Section("Step 1: Authorize") {
 				Button {
 					Task { await authorize() }

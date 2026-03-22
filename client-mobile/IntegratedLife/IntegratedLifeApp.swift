@@ -35,6 +35,7 @@ struct IntegratedLifeApp: App {
 	var body: some Scene {
 		WindowGroup {
 			ContentView()
+				.environmentObject(AppNavigationState.shared)
 		}
 		.onChange(of: scenePhase) { _, newPhase in
 			if newPhase == .active {
@@ -42,6 +43,7 @@ struct IntegratedLifeApp: App {
 				Task {
 					await WorkoutNotificationScheduler.shared.rescheduleAll()
 					await PushTokenRegistration.syncWithServerIfPossible()
+					SleepScoresBackgroundDeliveryService.shared.syncRegistrationWithUserPreference()
 				}
 			}
 		}

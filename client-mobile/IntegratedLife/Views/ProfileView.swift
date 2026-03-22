@@ -62,7 +62,7 @@ struct ProfileView: View {
 
 			Section("More") {
 				NavigationLink("Notifications") {
-					NotificationSettingsView(notificationState: notificationState)
+					NotificationSettingsView(notificationState: notificationState, healthKitService: healthKitService)
 				}
 				NavigationLink("Integrations") {
 					IntegrationsView(healthKitService: healthKitService)

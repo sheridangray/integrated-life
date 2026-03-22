@@ -1,12 +1,16 @@
 import SwiftUI
+import HealthKit
 
 struct NotificationSettingsView: View {
     @ObservedObject var notificationState: NotificationState
+    @ObservedObject var healthKitService: HealthKitService
+    @AppStorage(MorningSleepScoresPreferences.userDefaultsKey) private var morningSleepScoresEnabled = false
     @State private var pendingTime: Date
     @State private var hasSuggestedTime = false
 
-    init(notificationState: NotificationState) {
+    init(notificationState: NotificationState, healthKitService: HealthKitService) {
         self.notificationState = notificationState
+        self.healthKitService = healthKitService
         _pendingTime = State(initialValue: notificationState.notificationTime)
     }
 
@@ -21,12 +25,53 @@ struct NotificationSettingsView: View {
             if notificationState.workoutRemindersEnabled && notificationState.isAuthorized {
                 timePickerSection
             }
+
+            morningSleepScoresSection
         }
         .navigationTitle("Notifications")
         .task {
             await notificationState.refreshAuthorizationStatus()
             await suggestTimeIfNeeded()
+            SleepScoresBackgroundDeliveryService.shared.syncRegistrationWithUserPreference()
         }
+    }
+
+    private var sleepAnalysisAuthorized: Bool {
+        guard let sleepType = HKCategoryType.categoryType(forIdentifier: .sleepAnalysis) else { return false }
+        return healthKitService.authorizationStatus(for: sleepType) == .sharingAuthorized
+    }
+
+    private var morningSleepScoresSection: some View {
+        Section {
+            Toggle("Morning sleep & readiness", isOn: $morningSleepScoresEnabled)
+                .disabled(!sleepAnalysisAuthorized && !morningSleepScoresEnabled)
+                .onChange(of: morningSleepScoresEnabled) { _, newValue in
+                    Task { await handleMorningSleepScoresToggle(newValue) }
+                }
+        } footer: {
+            Text(morningSleepScoresFooter)
+        }
+    }
+
+    private var morningSleepScoresFooter: String {
+        if !sleepAnalysisAuthorized {
+            return "Allow sleep data in Profile → Integrations → Apple Health to use this. Delivery is best-effort after Health updates overnight sleep."
+        }
+        return "Best-effort local alert after Apple Health updates sleep, with your latest Sleep and Readiness scores. Tap the notification to open Pillars → Sleep."
+    }
+
+    private func handleMorningSleepScoresToggle(_ enabled: Bool) async {
+        if enabled {
+            let status = await NotificationService.shared.authorizationStatus()
+            if status != .authorized && status != .provisional {
+                let granted = await NotificationService.shared.requestAuthorization()
+                if !granted {
+                    await MainActor.run { morningSleepScoresEnabled = false }
+                    return
+                }
+            }
+        }
+        SleepScoresBackgroundDeliveryService.shared.syncRegistrationWithUserPreference()
     }
 
     // MARK: - Sections

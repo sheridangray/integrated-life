@@ -74,6 +74,31 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         notificationLog.info("Scheduled notification id=\(identifier)")
     }
 
+	/// Fires after a short delay (e.g. after HealthKit background work). Includes `userInfo` for deep linking.
+	func scheduleTimeInterval(
+		identifier: String,
+		category: NotificationCategory,
+		title: String,
+		body: String,
+		userInfo: [String: Any] = [:],
+		delaySeconds: TimeInterval = 1
+	) async throws {
+		notificationLog.debug("Scheduling time-interval notification id=\(identifier) delay=\(delaySeconds)s")
+
+		let content = UNMutableNotificationContent()
+		content.title = title
+		content.body = body
+		content.sound = .default
+		content.categoryIdentifier = category.rawValue
+		content.userInfo = userInfo
+
+		let interval = max(1, delaySeconds)
+		let trigger = UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false)
+		let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+		try await center.add(request)
+		notificationLog.info("Scheduled time-interval notification id=\(identifier)")
+	}
+
     // MARK: - Cancellation
 
     func cancelNotifications(withPrefix prefix: String) {
@@ -106,6 +131,12 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse
     ) async {
         notificationLog.info("User responded to notification: \(response.notification.request.identifier) action=\(response.actionIdentifier)")
-        // Future: handle action buttons (Skip, Add to Calendar)
+		let userInfo = response.notification.request.content.userInfo
+		if let deepLink = userInfo[NotificationDeepLink.userInfoKey] as? String,
+		   deepLink == NotificationDeepLink.pillarsSleep {
+			await MainActor.run {
+				AppNavigationState.shared.openSleepPillar()
+			}
+		}
     }
 }

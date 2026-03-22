@@ -1,11 +1,12 @@
 import SwiftUI
 
 struct PillarsOverviewView: View {
+	@Binding var pillarsPath: NavigationPath
 	@ObservedObject var healthKitService: HealthKitService
 	@ObservedObject var timeState: TimeState
 
 	var body: some View {
-		NavigationStack {
+		NavigationStack(path: $pillarsPath) {
 			ScrollView {
 				LazyVStack(spacing: 12) {
 					ForEach(Pillar.allCases, id: \.self) { pillar in
@@ -39,7 +40,7 @@ struct PillarsOverviewView: View {
 	}
 }
 
-enum Pillar: String, CaseIterable {
+enum Pillar: String, CaseIterable, Hashable {
 	case time = "Time"
 	case health = "Health"
 	case food = "Food"
