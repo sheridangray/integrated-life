@@ -65,23 +65,6 @@ struct SleepContributorsView: View {
                 subtitle: nil,
                 fraction: barFraction(breakdown.timingAlignment)
             )
-
-            if breakdown.penaltyTotal > 0 {
-                divider
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Adjustments")
-                        .font(.subheadline.weight(.semibold))
-                    Text("Preliminary \(breakdown.preliminaryScore) − penalty \(breakdown.penaltyTotal)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    if !breakdown.penaltyFlags.isEmpty {
-                        Text(breakdown.penaltyFlags.joined(separator: ", "))
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                    }
-                }
-                .padding(.vertical, 10)
-            }
         }
         .sheet(isPresented: $showDetail) {
             if let key = selectedContributor {

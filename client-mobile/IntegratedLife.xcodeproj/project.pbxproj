@@ -86,6 +86,7 @@
 		E5742EAF3AB4D2BA1B12EB5E /* MonitorGatingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B4B8225CEE2204942368A6 /* MonitorGatingView.swift */; };
 		EE11AA22BB33CC44DD55EE01 /* PushTokenRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11AA22BB33CC44DD55EE02 /* PushTokenRegistration.swift */; };
 		F204283AD72649CD3755AE6E /* SleepContributorsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D6F64CF12ED849DA7E177E9 /* SleepContributorsView.swift */; };
+		B8C9D0123F3A4B5C6D7E8F0B /* SleepPenaltiesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C9D0123F3A4B5C6D7E8F0A /* SleepPenaltiesView.swift */; };
 		F32DDE56C2AEA2FF0BB30AA5 /* HealthKitIntegrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 952C811DD97A65436093967C /* HealthKitIntegrationView.swift */; };
 		F4175675B4BE13D0614D5843 /* IntegrationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D9DB39F45C52D374DF0293A /* IntegrationsView.swift */; };
 		F770B53826A3E79E1BE45FDF /* PillarsOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 931D1968BC86A3D09146DD4E /* PillarsOverviewView.swift */; };
@@ -117,6 +118,7 @@
 		55FA62FF8843E4A55C4EDBB5 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		5CA778EBB641D560E9339EED /* ScoreRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreRingView.swift; sourceTree = "<group>"; };
 		5D6F64CF12ED849DA7E177E9 /* SleepContributorsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepContributorsView.swift; sourceTree = "<group>"; };
+		B8C9D0123F3A4B5C6D7E8F0A /* SleepPenaltiesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepPenaltiesView.swift; sourceTree = "<group>"; };
 		6177222E1971743C39FB8D38 /* HistoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryDetailView.swift; sourceTree = "<group>"; };
 		695C4B58F4E9E4D53C2BA11C /* NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
 		6C7369B54823AA02C012C310 /* SleepDisplayModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepDisplayModels.swift; sourceTree = "<group>"; };
@@ -341,6 +343,7 @@
 				5D6F64CF12ED849DA7E177E9 /* SleepContributorsView.swift */,
 				5170E210ADFE84A532792BB2 /* SleepDetailCardView.swift */,
 				DC4B6F16F85E3513C65919C3 /* SleepDisplayView.swift */,
+				B8C9D0123F3A4B5C6D7E8F0A /* SleepPenaltiesView.swift */,
 				714A04C0C4820B001ABE58EA /* SleepPillarView.swift */,
 				6F1E3B84C69E285340FF68DF /* SleepStageBarView.swift */,
 			);
@@ -576,6 +579,7 @@
 				C8D2BD2A19863B7DB650758C /* SignInView.swift in Sources */,
 				F204283AD72649CD3755AE6E /* SleepContributorsView.swift in Sources */,
 				70FE1EE01A07BA954A944608 /* SleepDataAggregator.swift in Sources */,
+				B8C9D0123F3A4B5C6D7E8F0B /* SleepPenaltiesView.swift in Sources */,
 				98ACFB3C91590ED73EFC7F51 /* SleepDetailCardView.swift in Sources */,
 				D9F65616FF8BDFF93802757D /* SleepDisplayModels.swift in Sources */,
 				2D5B97203423062EB18C91EB /* SleepDisplayService.swift in Sources */,

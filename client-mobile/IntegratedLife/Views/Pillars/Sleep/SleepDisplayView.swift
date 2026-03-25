@@ -33,11 +33,11 @@ struct SleepDisplayView: View {
             } else {
                 VStack(spacing: 20) {
                     periodPicker
-                    timeAsleepSection
+                    topSummarySection
                     graphSection
                     stagesSection
                     if let score = scoreResponse {
-                        sleepScoreSection(score)
+                        sleepScoringSection(score)
                     }
                 }
                 .padding()
@@ -58,6 +58,41 @@ struct SleepDisplayView: View {
             }
         }
         .pickerStyle(.segmented)
+    }
+
+    /// Time asleep with sleep score (colored number) on the right when a score is loaded.
+    @ViewBuilder
+    private var topSummarySection: some View {
+        if let score = scoreResponse {
+            HStack(alignment: .center, spacing: 20) {
+                timeAsleepColumn
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("SLEEP SCORE")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("\(score.sleepScore)")
+                        .font(.title2.weight(.semibold))
+                        .foregroundStyle(sleepScoreColor(score.sleepScore))
+                }
+            }
+            .padding(.vertical, 4)
+        } else {
+            timeAsleepSection
+        }
+    }
+
+    @ViewBuilder
+    private var timeAsleepColumn: some View {
+        if let value = state.timeAsleepValue {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(state.timeAsleepLabel)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text(value)
+                    .font(.title2.weight(.semibold))
+            }
+        }
     }
 
     @ViewBuilder
@@ -260,25 +295,35 @@ struct SleepDisplayView: View {
         }
     }
 
-    // MARK: - Sleep Score
+    // MARK: - Sleep scoring (contributors + penalties; ring lives in top summary)
 
     @ViewBuilder
-    private func sleepScoreSection(_ score: SleepScoreResponse) -> some View {
+    private func sleepScoringSection(_ score: SleepScoreResponse) -> some View {
         VStack(spacing: 16) {
-            ScoreRingView(score: score.sleepScore, label: "Sleep", size: 140)
-
             if score.calibrationPhase == 1 {
                 Label("Building your baseline -- scores become more accurate with more data.", systemImage: "info.circle")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            SleepContributorsView(
-                breakdown: score.sleepBreakdown,
-                scoreDate: score.date,
-                nightData: state.dayData
-            )
+            VStack(alignment: .leading, spacing: 0) {
+                SleepContributorsView(
+                    breakdown: score.sleepBreakdown,
+                    scoreDate: score.date,
+                    nightData: state.dayData
+                )
+            }
+            .padding()
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+
+            if score.sleepBreakdown.penaltyTotal > 0 || !score.sleepBreakdown.penaltyFlags.isEmpty {
+                VStack(alignment: .leading, spacing: 0) {
+                    SleepPenaltiesView(breakdown: score.sleepBreakdown, finalScore: score.sleepScore)
+                }
+                .padding()
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            }
         }
     }
 
@@ -352,6 +397,14 @@ struct SleepDisplayView: View {
 
     private func nearestNight(to date: Date, in nights: [SleepNightDisplay]) -> SleepNightDisplay? {
         nights.min(by: { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) })
+    }
+
+    private func sleepScoreColor(_ score: Int) -> Color {
+        switch score {
+        case 85...100: return .green
+        case 50..<85: return .yellow
+        default: return .red
+        }
     }
 
     private func colorForStage(_ stage: SleepStage) -> Color {
