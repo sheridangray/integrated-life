@@ -92,7 +92,14 @@ export async function getContributorDetail(req: Request, res: Response) {
 		})
 	}
 
-	const validKeys = ['duration', 'efficiency', 'deep', 'rem', 'restfulness', 'timing', 'physioStability']
+	const validKeys = [
+		'durationAdequacy',
+		'consistency',
+		'fragmentation',
+		'recoveryPhysiology',
+		'structure',
+		'timingAlignment',
+	]
 	if (!validKeys.includes(key)) {
 		return res.status(400).json({
 			error: { code: 'VALIDATION_ERROR', message: `key must be one of: ${validKeys.join(', ')}` },

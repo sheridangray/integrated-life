@@ -7,7 +7,6 @@ import {
 	computeSleepScore,
 	computeReadinessScore,
 	applyInteractionRules,
-	SCORING_CONFIG_V1,
 } from '../scoring'
 import type { NightlyMetrics, BaselineStats } from '@integrated-life/shared'
 
@@ -52,6 +51,31 @@ function makeBaseline(overrides: Partial<BaselineStats> = {}): BaselineStats {
 		sleepScoreSlope14d: 0.5,
 		...overrides,
 	}
+}
+
+/** Prior nights strictly before `template.date`, for sleep v2 history windows. */
+function makePriorNights(template: NightlyMetrics, count: number): NightlyMetrics[] {
+	const result: NightlyMetrics[] = []
+	const base = new Date(template.date + 'T12:00:00.000Z')
+	for (let i = count; i >= 1; i--) {
+		const d = new Date(base)
+		d.setUTCDate(d.getUTCDate() - i)
+		const ds = d.toISOString().slice(0, 10)
+		result.push({
+			...template,
+			date: ds,
+			sleepStartTime: `${ds}T23:30:00.000Z`,
+			sleepMidpoint: `${ds}T03:15:00.000Z`,
+			sleepEndTime: `${ds}T07:00:00.000Z`,
+			totalAsleepDuration: 450,
+			totalInBedDuration: 480,
+		})
+	}
+	return result
+}
+
+function recentIncludingTonight(template: NightlyMetrics, priorCount: number): NightlyMetrics[] {
+	return [...makePriorNights(template, priorCount), template]
 }
 
 describe('sigmoid', () => {
@@ -136,46 +160,52 @@ describe('determineActionBucket', () => {
 })
 
 describe('computeSleepScore', () => {
+	const m = makeMetrics()
+	const recent = recentIncludingTonight(m, 30)
+
 	it('computes a score between 0 and 100 with full data', () => {
-		const result = computeSleepScore(makeMetrics(), makeBaseline())
+		const result = computeSleepScore(m, makeBaseline(), recent)
 		expect(result.score).toBeGreaterThanOrEqual(0)
 		expect(result.score).toBeLessThanOrEqual(100)
 	})
 
-	it('includes all breakdown components with Tier A data', () => {
-		const result = computeSleepScore(makeMetrics(), makeBaseline())
-		expect(result.breakdown.duration).toBeDefined()
-		expect(result.breakdown.efficiency).toBeDefined()
-		expect(result.breakdown.deep).toBeDefined()
-		expect(result.breakdown.rem).toBeDefined()
-		expect(result.breakdown.restfulness).toBeDefined()
-		expect(result.breakdown.timing).toBeDefined()
-		expect(result.breakdown.physioStability).toBeDefined()
+	it('includes v2 breakdown fields with Tier A data', () => {
+		const result = computeSleepScore(m, makeBaseline(), recent)
+		expect(result.breakdown.durationAdequacy).toBeDefined()
+		expect(result.breakdown.consistency).toBeDefined()
+		expect(result.breakdown.fragmentation).toBeDefined()
+		expect(result.breakdown.recoveryPhysiology).toBeDefined()
+		expect(result.breakdown.timingAlignment).toBeDefined()
+		expect(result.breakdown.preliminaryScore).toBeDefined()
+		expect(result.breakdown.penaltyTotal).toBeDefined()
+		expect(Array.isArray(result.breakdown.penaltyFlags)).toBe(true)
 	})
 
-	it('degrades gracefully for Tier C (no stage data)', () => {
+	it('drops structure when stage data missing (Tier C)', () => {
 		const metrics = makeMetrics({
 			deepDuration: undefined,
 			remDuration: undefined,
 			coreDuration: undefined,
 			deviceTier: 'C',
 		})
-		const result = computeSleepScore(metrics, makeBaseline())
+		const r = recentIncludingTonight(metrics, 30)
+		const result = computeSleepScore(metrics, makeBaseline(), r)
 		expect(result.score).toBeGreaterThanOrEqual(0)
 		expect(result.score).toBeLessThanOrEqual(100)
-		expect(result.breakdown.deep).toBeUndefined()
-		expect(result.breakdown.rem).toBeUndefined()
+		expect(result.breakdown.structure).toBeUndefined()
 	})
 
-	it('uses population defaults when no baseline exists', () => {
-		const result = computeSleepScore(makeMetrics(), null)
+	it('uses defaults when no baseline exists', () => {
+		const result = computeSleepScore(m, null, recent)
 		expect(result.score).toBeGreaterThanOrEqual(0)
 		expect(result.score).toBeLessThanOrEqual(100)
 	})
 
-	it('penalizes short sleep duration', () => {
-		const good = computeSleepScore(makeMetrics({ totalAsleepDuration: 480 }), makeBaseline())
-		const bad = computeSleepScore(makeMetrics({ totalAsleepDuration: 240 }), makeBaseline())
+	it('penalizes shorter sleep vs longer sleep', () => {
+		const goodM = makeMetrics({ totalAsleepDuration: 480 })
+		const badM = makeMetrics({ totalAsleepDuration: 240 })
+		const good = computeSleepScore(goodM, makeBaseline(), recentIncludingTonight(goodM, 30))
+		const bad = computeSleepScore(badM, makeBaseline(), recentIncludingTonight(badM, 30))
 		expect(good.score).toBeGreaterThan(bad.score)
 	})
 })
@@ -189,20 +219,15 @@ describe('applyInteractionRules', () => {
 		expect(result.factor).toBeLessThan(1.0)
 	})
 
-	it('flags severely_short_sleep under 300 minutes', () => {
-		const metrics = makeMetrics({ totalAsleepDuration: 250 })
-		const result = applyInteractionRules(60, metrics, null, 3)
-		expect(result.flags).toContain('severely_short_sleep')
-	})
-
-	it('flags fragmented_sleep when efficiency < 75%', () => {
-		const metrics = makeMetrics({ totalAsleepDuration: 300, totalInBedDuration: 480 })
-		const result = applyInteractionRules(60, metrics, null, 3)
-		expect(result.flags).toContain('fragmented_sleep')
+	it('does not apply legacy sleep duration or fragmentation readiness penalties', () => {
+		const short = makeMetrics({ totalAsleepDuration: 250, totalInBedDuration: 480 })
+		const result = applyInteractionRules(60, short, null, 3)
+		expect(result.flags).not.toContain('severely_short_sleep')
+		expect(result.flags).not.toContain('fragmented_sleep')
 	})
 
 	it('respects calibration phase bounds', () => {
-		const metrics = makeMetrics({ totalAsleepDuration: 200, hrvMean: 20, avgHr: 70 })
+		const metrics = makeMetrics({ hrvMean: 20, avgHr: 70 })
 		const baseline = makeBaseline()
 
 		const phase1 = applyInteractionRules(50, metrics, baseline, 1)
@@ -214,14 +239,16 @@ describe('applyInteractionRules', () => {
 })
 
 describe('computeReadinessScore', () => {
+	const m = makeMetrics()
+
 	it('computes a score between 0 and 100', () => {
-		const result = computeReadinessScore(80, makeMetrics(), makeBaseline(), 10, 3)
+		const result = computeReadinessScore(80, m, makeBaseline(), 10, 3)
 		expect(result.score).toBeGreaterThanOrEqual(0)
 		expect(result.score).toBeLessThanOrEqual(100)
 	})
 
 	it('includes all readiness breakdown components', () => {
-		const result = computeReadinessScore(80, makeMetrics(), makeBaseline(), 0, 3)
+		const result = computeReadinessScore(80, m, makeBaseline(), 0, 3)
 		expect(result.breakdown.sleepScoreContrib).toBeDefined()
 		expect(result.breakdown.hrvDeviation).toBeDefined()
 		expect(result.breakdown.rhrDeviation).toBeDefined()
@@ -232,14 +259,14 @@ describe('computeReadinessScore', () => {
 	})
 
 	it('higher sleep score leads to higher readiness', () => {
-		const high = computeReadinessScore(95, makeMetrics(), makeBaseline(), 0, 3)
-		const low = computeReadinessScore(30, makeMetrics(), makeBaseline(), 0, 3)
+		const high = computeReadinessScore(95, m, makeBaseline(), 0, 3)
+		const low = computeReadinessScore(30, m, makeBaseline(), 0, 3)
 		expect(high.score).toBeGreaterThan(low.score)
 	})
 
 	it('higher sleep debt reduces readiness', () => {
-		const noDebt = computeReadinessScore(80, makeMetrics(), makeBaseline(), 0, 3)
-		const highDebt = computeReadinessScore(80, makeMetrics(), makeBaseline(), 30, 3)
+		const noDebt = computeReadinessScore(80, m, makeBaseline(), 0, 3)
+		const highDebt = computeReadinessScore(80, m, makeBaseline(), 30, 3)
 		expect(noDebt.score).toBeGreaterThan(highDebt.score)
 	})
 })

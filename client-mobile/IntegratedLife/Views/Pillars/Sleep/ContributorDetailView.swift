@@ -215,13 +215,12 @@ struct ContributorDetailView: View {
 
     private var displayName: String {
         let names: [String: String] = [
-            "duration": "Total Sleep",
-            "efficiency": "Efficiency",
-            "deep": "Deep Sleep",
-            "rem": "REM Sleep",
-            "restfulness": "Restfulness",
-            "timing": "Timing",
-            "physioStability": "Physio Stability",
+            "durationAdequacy": "Duration adequacy",
+            "consistency": "Consistency",
+            "fragmentation": "Fragmentation",
+            "recoveryPhysiology": "Recovery physiology",
+            "structure": "Sleep structure",
+            "timingAlignment": "Timing alignment",
         ]
         return names[contributorKey] ?? contributorKey
     }

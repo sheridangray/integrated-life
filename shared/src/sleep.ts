@@ -21,6 +21,12 @@ export const NightlyMetricsSchema = z.object({
 	remDuration: z.number().min(0).optional(),
 	coreDuration: z.number().min(0).optional(),
 	wasoDuration: z.number().min(0).optional(),
+	/** Awake minutes after first sleep onset until wake (fragmentation). */
+	awakeAfterOnsetMinutes: z.number().min(0).optional(),
+	/** Count of awake episodes > 2 minutes after sleep onset. */
+	awakeningCountOver2m: z.number().int().min(0).optional(),
+	/** Longest single awake episode after onset (minutes). */
+	longestAwakeEpisodeMinutes: z.number().min(0).optional(),
 	minHrValue: z.number().positive(),
 	minHrTimestamp: z.string(),
 	avgHr: z.number().positive(),
@@ -39,13 +45,16 @@ export type CreateNightlyMetrics = z.infer<typeof CreateNightlyMetricsSchema>
 // --- Sleep Score Component Breakdown ---
 
 export const ComponentBreakdownSchema = z.object({
-	duration: z.number(),
-	efficiency: z.number(),
-	deep: z.number().optional(),
-	rem: z.number().optional(),
-	restfulness: z.number(),
-	timing: z.number(),
-	physioStability: z.number(),
+	durationAdequacy: z.number(),
+	consistency: z.number(),
+	fragmentation: z.number(),
+	recoveryPhysiology: z.number(),
+	/** Omitted when stage data insufficient for structure score. */
+	structure: z.number().optional(),
+	timingAlignment: z.number(),
+	preliminaryScore: z.number(),
+	penaltyTotal: z.number(),
+	penaltyFlags: z.array(z.string()),
 })
 
 export type ComponentBreakdown = z.infer<typeof ComponentBreakdownSchema>

@@ -1,13 +1,15 @@
 import mongoose, { Schema, Document, Model } from 'mongoose'
 
 export type ComponentBreakdownSubdoc = {
-	duration: number
-	efficiency: number
-	deep?: number
-	rem?: number
-	restfulness: number
-	timing: number
-	physioStability: number
+	durationAdequacy: number
+	consistency: number
+	fragmentation: number
+	recoveryPhysiology: number
+	structure?: number
+	timingAlignment: number
+	preliminaryScore: number
+	penaltyTotal: number
+	penaltyFlags: string[]
 }
 
 export type ReadinessBreakdownSubdoc = {
@@ -37,15 +39,18 @@ export type SleepScoreDocument = Document & {
 	updatedAt: Date
 }
 
+/** Legacy documents may still carry pre-v2 keys; new writes always use v2 shape (durationAdequacy, …). */
 const componentBreakdownSchema = new Schema<ComponentBreakdownSubdoc>(
 	{
-		duration: { type: Number, required: true },
-		efficiency: { type: Number, required: true },
-		deep: { type: Number },
-		rem: { type: Number },
-		restfulness: { type: Number, required: true },
-		timing: { type: Number, required: true },
-		physioStability: { type: Number, required: true },
+		durationAdequacy: { type: Number, required: true },
+		consistency: { type: Number, required: true },
+		fragmentation: { type: Number, required: true },
+		recoveryPhysiology: { type: Number, required: true },
+		structure: { type: Number },
+		timingAlignment: { type: Number, required: true },
+		preliminaryScore: { type: Number, required: true },
+		penaltyTotal: { type: Number, required: true },
+		penaltyFlags: [{ type: String }],
 	},
 	{ _id: false }
 )

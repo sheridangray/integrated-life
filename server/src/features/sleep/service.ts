@@ -1,11 +1,44 @@
 import type { NightlyMetrics, SleepScore, BaselineStats } from '@integrated-life/shared'
+import type { SleepNightlyMetricsDocument } from '../../models/SleepNightlyMetrics'
 import * as repository from './repository'
-import { computeSleepScore, computeReadinessScore, getCalibrationPhase, determineActionBucket, computeContributorDetail, SCORING_CONFIG_V1 } from './scoring'
+import {
+	computeSleepScore,
+	computeReadinessScore,
+	getCalibrationPhase,
+	determineActionBucket,
+	computeContributorDetail,
+	SCORING_CONFIG_V2,
+} from './scoring'
 import type { ContributorDetail } from './scoring'
 import { getContributorAssessment } from './ai'
 import { updateBaseline, computeSlopes } from './baseline'
 import { computeSleepDebt, getOptimalDuration } from './sleep-debt'
 import type { ScoringResult } from './types'
+
+function nightlyDocToMetrics(d: SleepNightlyMetricsDocument): NightlyMetrics {
+	return {
+		date: d.date,
+		sleepStartTime: d.sleepStartTime,
+		sleepEndTime: d.sleepEndTime,
+		sleepMidpoint: d.sleepMidpoint,
+		totalAsleepDuration: d.totalAsleepDuration,
+		totalInBedDuration: d.totalInBedDuration,
+		deepDuration: d.deepDuration,
+		remDuration: d.remDuration,
+		coreDuration: d.coreDuration,
+		wasoDuration: d.wasoDuration,
+		awakeAfterOnsetMinutes: d.awakeAfterOnsetMinutes,
+		awakeningCountOver2m: d.awakeningCountOver2m,
+		longestAwakeEpisodeMinutes: d.longestAwakeEpisodeMinutes,
+		minHrValue: d.minHrValue,
+		minHrTimestamp: d.minHrTimestamp,
+		avgHr: d.avgHr,
+		hrvMean: d.hrvMean,
+		respiratoryRateMean: d.respiratoryRateMean,
+		temperatureDeviation: d.temperatureDeviation,
+		deviceTier: d.deviceTier as 'A' | 'B' | 'C',
+	}
+}
 
 function docToSleepScore(doc: any): SleepScore {
 	return {
@@ -32,25 +65,7 @@ export async function processNightlyData(
 
 	const existingBaseline = await repository.findBaseline(userId) as BaselineStats | null
 	const recentMetricDocs = await repository.findNightlyMetrics(userId, 60)
-	const recentMetrics: NightlyMetrics[] = recentMetricDocs.map(d => ({
-		date: d.date,
-		sleepStartTime: d.sleepStartTime,
-		sleepEndTime: d.sleepEndTime,
-		sleepMidpoint: d.sleepMidpoint,
-		totalAsleepDuration: d.totalAsleepDuration,
-		totalInBedDuration: d.totalInBedDuration,
-		deepDuration: d.deepDuration,
-		remDuration: d.remDuration,
-		coreDuration: d.coreDuration,
-		wasoDuration: d.wasoDuration,
-		minHrValue: d.minHrValue,
-		minHrTimestamp: d.minHrTimestamp,
-		avgHr: d.avgHr,
-		hrvMean: d.hrvMean,
-		respiratoryRateMean: d.respiratoryRateMean,
-		temperatureDeviation: d.temperatureDeviation,
-		deviceTier: d.deviceTier as 'A' | 'B' | 'C',
-	}))
+	const recentMetrics: NightlyMetrics[] = recentMetricDocs.map(nightlyDocToMetrics)
 
 	const dataPointCount = existingBaseline?.dataPointCount ?? recentMetrics.length
 	const calibrationPhase = getCalibrationPhase(dataPointCount)
@@ -59,7 +74,8 @@ export async function processNightlyData(
 	const { score: sleepScore, breakdown: sleepBreakdown } = computeSleepScore(
 		metrics,
 		baseline,
-		SCORING_CONFIG_V1
+		recentMetrics,
+		SCORING_CONFIG_V2
 	)
 
 	const optimalDuration = getOptimalDuration(baseline)
@@ -76,7 +92,7 @@ export async function processNightlyData(
 		baseline,
 		sleepDebt,
 		calibrationPhase,
-		SCORING_CONFIG_V1
+		SCORING_CONFIG_V2
 	)
 
 	const actionBucket = determineActionBucket(readinessScore)
@@ -89,7 +105,7 @@ export async function processNightlyData(
 		interactionFlags,
 		interactionFactor,
 		actionBucket,
-		modelVersion: SCORING_CONFIG_V1.modelVersion,
+		modelVersion: SCORING_CONFIG_V2.modelVersion,
 		calibrationPhase,
 		deviceTier: metrics.deviceTier,
 	}
@@ -113,25 +129,7 @@ export async function processNightlyData(
 
 export async function recomputeBaseline(userId: string): Promise<BaselineStats> {
 	const recentMetricDocs = await repository.findNightlyMetrics(userId, 90)
-	const recentMetrics: NightlyMetrics[] = recentMetricDocs.map(d => ({
-		date: d.date,
-		sleepStartTime: d.sleepStartTime,
-		sleepEndTime: d.sleepEndTime,
-		sleepMidpoint: d.sleepMidpoint,
-		totalAsleepDuration: d.totalAsleepDuration,
-		totalInBedDuration: d.totalInBedDuration,
-		deepDuration: d.deepDuration,
-		remDuration: d.remDuration,
-		coreDuration: d.coreDuration,
-		wasoDuration: d.wasoDuration,
-		minHrValue: d.minHrValue,
-		minHrTimestamp: d.minHrTimestamp,
-		avgHr: d.avgHr,
-		hrvMean: d.hrvMean,
-		respiratoryRateMean: d.respiratoryRateMean,
-		temperatureDeviation: d.temperatureDeviation,
-		deviceTier: d.deviceTier as 'A' | 'B' | 'C',
-	}))
+	const recentMetrics: NightlyMetrics[] = recentMetricDocs.map(nightlyDocToMetrics)
 
 	const freshBaseline = updateBaseline(null, recentMetrics)
 
@@ -157,28 +155,13 @@ export async function getContributorDetailForDate(
 	const metricDoc = await repository.findNightlyMetricsByDate(userId, date)
 	if (!metricDoc) return null
 
-	const metrics: NightlyMetrics = {
-		date: metricDoc.date,
-		sleepStartTime: metricDoc.sleepStartTime,
-		sleepEndTime: metricDoc.sleepEndTime,
-		sleepMidpoint: metricDoc.sleepMidpoint,
-		totalAsleepDuration: metricDoc.totalAsleepDuration,
-		totalInBedDuration: metricDoc.totalInBedDuration,
-		deepDuration: metricDoc.deepDuration,
-		remDuration: metricDoc.remDuration,
-		coreDuration: metricDoc.coreDuration,
-		wasoDuration: metricDoc.wasoDuration,
-		minHrValue: metricDoc.minHrValue,
-		minHrTimestamp: metricDoc.minHrTimestamp,
-		avgHr: metricDoc.avgHr,
-		hrvMean: metricDoc.hrvMean,
-		respiratoryRateMean: metricDoc.respiratoryRateMean,
-		temperatureDeviation: metricDoc.temperatureDeviation,
-		deviceTier: metricDoc.deviceTier as 'A' | 'B' | 'C',
-	}
+	const metrics = nightlyDocToMetrics(metricDoc)
+
+	const recentMetricDocs = await repository.findNightlyMetrics(userId, 60)
+	const recentMetrics = recentMetricDocs.map(nightlyDocToMetrics)
 
 	const baseline = await repository.findBaseline(userId) as BaselineStats | null
-	const detail = computeContributorDetail(key, metrics, baseline)
+	const detail = computeContributorDetail(key, metrics, baseline, recentMetrics)
 	if (!detail) return null
 
 	const aiAssessment = await getContributorAssessment(detail)

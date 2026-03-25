@@ -13,13 +13,12 @@ Rules:
 - Use a warm, supportive tone`
 
 const CONTRIBUTOR_LABELS: Record<string, string> = {
-	duration: 'Total Sleep Duration',
-	efficiency: 'Sleep Efficiency',
-	deep: 'Deep Sleep',
-	rem: 'REM Sleep',
-	restfulness: 'Restfulness',
-	timing: 'Sleep Timing Consistency',
-	physioStability: 'Physiological Stability',
+	durationAdequacy: 'Sleep Duration Adequacy',
+	consistency: 'Sleep Onset Consistency',
+	fragmentation: 'Sleep Fragmentation',
+	recoveryPhysiology: 'Recovery Physiology',
+	structure: 'Sleep Structure (Stages)',
+	timingAlignment: 'Timing Alignment',
 }
 
 export async function getContributorAssessment(

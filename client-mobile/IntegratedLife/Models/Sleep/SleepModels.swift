@@ -48,6 +48,9 @@ struct NightlyMetrics: Codable {
     let remDuration: Double?
     let coreDuration: Double?
     let wasoDuration: Double?
+    let awakeAfterOnsetMinutes: Double?
+    let awakeningCountOver2m: Int?
+    let longestAwakeEpisodeMinutes: Double?
     let minHrValue: Double
     let minHrTimestamp: String
     let avgHr: Double
@@ -60,13 +63,15 @@ struct NightlyMetrics: Codable {
 // MARK: - Component Breakdowns
 
 struct SleepBreakdown: Codable {
-    let duration: Int
-    let efficiency: Int
-    let deep: Int?
-    let rem: Int?
-    let restfulness: Int
-    let timing: Int
-    let physioStability: Int
+    let durationAdequacy: Int
+    let consistency: Int
+    let fragmentation: Int
+    let recoveryPhysiology: Int
+    let structure: Int?
+    let timingAlignment: Int
+    let preliminaryScore: Int
+    let penaltyTotal: Int
+    let penaltyFlags: [String]
 }
 
 struct ReadinessBreakdown: Codable {

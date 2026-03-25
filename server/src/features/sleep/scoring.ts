@@ -1,23 +1,24 @@
 import type { NightlyMetrics, BaselineStats, ComponentBreakdown, ReadinessBreakdown, ActionBucket } from '@integrated-life/shared'
 
+/** v1 config kept for readiness weights / k-values / interaction bounds parity. */
 export const SCORING_CONFIG_V1 = {
 	modelVersion: 'sleep_readiness_v1.2_rule_based',
 	sleepWeights: {
-		duration: 0.20,
+		duration: 0.2,
 		efficiency: 0.15,
 		deep: 0.15,
 		rem: 0.15,
-		restfulness: 0.10,
+		restfulness: 0.1,
 		timing: 0.15,
-		physioStability: 0.10,
+		physioStability: 0.1,
 	},
 	readinessWeights: {
-		sleepScore: 0.30,
-		hrvDeviation: 0.20,
+		sleepScore: 0.3,
+		hrvDeviation: 0.2,
 		rhrDeviation: 0.15,
-		recoveryIndex: 0.10,
-		hrvTrendSlope: 0.10,
-		sleepDebt: 0.10,
+		recoveryIndex: 0.1,
+		hrvTrendSlope: 0.1,
+		sleepDebt: 0.1,
 		activityLoad: 0.05,
 	},
 	kValues: {
@@ -26,9 +27,9 @@ export const SCORING_CONFIG_V1 = {
 		steep: 2.0,
 	},
 	interactionBounds: {
-		1: { min: 0.85, max: 1.10 },
+		1: { min: 0.85, max: 1.1 },
 		2: { min: 0.75, max: 1.15 },
-		3: { min: 0.65, max: 1.20 },
+		3: { min: 0.65, max: 1.2 },
 	} as Record<number, { min: number; max: number }>,
 	actionThresholds: {
 		pushHard: 85,
@@ -36,6 +37,24 @@ export const SCORING_CONFIG_V1 = {
 		activeRecovery: 50,
 	},
 } as const
+
+export const SCORING_CONFIG_V2 = {
+	modelVersion: 'sleep_readiness_v2.0_dci_rst',
+	sleepWeights: {
+		D: 0.35,
+		C: 0.2,
+		I: 0.15,
+		R: 0.15,
+		S: 0.1,
+		T: 0.05,
+	},
+	readinessWeights: SCORING_CONFIG_V1.readinessWeights,
+	kValues: SCORING_CONFIG_V1.kValues,
+	interactionBounds: SCORING_CONFIG_V1.interactionBounds,
+	actionThresholds: SCORING_CONFIG_V1.actionThresholds,
+} as const
+
+export type ScoringConfig = typeof SCORING_CONFIG_V2
 
 export function sigmoid(z: number, k: number): number {
 	return 100 / (1 + Math.exp(-k * z))
@@ -54,151 +73,269 @@ export function getCalibrationPhase(dataPointCount: number): 1 | 2 | 3 {
 }
 
 export function determineActionBucket(readinessScore: number): ActionBucket {
-	const t = SCORING_CONFIG_V1.actionThresholds
+	const t = SCORING_CONFIG_V2.actionThresholds
 	if (readinessScore >= t.pushHard) return 'push_hard'
 	if (readinessScore >= t.maintain) return 'maintain'
 	if (readinessScore >= t.activeRecovery) return 'active_recovery'
 	return 'full_rest'
 }
 
-function minutesToMidpointHour(isoString: string): number {
-	const d = new Date(isoString)
-	let h = d.getUTCHours() + d.getUTCMinutes() / 60
-	if (h > 12) h -= 24
-	return h
+// --- Sleep v2 helpers (recentMetrics: oldest → newest; may include the night being scored) ---
+
+function clamp(n: number, lo: number, hi: number): number {
+	return Math.max(lo, Math.min(hi, n))
+}
+
+function median(values: number[]): number {
+	if (values.length === 0) return 0
+	const s = [...values].sort((a, b) => a - b)
+	const mid = Math.floor(s.length / 2)
+	return s.length % 2 ? s[mid]! : (s[mid - 1]! + s[mid]!) / 2
+}
+
+function tail<T>(arr: T[], n: number): T[] {
+	if (arr.length <= n) return arr
+	return arr.slice(-n)
+}
+
+/** Nights strictly before scoring date (same calendar `date` string excluded). */
+function priorNights(recentMetrics: NightlyMetrics[], scoringDate: string): NightlyMetrics[] {
+	return recentMetrics.filter(m => m.date < scoringDate)
+}
+
+/** Last `n` nights on or before `upToDate`, sorted by date ascending. */
+function lastNightsUpTo(recentMetrics: NightlyMetrics[], upToDate: string, n: number): NightlyMetrics[] {
+	const sorted = [...recentMetrics].filter(m => m.date <= upToDate).sort((a, b) => a.date.localeCompare(b.date))
+	return sorted.slice(-n)
+}
+
+function minutesSinceUtcMidnight(iso: string): number {
+	const d = new Date(iso)
+	return d.getUTCHours() * 60 + d.getUTCMinutes() + d.getUTCSeconds() / 60
+}
+
+/** Shortest arc between two clock times on a 24h circle (minutes). */
+function circularDeltaMinutes(a: number, b: number): number {
+	const max = 24 * 60
+	let d = Math.abs(a - b)
+	if (d > max / 2) d = max - d
+	return d
+}
+
+function meanStd(values: number[]): { mean: number; std: number } | null {
+	if (values.length < 3) return null
+	const mean = values.reduce((s, v) => s + v, 0) / values.length
+	const variance = values.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / values.length
+	const std = Math.sqrt(variance)
+	return { mean, std: std || 1e-9 }
+}
+
+function computeNeedMinutes(prior: NightlyMetrics[]): number {
+	if (prior.length === 0) return 480
+	const tst = tail(prior, 28).map(m => m.totalAsleepDuration)
+	return clamp(median(tst), 420, 540)
+}
+
+function computeDurationAdequacy(tst: number, need: number): number {
+	let D = 100 * Math.min(1, tst / need)
+	const oversleep = tst - need - 90
+	if (oversleep > 0) D -= Math.min(25, oversleep * 0.12)
+	return clamp(D, 0, 100)
+}
+
+function computeConsistency(metrics: NightlyMetrics, prior: NightlyMetrics[]): number {
+	const window = tail(prior, 28)
+	const minNights = 5
+	if (window.length < minNights) return 72
+	const medOnset = median(window.map(m => minutesSinceUtcMidnight(m.sleepStartTime)))
+	const tonight = minutesSinceUtcMidnight(metrics.sleepStartTime)
+	const delta = circularDeltaMinutes(medOnset, tonight)
+	return clamp(100 * Math.exp(-Math.pow(delta / 75, 1.6)), 0, 100)
+}
+
+function computeFragmentation(metrics: NightlyMetrics): number {
+	const an = metrics.awakeningCountOver2m
+	const at = metrics.awakeAfterOnsetMinutes
+	const lmax = metrics.longestAwakeEpisodeMinutes
+	if (an !== undefined && at !== undefined && lmax !== undefined) {
+		return clamp(100 - (3 * an + 0.8 * at + 0.7 * lmax), 0, 100)
+	}
+	const waso = metrics.wasoDuration ?? metrics.awakeAfterOnsetMinutes ?? 0
+	const eff = metrics.totalInBedDuration > 0 ? (metrics.totalAsleepDuration / metrics.totalInBedDuration) * 100 : 0
+	return clamp(100 - waso * 0.35 - Math.max(0, 82 - eff) * 1.2, 0, 100)
+}
+
+function computeRecoveryPhysiology(
+	metrics: NightlyMetrics,
+	prior30: NightlyMetrics[],
+	k: ScoringConfig['kValues']
+): number | null {
+	const hrVals = prior30.map(m => m.avgHr).filter(v => v > 0)
+	const hrvVals = prior30.map(m => m.hrvMean).filter((v): v is number => v !== undefined && v >= 0)
+	const rrVals = prior30.map(m => m.respiratoryRateMean).filter((v): v is number => v !== undefined && v >= 0)
+	const tempVals = prior30.map(m => m.temperatureDeviation).filter((v): v is number => v !== undefined)
+
+	let sum = 0
+	let n = 0
+
+	if (metrics.hrvMean !== undefined) {
+		const st = meanStd(hrvVals)
+		if (st) {
+			sum += sigmoid(computeZScore(metrics.hrvMean, st.mean, st.std), k.moderate)
+			n++
+		}
+	}
+
+	const hrSt = meanStd(hrVals)
+	if (hrSt) {
+		sum += sigmoid(-computeZScore(metrics.avgHr, hrSt.mean, hrSt.std), k.moderate)
+		n++
+	}
+
+	if (metrics.respiratoryRateMean !== undefined) {
+		const st = meanStd(rrVals)
+		if (st) {
+			const z = computeZScore(metrics.respiratoryRateMean, st.mean, st.std)
+			sum += sigmoid(-Math.abs(z), k.steep)
+			n++
+		}
+	}
+
+	if (metrics.temperatureDeviation !== undefined) {
+		const st = meanStd(tempVals)
+		if (st) {
+			const z = computeZScore(metrics.temperatureDeviation, st.mean, st.std)
+			sum += sigmoid(-Math.abs(z), k.steep)
+			n++
+		}
+	}
+
+	if (n === 0) return null
+	return clamp(sum / n, 0, 100)
+}
+
+function computeStructure(metrics: NightlyMetrics, baseline: BaselineStats | null): number | null {
+	if (!baseline?.deepPct || !baseline.remPct) return null
+	if (metrics.deepDuration === undefined || metrics.remDuration === undefined || metrics.totalAsleepDuration <= 0) {
+		return null
+	}
+	const eff = metrics.totalInBedDuration > 0 ? (metrics.totalAsleepDuration / metrics.totalInBedDuration) * 100 : 0
+	const deepPct = (metrics.deepDuration / metrics.totalAsleepDuration) * 100
+	const remPct = (metrics.remDuration / metrics.totalAsleepDuration) * 100
+	const corePct = metrics.coreDuration !== undefined ? (metrics.coreDuration / metrics.totalAsleepDuration) * 100 : 0
+	const awakePct = Math.max(0, 100 - deepPct - remPct - corePct)
+
+	const zEff = computeZScore(eff, baseline.efficiency.mean, baseline.efficiency.std)
+	const zDeep = computeZScore(deepPct, baseline.deepPct.mean, baseline.deepPct.std)
+	const zRem = computeZScore(remPct, baseline.remPct.mean, baseline.remPct.std)
+	const typicalAwake = clamp(100 - baseline.deepPct.mean - baseline.remPct.mean - 55, 3, 40)
+	const zAwake = -computeZScore(awakePct, typicalAwake, 6)
+	const zStage = (zDeep + zRem + zAwake) / 3
+	const q = clamp(0.5 + 0.25 * (zEff / 3) + 0.25 * (zStage / 3), 0, 1)
+	return Math.round(100 * q)
+}
+
+function computeTimingAlignment(metrics: NightlyMetrics, prior: NightlyMetrics[]): number {
+	const window = tail(prior, 28)
+	if (window.length < 5) return 72
+	const medMid = median(window.map(m => minutesSinceUtcMidnight(m.sleepMidpoint)))
+	const tonight = minutesSinceUtcMidnight(metrics.sleepMidpoint)
+	const delta = circularDeltaMinutes(medMid, tonight)
+	return clamp(100 * Math.exp(-Math.pow(delta / 90, 1.5)), 0, 100)
+}
+
+export type SleepV2Context = {
+	need: number
+	D: number
+	C: number
+	I: number
+	R: number | null
+	S: number | null
+	T: number
+}
+
+export function buildSleepV2Context(
+	metrics: NightlyMetrics,
+	baseline: BaselineStats | null,
+	recentMetrics: NightlyMetrics[],
+	config: ScoringConfig = SCORING_CONFIG_V2
+): SleepV2Context {
+	const prior = priorNights(recentMetrics, metrics.date)
+	const need = computeNeedMinutes(prior)
+	const tst = metrics.totalAsleepDuration
+	const D = computeDurationAdequacy(tst, need)
+	const C = computeConsistency(metrics, prior)
+	const I = computeFragmentation(metrics)
+	const R = computeRecoveryPhysiology(metrics, tail(prior, 30), config.kValues)
+	const S = computeStructure(metrics, baseline)
+	const T = computeTimingAlignment(metrics, prior)
+	return { need, D, C, I, R, S, T }
 }
 
 export function computeSleepScore(
 	metrics: NightlyMetrics,
 	baseline: BaselineStats | null,
-	config = SCORING_CONFIG_V1
+	recentMetrics: NightlyMetrics[],
+	config: ScoringConfig = SCORING_CONFIG_V2
 ): { score: number; breakdown: ComponentBreakdown } {
 	const w = config.sleepWeights
-	const k = config.kValues
+	const ctx = buildSleepV2Context(metrics, baseline, recentMetrics, config)
 
-	const efficiency = metrics.totalInBedDuration > 0
-		? (metrics.totalAsleepDuration / metrics.totalInBedDuration) * 100
-		: 0
+	type Key = keyof typeof w
+	const entries: Array<{ key: Key; value: number; use: boolean }> = [
+		{ key: 'D', value: ctx.D, use: true },
+		{ key: 'C', value: ctx.C, use: true },
+		{ key: 'I', value: ctx.I, use: true },
+		{ key: 'R', value: ctx.R ?? 0, use: ctx.R !== null },
+		{ key: 'S', value: ctx.S ?? 0, use: ctx.S !== null },
+		{ key: 'T', value: ctx.T, use: true },
+	]
 
-	let durationScore: number
-	let efficiencyScore: number
-	let timingScore: number
+	const active = entries.filter(e => e.use)
+	const sumW = active.reduce((s, e) => s + w[e.key], 0)
+	let preliminary = active.reduce((s, e) => s + (w[e.key] / sumW) * e.value, 0)
+	preliminary = Math.round(preliminary)
 
-	if (baseline) {
-		const durationZ = computeZScore(metrics.totalAsleepDuration, baseline.duration.mean, baseline.duration.std)
-		durationScore = sigmoid(durationZ, k.gentle)
+	let penalty = 0
+	const penaltyFlags: string[] = []
 
-		const efficiencyZ = computeZScore(efficiency, baseline.efficiency.mean, baseline.efficiency.std)
-		efficiencyScore = sigmoid(efficiencyZ, k.moderate)
-
-		const midpointHour = minutesToMidpointHour(metrics.sleepMidpoint)
-		const timingZ = computeZScore(midpointHour, baseline.sleepMidpoint.mean, baseline.sleepMidpoint.std)
-		timingScore = 100 * Math.exp(-0.5 * timingZ * timingZ)
-	} else {
-		durationScore = Math.min(100, (metrics.totalAsleepDuration / 480) * 100)
-		efficiencyScore = Math.min(100, efficiency)
-		timingScore = 75
+	if (ctx.D < 50 && ctx.I < 50) {
+		penalty += 8
+		penaltyFlags.push('short_sleep_fragmented')
+	}
+	if (ctx.D > 75 && ctx.R !== null && ctx.R < 45) {
+		penalty += 6
+		penaltyFlags.push('adequate_duration_low_recovery')
+	}
+	if (ctx.C < 45 && ctx.R !== null && ctx.R < 45) {
+		penalty += 6
+		penaltyFlags.push('low_consistency_low_recovery')
 	}
 
-	let deepScore: number | undefined
-	let remScore: number | undefined
-
-	if (metrics.deepDuration !== undefined && metrics.totalAsleepDuration > 0) {
-		const deepPct = (metrics.deepDuration / metrics.totalAsleepDuration) * 100
-		if (baseline?.deepPct) {
-			deepScore = sigmoid(computeZScore(deepPct, baseline.deepPct.mean, baseline.deepPct.std), k.gentle)
-		} else {
-			deepScore = Math.min(100, (deepPct / 20) * 100)
-		}
+	const debtNights = lastNightsUpTo(recentMetrics, metrics.date, 7)
+	const debtSum = debtNights.reduce((s, m) => s + Math.max(0, ctx.need - m.totalAsleepDuration), 0)
+	if (debtSum > 0) {
+		const p = Math.min(18, debtSum * 0.06)
+		penalty += p
+		penaltyFlags.push('sleep_debt_7d')
 	}
 
-	if (metrics.remDuration !== undefined && metrics.totalAsleepDuration > 0) {
-		const remPct = (metrics.remDuration / metrics.totalAsleepDuration) * 100
-		if (baseline?.remPct) {
-			remScore = sigmoid(computeZScore(remPct, baseline.remPct.mean, baseline.remPct.std), k.gentle)
-		} else {
-			remScore = Math.min(100, (remPct / 25) * 100)
-		}
+	const penaltyTotal = Math.round(penalty)
+	const score = clamp(preliminary - penaltyTotal, 0, 100)
+
+	const breakdown: ComponentBreakdown = {
+		durationAdequacy: Math.round(ctx.D),
+		consistency: Math.round(ctx.C),
+		fragmentation: Math.round(ctx.I),
+		recoveryPhysiology: ctx.R !== null ? Math.round(ctx.R) : 0,
+		structure: ctx.S !== null ? ctx.S : undefined,
+		timingAlignment: Math.round(ctx.T),
+		preliminaryScore: preliminary,
+		penaltyTotal,
+		penaltyFlags,
 	}
 
-	const wasoPct = metrics.wasoDuration !== undefined && metrics.totalInBedDuration > 0
-		? (metrics.wasoDuration / metrics.totalInBedDuration) * 100
-		: (100 - efficiency)
-	const restfulnessScore = Math.max(0, Math.min(100, 100 - wasoPct * 5))
-
-	let physioScore = 50
-	let physioComponents = 0
-	let physioSum = 0
-
-	if (metrics.hrvMean !== undefined && baseline?.hrv) {
-		const hrvZ = computeZScore(metrics.hrvMean, baseline.hrv.mean, baseline.hrv.std)
-		physioSum += sigmoid(hrvZ, k.moderate)
-		physioComponents++
-	}
-
-	if (baseline?.restingHr) {
-		const rhrZ = computeZScore(metrics.avgHr, baseline.restingHr.mean, baseline.restingHr.std)
-		physioSum += sigmoid(-rhrZ, k.moderate)
-		physioComponents++
-	}
-
-	if (metrics.respiratoryRateMean !== undefined && baseline?.respiratoryRate) {
-		const rrZ = computeZScore(metrics.respiratoryRateMean, baseline.respiratoryRate.mean, baseline.respiratoryRate.std)
-		physioSum += sigmoid(-Math.abs(rrZ), k.steep)
-		physioComponents++
-	}
-
-	if (metrics.temperatureDeviation !== undefined && baseline?.tempDeviation) {
-		const tempZ = computeZScore(metrics.temperatureDeviation, baseline.tempDeviation.mean, baseline.tempDeviation.std)
-		physioSum += sigmoid(-Math.abs(tempZ), k.steep)
-		physioComponents++
-	}
-
-	if (physioComponents > 0) {
-		physioScore = physioSum / physioComponents
-	}
-
-	const hasStages = deepScore !== undefined && remScore !== undefined
-	let weightedSum: number
-	let totalWeight: number
-
-	if (hasStages) {
-		weightedSum =
-			durationScore * w.duration +
-			efficiencyScore * w.efficiency +
-			deepScore! * w.deep +
-			remScore! * w.rem +
-			restfulnessScore * w.restfulness +
-			timingScore * w.timing +
-			physioScore * w.physioStability
-		totalWeight = 1.0
-	} else {
-		const adjustedDuration = w.duration + w.deep * 0.5
-		const adjustedEfficiency = w.efficiency + w.rem * 0.5
-		const adjustedRestfulness = w.restfulness + (w.deep + w.rem) * 0.0
-		weightedSum =
-			durationScore * adjustedDuration +
-			efficiencyScore * adjustedEfficiency +
-			restfulnessScore * (w.restfulness + adjustedRestfulness) +
-			timingScore * w.timing +
-			physioScore * w.physioStability
-		totalWeight = adjustedDuration + adjustedEfficiency + (w.restfulness + adjustedRestfulness) + w.timing + w.physioStability
-	}
-
-	const score = Math.round(Math.max(0, Math.min(100, weightedSum / totalWeight)))
-
-	return {
-		score,
-		breakdown: {
-			duration: Math.round(durationScore),
-			efficiency: Math.round(efficiencyScore),
-			deep: deepScore !== undefined ? Math.round(deepScore) : undefined,
-			rem: remScore !== undefined ? Math.round(remScore) : undefined,
-			restfulness: Math.round(restfulnessScore),
-			timing: Math.round(timingScore),
-			physioStability: Math.round(physioScore),
-		},
-	}
+	return { score, breakdown }
 }
 
 // MARK: - Contributor Detail
@@ -241,177 +378,198 @@ export function computeContributorDetail(
 	key: string,
 	metrics: NightlyMetrics,
 	baseline: BaselineStats | null,
-	config = SCORING_CONFIG_V1,
+	recentMetrics: NightlyMetrics[],
+	config: ScoringConfig = SCORING_CONFIG_V2
 ): ContributorDetail | null {
 	const w = config.sleepWeights
 	const k = config.kValues
-
-	const efficiency = metrics.totalInBedDuration > 0
-		? (metrics.totalAsleepDuration / metrics.totalInBedDuration) * 100
-		: 0
+	const prior = priorNights(recentMetrics, metrics.date)
+	const ctx = buildSleepV2Context(metrics, baseline, recentMetrics, config)
 
 	switch (key) {
-		case 'duration': {
-			let score: number
-			let zScore: number | undefined
-			if (baseline) {
-				zScore = computeZScore(metrics.totalAsleepDuration, baseline.duration.mean, baseline.duration.std)
-				score = Math.round(sigmoid(zScore, k.gentle))
-			} else {
-				score = Math.round(Math.min(100, (metrics.totalAsleepDuration / 480) * 100))
-			}
+		case 'durationAdequacy': {
+			const need = ctx.need
+			const tst = metrics.totalAsleepDuration
 			return {
-				key, score, weight: w.duration,
-				rawValue: metrics.totalAsleepDuration,
-				rawLabel: formatMinutes(metrics.totalAsleepDuration),
-				baselineMean: baseline?.duration.mean,
-				baselineStd: baseline?.duration.std,
-				zScore,
-				formula: baseline
-					? 'Sigmoid of Z-score vs your average sleep duration'
-					: 'Percentage of 8-hour target (no baseline yet)',
+				key,
+				score: Math.round(ctx.D),
+				weight: w.D,
+				rawValue: tst,
+				rawLabel: `${formatMinutes(tst)} vs need ${formatMinutes(need)}`,
+				formula:
+					'D = 100 × min(1, TST/Need), minus oversleep penalty beyond Need+90m; Need = median(TST last 28 nights), clamped 7–9h.',
 			}
 		}
-		case 'efficiency': {
-			let score: number
-			let zScore: number | undefined
-			if (baseline) {
-				zScore = computeZScore(efficiency, baseline.efficiency.mean, baseline.efficiency.std)
-				score = Math.round(sigmoid(zScore, k.moderate))
-			} else {
-				score = Math.round(Math.min(100, efficiency))
+		case 'consistency': {
+			const window = tail(prior, 28)
+			if (window.length < 5) {
+				return {
+					key,
+					score: Math.round(ctx.C),
+					weight: w.C,
+					rawValue: 0,
+					rawLabel: 'Building history',
+					formula: 'Default score until at least 5 prior nights exist for onset median.',
+				}
 			}
+			const medOnset = median(window.map(m => minutesSinceUtcMidnight(m.sleepStartTime)))
+			const tonight = minutesSinceUtcMidnight(metrics.sleepStartTime)
+			const delta = circularDeltaMinutes(medOnset, tonight)
 			return {
-				key, score, weight: w.efficiency,
-				rawValue: Math.round(efficiency * 10) / 10,
-				rawLabel: `${Math.round(efficiency)}%`,
-				baselineMean: baseline?.efficiency.mean,
-				baselineStd: baseline?.efficiency.std,
-				zScore,
-				formula: baseline
-					? 'Sigmoid of Z-score vs your average sleep efficiency'
-					: 'Raw efficiency percentage (no baseline yet)',
+				key,
+				score: Math.round(ctx.C),
+				weight: w.C,
+				rawValue: Math.round(delta * 10) / 10,
+				rawLabel: `${Math.round(delta)}m from your typical onset`,
+				formula: 'C = 100 × exp(−(Δonset/75)^1.6) vs median sleep onset (UTC clock) over up to 28 prior nights.',
 			}
 		}
-		case 'deep': {
-			if (metrics.deepDuration === undefined || metrics.totalAsleepDuration === 0) return null
-			const deepPct = (metrics.deepDuration / metrics.totalAsleepDuration) * 100
-			let score: number
-			let zScore: number | undefined
-			if (baseline?.deepPct) {
-				zScore = computeZScore(deepPct, baseline.deepPct.mean, baseline.deepPct.std)
-				score = Math.round(sigmoid(zScore, k.gentle))
-			} else {
-				score = Math.round(Math.min(100, (deepPct / 20) * 100))
+		case 'fragmentation': {
+			const an = metrics.awakeningCountOver2m
+			const at = metrics.awakeAfterOnsetMinutes
+			const lmax = metrics.longestAwakeEpisodeMinutes
+			if (an !== undefined && at !== undefined && lmax !== undefined) {
+				return {
+					key,
+					score: Math.round(ctx.I),
+					weight: w.I,
+					rawValue: an,
+					rawLabel: `${an} episodes >2m, ${Math.round(at)}m awake, longest ${Math.round(lmax)}m`,
+					formula: 'I = 100 − (3×A_n + 0.8×A_t + 0.7×L_max), post sleep onset.',
+				}
 			}
 			return {
-				key, score, weight: w.deep,
-				rawValue: Math.round(deepPct * 10) / 10,
-				rawLabel: `${formatMinutes(metrics.deepDuration)} (${Math.round(deepPct)}%)`,
-				baselineMean: baseline?.deepPct?.mean,
-				baselineStd: baseline?.deepPct?.std,
-				zScore,
-				formula: baseline?.deepPct
-					? 'Sigmoid of Z-score vs your average deep sleep percentage'
-					: 'Percentage of 20% deep sleep target',
+				key,
+				score: Math.round(ctx.I),
+				weight: w.I,
+				rawValue: metrics.wasoDuration ?? 0,
+				rawLabel: `WASO ~${Math.round(metrics.wasoDuration ?? 0)}m (estimated)`,
+				formula: 'Fallback: WASO and efficiency-based estimate when post-onset fragmentation fields are missing.',
 			}
 		}
-		case 'rem': {
-			if (metrics.remDuration === undefined || metrics.totalAsleepDuration === 0) return null
-			const remPct = (metrics.remDuration / metrics.totalAsleepDuration) * 100
-			let score: number
-			let zScore: number | undefined
-			if (baseline?.remPct) {
-				zScore = computeZScore(remPct, baseline.remPct.mean, baseline.remPct.std)
-				score = Math.round(sigmoid(zScore, k.gentle))
-			} else {
-				score = Math.round(Math.min(100, (remPct / 25) * 100))
+		case 'recoveryPhysiology': {
+			const r = computeRecoveryPhysiology(metrics, tail(prior, 30), k)
+			if (r === null) {
+				return {
+					key,
+					score: 0,
+					weight: w.R,
+					rawValue: 0,
+					rawLabel: 'Insufficient 30-night history',
+					formula: 'Dropped from weighted sum when no rolling 30-night baselines for available metrics.',
+				}
 			}
-			return {
-				key, score, weight: w.rem,
-				rawValue: Math.round(remPct * 10) / 10,
-				rawLabel: `${formatMinutes(metrics.remDuration)} (${Math.round(remPct)}%)`,
-				baselineMean: baseline?.remPct?.mean,
-				baselineStd: baseline?.remPct?.std,
-				zScore,
-				formula: baseline?.remPct
-					? 'Sigmoid of Z-score vs your average REM percentage'
-					: 'Percentage of 25% REM sleep target',
-			}
-		}
-		case 'restfulness': {
-			const wasoPct = metrics.wasoDuration !== undefined && metrics.totalInBedDuration > 0
-				? (metrics.wasoDuration / metrics.totalInBedDuration) * 100
-				: (100 - efficiency)
-			const score = Math.round(Math.max(0, Math.min(100, 100 - wasoPct * 5)))
-			return {
-				key, score, weight: w.restfulness,
-				rawValue: Math.round(wasoPct * 10) / 10,
-				rawLabel: `${Math.round(wasoPct)}% time awake`,
-				formula: 'Score = 100 minus (wake percentage x 5). Lower wake time = higher score.',
-			}
-		}
-		case 'timing': {
-			const midpointHour = minutesToMidpointHour(metrics.sleepMidpoint)
-			let score: number
-			let zScore: number | undefined
-			if (baseline) {
-				zScore = computeZScore(midpointHour, baseline.sleepMidpoint.mean, baseline.sleepMidpoint.std)
-				score = Math.round(100 * Math.exp(-0.5 * zScore * zScore))
-			} else {
-				score = 75
-			}
-			return {
-				key, score, weight: w.timing,
-				rawValue: Math.round(midpointHour * 100) / 100,
-				rawLabel: midpointToTimeLabel(midpointHour),
-				baselineMean: baseline?.sleepMidpoint.mean,
-				baselineStd: baseline?.sleepMidpoint.std,
-				zScore,
-				formula: baseline
-					? 'Gaussian decay based on deviation from your typical sleep midpoint'
-					: 'Default score (no baseline yet)',
-			}
-		}
-		case 'physioStability': {
 			const subs: ContributorDetail['subComponents'] = []
-			let physioSum = 0
-			let physioCount = 0
+			const prior30 = tail(prior, 30)
+			const hrVals = prior30.map(m => m.avgHr).filter(v => v > 0)
+			const hrvVals = prior30.map(m => m.hrvMean).filter((v): v is number => v !== undefined && v >= 0)
+			const rrVals = prior30.map(m => m.respiratoryRateMean).filter((v): v is number => v !== undefined && v >= 0)
+			const tempVals = prior30.map(m => m.temperatureDeviation).filter((v): v is number => v !== undefined)
 
-			if (metrics.hrvMean !== undefined && baseline?.hrv) {
-				const z = computeZScore(metrics.hrvMean, baseline.hrv.mean, baseline.hrv.std)
-				const s = sigmoid(z, k.moderate)
-				subs.push({ name: 'HRV', rawValue: Math.round(metrics.hrvMean * 10) / 10, score: Math.round(s), baselineMean: baseline.hrv.mean, baselineStd: baseline.hrv.std, zScore: z })
-				physioSum += s; physioCount++
+			if (metrics.hrvMean !== undefined) {
+				const st = meanStd(hrvVals)
+				if (st) {
+					const z = computeZScore(metrics.hrvMean, st.mean, st.std)
+					subs.push({
+						name: 'HRV',
+						rawValue: Math.round(metrics.hrvMean * 10) / 10,
+						score: Math.round(sigmoid(z, k.moderate)),
+						baselineMean: st.mean,
+						baselineStd: st.std,
+						zScore: z,
+					})
+				}
 			}
-			if (baseline?.restingHr) {
-				const z = computeZScore(metrics.avgHr, baseline.restingHr.mean, baseline.restingHr.std)
-				const s = sigmoid(-z, k.moderate)
-				subs.push({ name: 'Resting HR', rawValue: Math.round(metrics.avgHr * 10) / 10, score: Math.round(s), baselineMean: baseline.restingHr.mean, baselineStd: baseline.restingHr.std, zScore: z })
-				physioSum += s; physioCount++
+			const hrSt = meanStd(hrVals)
+			if (hrSt) {
+				const z = computeZScore(metrics.avgHr, hrSt.mean, hrSt.std)
+				subs.push({
+					name: 'Heart rate',
+					rawValue: Math.round(metrics.avgHr * 10) / 10,
+					score: Math.round(sigmoid(-z, k.moderate)),
+					baselineMean: hrSt.mean,
+					baselineStd: hrSt.std,
+					zScore: z,
+				})
 			}
-			if (metrics.respiratoryRateMean !== undefined && baseline?.respiratoryRate) {
-				const z = computeZScore(metrics.respiratoryRateMean, baseline.respiratoryRate.mean, baseline.respiratoryRate.std)
-				const s = sigmoid(-Math.abs(z), k.steep)
-				subs.push({ name: 'Respiratory Rate', rawValue: Math.round(metrics.respiratoryRateMean * 10) / 10, score: Math.round(s), baselineMean: baseline.respiratoryRate.mean, baselineStd: baseline.respiratoryRate.std, zScore: z })
-				physioSum += s; physioCount++
+			if (metrics.respiratoryRateMean !== undefined) {
+				const st = meanStd(rrVals)
+				if (st) {
+					const z = computeZScore(metrics.respiratoryRateMean, st.mean, st.std)
+					subs.push({
+						name: 'Respiratory rate',
+						rawValue: Math.round(metrics.respiratoryRateMean * 10) / 10,
+						score: Math.round(sigmoid(-Math.abs(z), k.steep)),
+						baselineMean: st.mean,
+						baselineStd: st.std,
+						zScore: z,
+					})
+				}
 			}
-			if (metrics.temperatureDeviation !== undefined && baseline?.tempDeviation) {
-				const z = computeZScore(metrics.temperatureDeviation, baseline.tempDeviation.mean, baseline.tempDeviation.std)
-				const s = sigmoid(-Math.abs(z), k.steep)
-				subs.push({ name: 'Temperature', rawValue: Math.round(metrics.temperatureDeviation * 100) / 100, score: Math.round(s), baselineMean: baseline.tempDeviation.mean, baselineStd: baseline.tempDeviation.std, zScore: z })
-				physioSum += s; physioCount++
+			if (metrics.temperatureDeviation !== undefined) {
+				const st = meanStd(tempVals)
+				if (st) {
+					const z = computeZScore(metrics.temperatureDeviation, st.mean, st.std)
+					subs.push({
+						name: 'Temperature deviation',
+						rawValue: Math.round(metrics.temperatureDeviation * 1000) / 1000,
+						score: Math.round(sigmoid(-Math.abs(z), k.steep)),
+						baselineMean: st.mean,
+						baselineStd: st.std,
+						zScore: z,
+					})
+				}
 			}
 
-			const score = physioCount > 0 ? Math.round(physioSum / physioCount) : 50
 			return {
-				key, score, weight: w.physioStability,
-				rawValue: score,
-				rawLabel: `${score}/100`,
-				formula: physioCount > 0
-					? `Average of ${physioCount} physiological metric(s) compared to your baseline`
-					: 'Default score (no baseline data available)',
+				key,
+				score: Math.round(r),
+				weight: w.R,
+				rawValue: Math.round(r * 10) / 10,
+				rawLabel: `${Math.round(r)}/100`,
+				formula: 'Average of sigmoid z-scores vs your last 30 nights (HRV, HR, RR, temperature when present).',
 				subComponents: subs.length > 0 ? subs : undefined,
+			}
+		}
+		case 'structure': {
+			const s = computeStructure(metrics, baseline)
+			if (s === null) {
+				return null
+			}
+			const eff = metrics.totalInBedDuration > 0 ? (metrics.totalAsleepDuration / metrics.totalInBedDuration) * 100 : 0
+			return {
+				key,
+				score: s,
+				weight: w.S,
+				rawValue: Math.round(eff * 10) / 10,
+				rawLabel: `${Math.round(eff)}% efficiency`,
+				formula:
+					'S = 100 × clamp(0.5 + 0.25×z_eff + 0.25×z_stage) using efficiency, deep%, REM%, awake% vs baselines.',
+			}
+		}
+		case 'timingAlignment': {
+			const window = tail(prior, 28)
+			if (window.length < 5) {
+				return {
+					key,
+					score: Math.round(ctx.T),
+					weight: w.T,
+					rawValue: 0,
+					rawLabel: 'Building history',
+					formula: 'Default score until at least 5 prior nights exist for midpoint median.',
+				}
+			}
+			const medMid = median(window.map(m => minutesSinceUtcMidnight(m.sleepMidpoint)))
+			const tonight = minutesSinceUtcMidnight(metrics.sleepMidpoint)
+			const delta = circularDeltaMinutes(medMid, tonight)
+			const hour = medMid / 60
+			return {
+				key,
+				score: Math.round(ctx.T),
+				weight: w.T,
+				rawValue: Math.round(delta * 10) / 10,
+				rawLabel: `${Math.round(delta)}m from typical midpoint (${midpointToTimeLabel(hour)})`,
+				formula: 'T = 100 × exp(−(Δmidpoint/90)^1.5) vs median sleep midpoint (UTC clock) over up to 28 prior nights.',
 			}
 		}
 		default:
@@ -424,6 +582,10 @@ export type InteractionResult = {
 	flags: string[]
 }
 
+/**
+ * Readiness-only interactions. Sleep duration / fragmentation penalties live in sleep v2 scoring
+ * to avoid double-counting against readiness.
+ */
 export function applyInteractionRules(
 	baseScore: number,
 	metrics: NightlyMetrics,
@@ -439,7 +601,7 @@ export function applyInteractionRules(
 
 		if (hrvLow && rhrHigh) {
 			flags.push('sympathetic_stress')
-			factor *= 0.90
+			factor *= 0.9
 		}
 	}
 
@@ -453,32 +615,17 @@ export function applyInteractionRules(
 		}
 	}
 
-	if (metrics.totalAsleepDuration < 300) {
-		flags.push('severely_short_sleep')
-		factor *= 0.85
-	}
-
-	if (metrics.totalInBedDuration > 0) {
-		const eff = (metrics.totalAsleepDuration / metrics.totalInBedDuration) * 100
-		if (eff < 75) {
-			flags.push('fragmented_sleep')
-			factor *= 0.92
-		}
-	}
-
 	if (metrics.temperatureDeviation !== undefined && baseline?.tempDeviation) {
-		const tempZ = Math.abs(computeZScore(
-			metrics.temperatureDeviation,
-			baseline.tempDeviation.mean,
-			baseline.tempDeviation.std
-		))
+		const tempZ = Math.abs(
+			computeZScore(metrics.temperatureDeviation, baseline.tempDeviation.mean, baseline.tempDeviation.std)
+		)
 		if (tempZ > 2.0) {
 			flags.push('temperature_anomaly')
 			factor *= 0.93
 		}
 	}
 
-	const bounds = SCORING_CONFIG_V1.interactionBounds[calibrationPhase] ?? SCORING_CONFIG_V1.interactionBounds[3]
+	const bounds = SCORING_CONFIG_V2.interactionBounds[calibrationPhase] ?? SCORING_CONFIG_V2.interactionBounds[3]
 	factor = Math.max(bounds.min, Math.min(bounds.max, factor))
 
 	return { factor, flags }
@@ -490,7 +637,7 @@ export function computeReadinessScore(
 	baseline: BaselineStats | null,
 	sleepDebt: number,
 	calibrationPhase: number,
-	config = SCORING_CONFIG_V1
+	config: ScoringConfig = SCORING_CONFIG_V2
 ): { score: number; breakdown: ReadinessBreakdown; interactionFactor: number; interactionFlags: string[] } {
 	const w = config.readinessWeights
 	const k = config.kValues
@@ -518,7 +665,8 @@ export function computeReadinessScore(
 
 	let hrvTrendSlope = 50
 	if (baseline?.hrvSlope14d !== undefined) {
-		hrvTrendSlope = baseline.hrvSlope14d > 0 ? Math.min(100, 50 + baseline.hrvSlope14d * 10) : Math.max(0, 50 + baseline.hrvSlope14d * 10)
+		hrvTrendSlope =
+			baseline.hrvSlope14d > 0 ? Math.min(100, 50 + baseline.hrvSlope14d * 10) : Math.max(0, 50 + baseline.hrvSlope14d * 10)
 	}
 
 	const sleepDebtScore = Math.max(0, Math.min(100, 100 - sleepDebt * 3))

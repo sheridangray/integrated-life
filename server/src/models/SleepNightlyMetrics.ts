@@ -12,6 +12,9 @@ export type SleepNightlyMetricsDocument = Document & {
 	remDuration?: number
 	coreDuration?: number
 	wasoDuration?: number
+	awakeAfterOnsetMinutes?: number
+	awakeningCountOver2m?: number
+	longestAwakeEpisodeMinutes?: number
 	minHrValue: number
 	minHrTimestamp: string
 	avgHr: number
@@ -36,6 +39,9 @@ const sleepNightlyMetricsSchema = new Schema<SleepNightlyMetricsDocument>(
 		remDuration: { type: Number },
 		coreDuration: { type: Number },
 		wasoDuration: { type: Number },
+		awakeAfterOnsetMinutes: { type: Number },
+		awakeningCountOver2m: { type: Number },
+		longestAwakeEpisodeMinutes: { type: Number },
 		minHrValue: { type: Number, required: true },
 		minHrTimestamp: { type: String, required: true },
 		avgHr: { type: Number, required: true },

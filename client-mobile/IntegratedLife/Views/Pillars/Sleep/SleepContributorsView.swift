@@ -14,32 +14,68 @@ struct SleepContributorsView: View {
                 .font(.headline)
                 .padding(.bottom, 12)
 
-            contributorRow("Total Sleep", key: "duration", value: totalSleepDisplay,
-                           fraction: totalSleepFraction)
+            contributorRow(
+                "Duration adequacy",
+                key: "durationAdequacy",
+                value: durationValueLabel,
+                fraction: barFraction(breakdown.durationAdequacy)
+            )
             divider
-            contributorRow("Efficiency", key: "efficiency", value: efficiencyDisplay,
-                           fraction: efficiencyFraction)
+            contributorRow(
+                "Consistency",
+                key: "consistency",
+                value: qualitativeLabel(breakdown.consistency),
+                fraction: barFraction(breakdown.consistency)
+            )
             divider
-            contributorRow("Restfulness", key: "restfulness", value: qualitativeLabel(restfulnessScore),
-                           fraction: Double(restfulnessScore) / 100.0)
+            contributorRow(
+                "Fragmentation",
+                key: "fragmentation",
+                value: qualitativeLabel(breakdown.fragmentation),
+                fraction: barFraction(breakdown.fragmentation)
+            )
+            divider
+            contributorRow(
+                "Recovery physiology",
+                key: "recoveryPhysiology",
+                value: qualitativeLabel(breakdown.recoveryPhysiology),
+                fraction: barFraction(breakdown.recoveryPhysiology)
+            )
             divider
 
-            if breakdown.rem != nil {
-                contributorRow("REM Sleep", key: "rem", value: remDisplay,
-                               fraction: remFraction)
-                divider
-            }
-            if breakdown.deep != nil {
-                contributorRow("Deep Sleep", key: "deep", value: deepDisplay,
-                               fraction: deepFraction)
+            if let structure = breakdown.structure {
+                contributorRow(
+                    "Sleep structure",
+                    key: "structure",
+                    value: qualitativeLabel(structure),
+                    fraction: barFraction(structure)
+                )
                 divider
             }
 
-            contributorRow("Timing", key: "timing", value: qualitativeLabel(breakdown.timing),
-                           fraction: Double(breakdown.timing) / 100.0)
-            divider
-            contributorRow("Physio Stability", key: "physioStability", value: qualitativeLabel(breakdown.physioStability),
-                           fraction: Double(breakdown.physioStability) / 100.0)
+            contributorRow(
+                "Timing alignment",
+                key: "timingAlignment",
+                value: qualitativeLabel(breakdown.timingAlignment),
+                fraction: barFraction(breakdown.timingAlignment)
+            )
+
+            if breakdown.penaltyTotal > 0 {
+                divider
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Adjustments")
+                        .font(.subheadline.weight(.semibold))
+                    Text("Preliminary \(breakdown.preliminaryScore) − penalty \(breakdown.penaltyTotal)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    if !breakdown.penaltyFlags.isEmpty {
+                        Text(breakdown.penaltyFlags.joined(separator: ", "))
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .padding(.vertical, 10)
+            }
         }
         .sheet(isPresented: $showDetail) {
             if let key = selectedContributor {
@@ -74,115 +110,17 @@ struct SleepContributorsView: View {
         }
     }
 
+    private func barFraction(_ score: Int) -> Double {
+        Double(score) / 100.0
+    }
+
     private var divider: some View { Divider() }
 
-    // MARK: - Total Sleep (7 h = 100 %)
-
-    private var totalSleepDisplay: String {
-        guard let night = nightData else { return formatMin(Double(breakdown.duration) / 100 * 480) }
-        return formatMin(night.totalAsleepMinutes)
-    }
-
-    private var totalSleepFraction: Double {
-        guard let night = nightData else { return Double(breakdown.duration) / 100 }
-        return min(1.0, night.totalAsleepMinutes / 420)
-    }
-
-    // MARK: - Efficiency
-
-    private var rawEfficiencyPct: Double {
-        guard let night = nightData else { return Double(breakdown.efficiency) }
-        let inBed = night.stageDurations.totalWithAwake
-        guard inBed > 0 else { return 0 }
-        return (night.totalAsleepMinutes / inBed) * 100
-    }
-
-    private var adjustedEfficiency: Double {
-        var score = rawEfficiencyPct
-
-        if latencyMinutes > 20 {
-            score -= min(10, (latencyMinutes - 20) * 0.5)
+    private var durationValueLabel: String {
+        if let night = nightData {
+            return "\(formatMin(night.totalAsleepMinutes)) asleep"
         }
-        let wakeups = middleWakeupDurations
-        if wakeups.contains(where: { $0 > 15 }) { score -= 3 }
-        if wakeups.count >= 3 { score -= Double(wakeups.count - 2) * 2 }
-
-        return max(0, min(100, score))
-    }
-
-    private var efficiencyDisplay: String {
-        guard let night = nightData else { return "\(breakdown.efficiency)%" }
-        let inBed = night.stageDurations.totalWithAwake
-        guard inBed > 0 else { return "N/A" }
-        let pct = Int(rawEfficiencyPct)
-        return "\(pct)% (\(formatMin(night.totalAsleepMinutes)) / \(formatMin(inBed)))"
-    }
-
-    private var efficiencyFraction: Double { adjustedEfficiency / 100 }
-
-    // MARK: - Efficiency helpers (latency & wakeups)
-
-    private var latencyMinutes: Double {
-        guard let segs = nightData?.stageSegments,
-              let first = segs.first, first.stage == .awake else { return 0 }
-        return first.end.timeIntervalSince(first.start) / 60
-    }
-
-    private var middleWakeupDurations: [Double] {
-        guard let segs = nightData?.stageSegments, segs.count > 2 else { return [] }
-        return segs.dropFirst().dropLast().compactMap { seg in
-            seg.stage == .awake ? seg.end.timeIntervalSince(seg.start) / 60 : nil
-        }
-    }
-
-    // MARK: - Restfulness
-
-    private var restfulnessScore: Int {
-        guard let night = nightData else { return breakdown.restfulness }
-        let inBed = night.stageDurations.totalWithAwake
-        guard inBed > 0 else { return 0 }
-        let wasoPct = night.stageDurations.awake / inBed * 100
-        return Int(max(0, min(100, 100 - wasoPct * 5)))
-    }
-
-    // MARK: - REM (25 % of total asleep = 100 score)
-
-    private var remFraction: Double {
-        guard let night = nightData, night.stageDurations.rem > 0,
-              night.totalAsleepMinutes > 0 else {
-            return Double(breakdown.rem ?? 0) / 100
-        }
-        let pct = night.stageDurations.rem / night.totalAsleepMinutes * 100
-        return min(1.0, pct / 25)
-    }
-
-    private var remDisplay: String {
-        guard let night = nightData, night.stageDurations.rem > 0 else {
-            return breakdown.rem.map { qualitativeLabel($0) } ?? "N/A"
-        }
-        let pct = night.totalAsleepMinutes > 0
-            ? Int((night.stageDurations.rem / night.totalAsleepMinutes) * 100) : 0
-        return "\(formatMin(night.stageDurations.rem)), \(pct)%"
-    }
-
-    // MARK: - Deep (20 % of total asleep = 100 score)
-
-    private var deepFraction: Double {
-        guard let night = nightData, night.stageDurations.deep > 0,
-              night.totalAsleepMinutes > 0 else {
-            return Double(breakdown.deep ?? 0) / 100
-        }
-        let pct = night.stageDurations.deep / night.totalAsleepMinutes * 100
-        return min(1.0, pct / 20)
-    }
-
-    private var deepDisplay: String {
-        guard let night = nightData, night.stageDurations.deep > 0 else {
-            return breakdown.deep.map { qualitativeLabel($0) } ?? "N/A"
-        }
-        let pct = night.totalAsleepMinutes > 0
-            ? Int((night.stageDurations.deep / night.totalAsleepMinutes) * 100) : 0
-        return "\(formatMin(night.stageDurations.deep)), \(pct)%"
+        return qualitativeLabel(breakdown.durationAdequacy)
     }
 
     // MARK: - Helpers

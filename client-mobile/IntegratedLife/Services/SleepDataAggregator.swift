@@ -113,6 +113,12 @@ final class SleepDataAggregator {
 
         let dateStr = isoFormatter.string(from: calendar.startOfDay(for: sleepStart.addingTimeInterval(4 * 3600)))
 
+        let frag = computePostOnsetFragmentation(
+            stageSamples: stageSamples,
+            asleepSamples: asleepSamples,
+            sleepEnd: sleepEnd
+        )
+
         return NightlyMetrics(
             date: dateStr,
             sleepStartTime: isoFormatter.string(from: sleepStart),
@@ -124,6 +130,9 @@ final class SleepDataAggregator {
             remDuration: remDuration,
             coreDuration: coreDuration,
             wasoDuration: wasoDuration,
+            awakeAfterOnsetMinutes: frag?.awakeMinutes,
+            awakeningCountOver2m: frag?.episodeCountOver2m,
+            longestAwakeEpisodeMinutes: frag?.longestEpisodeMinutes,
             minHrValue: minHrSample.value,
             minHrTimestamp: isoFormatter.string(from: minHrSample.date),
             avgHr: avgHr,
@@ -191,6 +200,47 @@ final class SleepDataAggregator {
         let matching = samples.filter { $0.value == stage.rawValue }
         guard !matching.isEmpty else { return nil }
         return matching.reduce(0.0) { $0 + $1.endDate.timeIntervalSince($1.startDate) / 60 }
+    }
+
+    /// Post-onset fragmentation: awake only after first sleep onset, clipped to final wake (`sleepEnd`).
+    /// Returns `nil` when there are no staged awake intervals (e.g. tier C / no stage timeline).
+    private func computePostOnsetFragmentation(
+        stageSamples: [HKCategorySample],
+        asleepSamples: [HKCategorySample],
+        sleepEnd: Date
+    ) -> (awakeMinutes: Double, episodeCountOver2m: Int, longestEpisodeMinutes: Double)? {
+        guard let onset = asleepSamples.map(\.startDate).min() else { return nil }
+
+        var awakeIntervals: [(Date, Date)] = []
+        for sample in stageSamples {
+            guard HKCategoryValueSleepAnalysis(rawValue: sample.value) == .awake else { continue }
+            let start = max(sample.startDate, onset)
+            let end = min(sample.endDate, sleepEnd)
+            guard end > start else { continue }
+            awakeIntervals.append((start, end))
+        }
+        guard !awakeIntervals.isEmpty else { return nil }
+
+        awakeIntervals.sort { $0.0 < $1.0 }
+        var merged: [(Date, Date)] = []
+        for (s, e) in awakeIntervals {
+            if let last = merged.last, s <= last.1 {
+                merged[merged.count - 1] = (last.0, max(last.1, e))
+            } else {
+                merged.append((s, e))
+            }
+        }
+
+        var totalMins = 0.0
+        var countOver2 = 0
+        var longest = 0.0
+        for (s, e) in merged {
+            let mins = e.timeIntervalSince(s) / 60.0
+            totalMins += mins
+            if mins > 2 { countOver2 += 1 }
+            longest = max(longest, mins)
+        }
+        return (totalMins, countOver2, longest)
     }
 
     private func fetchQuantitySamples(
