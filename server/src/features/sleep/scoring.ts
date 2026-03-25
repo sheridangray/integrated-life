@@ -415,21 +415,41 @@ export function computeContributorDetail(
 		case 'durationAdequacy': {
 			const need = ctx.need
 			const tst = metrics.totalAsleepDuration
+			const priorWindow = tail(prior, 28)
+			const medianTstRaw =
+				prior.length === 0 ? null : median(priorWindow.map(m => m.totalAsleepDuration))
+
+			const detailFields: ContributorDetailField[] = [
+				{ label: 'Total sleep time', value: formatMinutes(tst) },
+			]
+			if (medianTstRaw !== null) {
+				detailFields.push({
+					label: 'Median sleep (L28)',
+					value: formatMinutes(medianTstRaw),
+				})
+			} else {
+				detailFields.push({
+					label: 'Median sleep (L28)',
+					value: 'No L28 data yet',
+				})
+			}
+			detailFields.push({
+				label: 'Need used in formula',
+				value:
+					medianTstRaw === null
+						? `${formatMinutes(need)} (default until L28 available)`
+						: `${formatMinutes(need)} (L28 median clamped to 7–9h)`,
+			})
+
 			return {
 				key,
 				score: Math.round(ctx.D),
 				weight: w.D,
 				rawValue: tst,
-				rawLabel: `${formatMinutes(tst)} asleep vs ${formatMinutes(need)} need`,
-				detailFields: [
-					{ label: 'Total sleep time', value: formatMinutes(tst) },
-					{
-						label: 'Personalized need',
-						value: `${formatMinutes(need)} (median of last 28 nights, clamped 7–9h)`,
-					},
-				],
+				rawLabel: `${formatMinutes(tst)} asleep vs ${formatMinutes(need)} need (scoring baseline)`,
+				detailFields,
 				formula:
-					'D = 100 × min(1, TST/Need), minus oversleep penalty beyond Need+90m; Need = median(TST last 28 nights), clamped 7–9h.',
+					'D = 100 × min(1, TST/Need), minus oversleep penalty beyond Need+90m. Need = clamp(L28 median TST, 7h–9h); Values shows the raw L28 median separately.',
 			}
 		}
 		case 'consistency': {
@@ -441,7 +461,7 @@ export function computeContributorDetail(
 					weight: w.C,
 					rawValue: 0,
 					rawLabel: 'Building history',
-					formula: 'Default score until at least 5 prior nights exist for onset median.',
+					formula: 'Default until L28 has at least 5 nights for onset median.',
 				}
 			}
 			const medOnset = median(window.map(m => minutesSinceUtcMidnight(m.sleepStartTime)))
@@ -460,13 +480,13 @@ export function computeContributorDetail(
 						localDisplayIso: metrics.sleepStartTime,
 					},
 					{
-						label: 'Typical onset (28-night median)',
+						label: 'Typical onset (L28 median)',
 						value: utcClockLabelFromMinutesSinceMidnight(medOnset),
 						utcMinutesFromMidnight: medOnset,
 					},
 					{ label: 'Deviation (shortest arc)', value: formatMinutes(delta) },
 				],
-				formula: 'C = 100 × exp(−(Δonset/75)^1.6) vs median sleep onset (UTC clock) over up to 28 prior nights.',
+				formula: 'C = 100 × exp(−(Δonset/75)^1.6) vs L28 median sleep onset (UTC clock).',
 			}
 		}
 		case 'fragmentation': {
@@ -511,8 +531,8 @@ export function computeContributorDetail(
 					score: 0,
 					weight: w.R,
 					rawValue: 0,
-					rawLabel: 'Insufficient 30-night history',
-					formula: 'Dropped from weighted sum when no rolling 30-night baselines for available metrics.',
+					rawLabel: 'Insufficient L30 history',
+					formula: 'Dropped from weighted sum when no L30 rolling baselines for available metrics.',
 				}
 			}
 			const subs: ContributorDetail['subComponents'] = []
@@ -578,7 +598,7 @@ export function computeContributorDetail(
 			}
 
 			const physioFields: ContributorDetailField[] = [
-				{ label: 'Nights in rolling window', value: `${prior30.length} (up to 30 prior nights)` },
+				{ label: 'Nights in rolling window', value: `${prior30.length} (L30 max)` },
 				{ label: 'Sleep heart rate (avg)', value: `${Math.round(metrics.avgHr * 10) / 10} bpm` },
 			]
 			if (metrics.hrvMean !== undefined) {
@@ -607,7 +627,7 @@ export function computeContributorDetail(
 				rawValue: Math.round(r * 10) / 10,
 				rawLabel: `${Math.round(r)}/100`,
 				detailFields: physioFields,
-				formula: 'Average of sigmoid z-scores vs your last 30 nights (HRV, HR, RR, temperature when present).',
+				formula: 'Average of sigmoid z-scores vs L30 (HRV, HR, RR, temperature when present).',
 				subComponents: subs.length > 0 ? subs : undefined,
 			}
 		}
@@ -647,7 +667,7 @@ export function computeContributorDetail(
 					weight: w.T,
 					rawValue: 0,
 					rawLabel: 'Building history',
-					formula: 'Default score until at least 5 prior nights exist for midpoint median.',
+					formula: 'Default until L28 has at least 5 nights for midpoint median.',
 				}
 			}
 			const medMid = median(window.map(m => minutesSinceUtcMidnight(m.sleepMidpoint)))
@@ -666,13 +686,13 @@ export function computeContributorDetail(
 						localDisplayIso: metrics.sleepMidpoint,
 					},
 					{
-						label: 'Typical midpoint (28-night median)',
+						label: 'Typical midpoint (L28 median)',
 						value: utcClockLabelFromMinutesSinceMidnight(medMid),
 						utcMinutesFromMidnight: medMid,
 					},
 					{ label: 'Deviation (shortest arc)', value: formatMinutes(delta) },
 				],
-				formula: 'T = 100 × exp(−(Δmidpoint/90)^1.5) vs median sleep midpoint (UTC clock) over up to 28 prior nights.',
+				formula: 'T = 100 × exp(−(Δmidpoint/90)^1.5) vs L28 median sleep midpoint (UTC clock).',
 			}
 		}
 		default:
