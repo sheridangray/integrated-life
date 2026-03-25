@@ -333,6 +333,11 @@ export function computeSleepScore(
 		preliminaryScore: preliminary,
 		penaltyTotal,
 		penaltyFlags,
+		sleepNeedMinutes: ctx.need,
+		sleepDebt7dSumMinutes: Math.round(debtSum),
+		nightAvgHr: metrics.avgHr,
+		nightMinHr: metrics.minHrValue,
+		...(metrics.hrvMean !== undefined ? { nightHrvMean: metrics.hrvMean } : {}),
 	}
 
 	return { score, breakdown }

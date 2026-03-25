@@ -10,9 +10,20 @@ struct SleepContributorsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Contributors")
-                .font(.headline)
-                .padding(.bottom, 12)
+            HStack(alignment: .firstTextBaseline) {
+                Text("Contributors")
+                    .font(.headline)
+                Spacer()
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("Contributor score")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("\(breakdown.preliminaryScore)")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.black)
+                }
+            }
+            .padding(.bottom, 12)
 
             contributorRow(
                 "Duration adequacy",

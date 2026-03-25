@@ -10,6 +10,11 @@ export type ComponentBreakdownSubdoc = {
 	preliminaryScore: number
 	penaltyTotal: number
 	penaltyFlags: string[]
+	sleepNeedMinutes?: number
+	sleepDebt7dSumMinutes?: number
+	nightAvgHr?: number
+	nightMinHr?: number
+	nightHrvMean?: number
 }
 
 export type ReadinessBreakdownSubdoc = {
@@ -51,6 +56,11 @@ const componentBreakdownSchema = new Schema<ComponentBreakdownSubdoc>(
 		preliminaryScore: { type: Number, required: true },
 		penaltyTotal: { type: Number, required: true },
 		penaltyFlags: [{ type: String }],
+		sleepNeedMinutes: { type: Number },
+		sleepDebt7dSumMinutes: { type: Number },
+		nightAvgHr: { type: Number },
+		nightMinHr: { type: Number },
+		nightHrvMean: { type: Number },
 	},
 	{ _id: false }
 )

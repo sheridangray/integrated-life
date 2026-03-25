@@ -55,6 +55,15 @@ export const ComponentBreakdownSchema = z.object({
 	preliminaryScore: z.number(),
 	penaltyTotal: z.number(),
 	penaltyFlags: z.array(z.string()),
+	/** L28 median TST (minutes), clamped 7–9h; used for duration & 7d debt penalty. */
+	sleepNeedMinutes: z.number().optional(),
+	/** Sum over last 7 scored nights of max(0, need − asleep), minutes. */
+	sleepDebt7dSumMinutes: z.number().optional(),
+	/** Night of this score: average HR (bpm). */
+	nightAvgHr: z.number().optional(),
+	nightMinHr: z.number().optional(),
+	/** Night of this score: mean HRV (same units as submitted metrics). */
+	nightHrvMean: z.number().optional(),
 })
 
 export type ComponentBreakdown = z.infer<typeof ComponentBreakdownSchema>

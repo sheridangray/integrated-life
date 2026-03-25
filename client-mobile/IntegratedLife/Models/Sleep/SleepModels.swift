@@ -72,6 +72,11 @@ struct SleepBreakdown: Codable {
     let preliminaryScore: Int
     let penaltyTotal: Int
     let penaltyFlags: [String]
+    let sleepNeedMinutes: Double?
+    let sleepDebt7dSumMinutes: Double?
+    let nightAvgHr: Double?
+    let nightMinHr: Double?
+    let nightHrvMean: Double?
 }
 
 struct ReadinessBreakdown: Codable {

@@ -319,7 +319,7 @@ struct SleepDisplayView: View {
 
             if score.sleepBreakdown.penaltyTotal > 0 || !score.sleepBreakdown.penaltyFlags.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {
-                    SleepPenaltiesView(breakdown: score.sleepBreakdown, finalScore: score.sleepScore)
+                    SleepPenaltiesView(breakdown: score.sleepBreakdown, nightData: state.dayData)
                 }
                 .padding()
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))

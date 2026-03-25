@@ -3,27 +3,31 @@ import SwiftUI
 /// Explains sleep score penalties from `penaltyFlags` (server `computeSleepScore`).
 struct SleepPenaltiesView: View {
     let breakdown: SleepBreakdown
-    let finalScore: Int
+    var nightData: SleepNightDisplay?
 
     var body: some View {
         if breakdown.penaltyTotal > 0 || !breakdown.penaltyFlags.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
-                Text("Penalties")
-                    .font(.headline)
-                    .padding(.bottom, 12)
-
-                if !summaryLine.isEmpty {
-                    Text(summaryLine)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.bottom, 12)
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Penalties")
+                        .font(.headline)
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("Penalty score")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(penaltyScoreLabel)
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(.red)
+                    }
                 }
+                .padding(.bottom, 12)
 
                 if !breakdown.penaltyFlags.isEmpty {
                     ForEach(Array(breakdown.penaltyFlags.enumerated()), id: \.offset) { index, flag in
-                        if let info = Self.info(for: flag) {
+                        if let info = Self.baseInfo(for: flag) {
                             if index > 0 { Divider() }
-                            penaltyRow(info)
+                            penaltyRow(flag: flag, info: info)
                         }
                     }
                 }
@@ -32,32 +36,18 @@ struct SleepPenaltiesView: View {
         }
     }
 
-    private var summaryLine: String {
-        let pre = breakdown.preliminaryScore
-        let pen = breakdown.penaltyTotal
-        if pen > 0 {
-            return
-                "Contributors combined to \(pre) before penalties. Total penalty −\(pen) → sleep score \(finalScore)."
-        }
-        if !breakdown.penaltyFlags.isEmpty {
-            return "Rule-based adjustments applied for this night (see below)."
-        }
-        return ""
+    private var penaltyScoreLabel: String {
+        breakdown.penaltyTotal > 0 ? "−\(breakdown.penaltyTotal)" : "0"
     }
 
-    private struct PenaltyInfo {
+    private struct PenaltyBaseInfo {
         let title: String
-        /// Matches server deduction where fixed (e.g. "−8 pts").
         let pointsLabel: String
-        /// Exact trigger logic from scoring (user-facing).
-        let when: String
-        /// Short interpretation after the rule fires.
         let because: String
-        /// Bar fill 0...1 for visual weight (max single rule ≈ 18).
         let barFraction: Double
     }
 
-    private func penaltyRow(_ info: PenaltyInfo) -> some View {
+    private func penaltyRow(flag: String, info: PenaltyBaseInfo) -> some View {
         let clamped = max(0.04, min(1.0, info.barFraction))
         return VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .top) {
@@ -69,14 +59,18 @@ struct SleepPenaltiesView: View {
                     .foregroundStyle(.secondary)
             }
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("When")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-                Text(info.when)
+            Text(whenLine(flag: flag))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(3)
+                .minimumScaleFactor(0.85)
+
+            if let values = valuesLine(flag: flag), !values.isEmpty {
+                Text(values)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.85)
             }
 
             GeometryReader { geo in
@@ -98,47 +92,126 @@ struct SleepPenaltiesView: View {
         .padding(.vertical, 10)
     }
 
-    private static func info(for flag: String) -> PenaltyInfo? {
+    private func whenLine(flag: String) -> String {
+        let d = breakdown.durationAdequacy
+        let c = breakdown.consistency
+        let i = breakdown.fragmentation
+        let r = breakdown.recoveryPhysiology
         switch flag {
         case "short_sleep_fragmented":
-            return PenaltyInfo(
+            return "When: D < 50 and I < 50 · D=\(d), I=\(i)"
+        case "adequate_duration_low_recovery":
+            return "When: D > 75 and R < 45 · D=\(d), R=\(r)"
+        case "low_consistency_low_recovery":
+            return "When: C < 45 and R < 45 · C=\(c), R=\(r)"
+        case "sleep_debt_7d":
+            return "When: Σ max(0, need−TST) > 0"
+        default:
+            return "When: rule matched for this night"
+        }
+    }
+
+    private func valuesLine(flag: String) -> String? {
+        switch flag {
+        case "adequate_duration_low_recovery", "low_consistency_low_recovery":
+            return physiologyLine()
+        case "sleep_debt_7d":
+            return debtAndPhysiologyLine()
+        case "short_sleep_fragmented":
+            return shortSleepValuesLine()
+        default:
+            return physiologyLine()
+        }
+    }
+
+    private func physiologyLine() -> String? {
+        var parts: [String] = []
+        if let hr = breakdown.nightAvgHr {
+            parts.append("HR \(Int(hr.rounded())) bpm")
+        }
+        if let mn = breakdown.nightMinHr {
+            parts.append("min \(Int(mn.rounded())) bpm")
+        }
+        if let hrv = breakdown.nightHrvMean {
+            parts.append("HRV \(formatHrv(hrv)) ms")
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
+    private func debtAndPhysiologyLine() -> String? {
+        var parts: [String] = []
+        if let sum = breakdown.sleepDebt7dSumMinutes, sum > 0 {
+            parts.append("Σ shortfall \(Int(sum.rounded()))m")
+        }
+        if let need = breakdown.sleepNeedMinutes {
+            parts.append("need \(Int(need.rounded()))m")
+        }
+        if let phys = physiologyLine() {
+            parts.append(phys)
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
+    private func shortSleepValuesLine() -> String? {
+        var parts: [String] = []
+        if let night = nightData {
+            parts.append("TST \(formatMinutes(night.totalAsleepMinutes))")
+        }
+        if let phys = physiologyLine() {
+            parts.append(phys)
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
+    private func formatHrv(_ x: Double) -> String {
+        let r = (x * 10).rounded() / 10
+        if abs(r - r.rounded()) < 0.05 {
+            return "\(Int(r.rounded()))"
+        }
+        return String(format: "%.1f", r)
+    }
+
+    private func formatMinutes(_ mins: Double) -> String {
+        let h = Int(mins) / 60
+        let m = Int(mins) % 60
+        return h > 0 ? "\(h)h \(m)m" : "\(m)m"
+    }
+
+    private static func baseInfo(for flag: String) -> PenaltyBaseInfo? {
+        switch flag {
+        case "short_sleep_fragmented":
+            return PenaltyBaseInfo(
                 title: "Short sleep + fragmentation",
                 pointsLabel: "−8 pts",
-                when: "Duration adequacy (D) is below 50 and Interruptions (I) is below 50 on the same night.",
                 because: "Very little sleep together with frequent wake-ups is penalized more than either issue alone.",
                 barFraction: 8.0 / 18.0
             )
         case "adequate_duration_low_recovery":
-            return PenaltyInfo(
+            return PenaltyBaseInfo(
                 title: "Long sleep, poor recovery",
                 pointsLabel: "−6 pts",
-                when: "Duration adequacy (D) is above 75, recovery physiology (R) is in the score, and R is below 45.",
                 because: "Enough time in bed but HR/HRV (and related signals) vs your L30 baseline looked strained.",
                 barFraction: 6.0 / 18.0
             )
         case "low_consistency_low_recovery":
-            return PenaltyInfo(
+            return PenaltyBaseInfo(
                 title: "Timing off + poor recovery",
                 pointsLabel: "−6 pts",
-                when: "Consistency (C) is below 45, R is in the score, and R is below 45.",
                 because: "Unusual sleep timing plus weak recovery metrics suggests your rhythm and physiology didn’t line up.",
                 barFraction: 6.0 / 18.0
             )
         case "sleep_debt_7d":
-            return PenaltyInfo(
+            return PenaltyBaseInfo(
                 title: "7-night sleep debt",
                 pointsLabel: "Varies (max −18)",
-                when:
-                    "Sum over the last 7 scored nights of max(0, need − time asleep) is greater than zero. Need is your L28 median TST clamped to 7–9h.",
                 because: "Each minute of cumulative shortfall adds to the penalty (6% of total minutes), capped at 18 points.",
                 barFraction: 1.0
             )
         default:
             let title = flag.split(separator: "_").map { String($0).capitalized }.joined(separator: " ")
-            return PenaltyInfo(
+            return PenaltyBaseInfo(
                 title: title,
                 pointsLabel: "—",
-                when: "Triggered when this rule’s conditions in the current sleep scoring model are met.",
                 because: "See server scoring for this flag.",
                 barFraction: 0.35
             )
