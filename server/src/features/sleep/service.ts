@@ -147,26 +147,41 @@ export async function recomputeBaseline(userId: string): Promise<BaselineStats> 
 	return saved.toObject() as unknown as BaselineStats
 }
 
-export async function getContributorDetailForDate(
+async function buildContributorDetail(
 	userId: string,
 	date: string,
 	key: string
-): Promise<(ContributorDetail & { aiAssessment: string | null }) | null> {
+): Promise<ContributorDetail | null> {
 	const metricDoc = await repository.findNightlyMetricsByDate(userId, date)
 	if (!metricDoc) return null
 
 	const metrics = nightlyDocToMetrics(metricDoc)
-
 	const recentMetricDocs = await repository.findNightlyMetrics(userId, 60)
 	const recentMetrics = recentMetricDocs.map(nightlyDocToMetrics)
-
 	const baseline = await repository.findBaseline(userId) as BaselineStats | null
-	const detail = computeContributorDetail(key, metrics, baseline, recentMetrics)
+
+	return computeContributorDetail(key, metrics, baseline, recentMetrics)
+}
+
+/** Fast path: metrics + formulas only (no LLM). */
+export async function getContributorDetailForDate(
+	userId: string,
+	date: string,
+	key: string
+): Promise<ContributorDetail | null> {
+	return buildContributorDetail(userId, date, key)
+}
+
+/** Slow path: generates AI copy; call after the detail sheet is visible. */
+export async function getContributorDetailAssessmentForDate(
+	userId: string,
+	date: string,
+	key: string
+): Promise<{ aiAssessment: string | null } | null> {
+	const detail = await buildContributorDetail(userId, date, key)
 	if (!detail) return null
-
 	const aiAssessment = await getContributorAssessment(detail)
-
-	return { ...detail, aiAssessment }
+	return { aiAssessment }
 }
 
 export async function getTodayScores(userId: string): Promise<SleepScore | null> {

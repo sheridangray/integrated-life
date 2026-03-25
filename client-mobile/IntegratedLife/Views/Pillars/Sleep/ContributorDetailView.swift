@@ -7,6 +7,9 @@ struct ContributorDetailView: View {
     @State private var detail: ContributorDetail?
     @State private var isLoading = true
     @State private var errorMessage: String?
+    @State private var aiAssessment: String?
+    @State private var aiLoading = false
+    @State private var aiErrorMessage: String?
     @Environment(\.dismiss) private var dismiss
 
     private let sleepService = SleepService.shared
@@ -56,7 +59,7 @@ struct ContributorDetailView: View {
                     subComponentsSection(subs)
                 }
                 Divider()
-                aiSection(detail)
+                aiSection()
             }
             .padding()
         }
@@ -112,16 +115,18 @@ struct ContributorDetailView: View {
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(row.value)
+                    Text(displayValue(for: row))
                         .font(.callout.weight(.medium))
                         .multilineTextAlignment(.trailing)
                 }
             }
             if contributorKey == "consistency" || contributorKey == "timingAlignment" {
-                Text("Clock times use UTC—the same reference used to compute this score.")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-                    .padding(.top, 4)
+                Text(
+                    "Clock times are shown in your device timezone. The score still compares habitual timing using UTC so it stays consistent night to night."
+                )
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+                .padding(.top, 4)
             }
         }
     }
@@ -174,7 +179,7 @@ struct ContributorDetailView: View {
         }
     }
 
-    // MARK: - Sub-components (Physio Stability)
+    // MARK: - Sub-components
 
     private func subComponentsSection(_ subs: [ContributorSubComponent]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -199,12 +204,24 @@ struct ContributorDetailView: View {
 
     // MARK: - AI Assessment
 
-    private func aiSection(_ detail: ContributorDetail) -> some View {
+    private func aiSection() -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("AI Assessment", systemImage: "sparkles")
                 .font(.subheadline.weight(.semibold))
 
-            if let assessment = detail.aiAssessment {
+            if aiLoading {
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text("Generating assessment…")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 4)
+            } else if let err = aiErrorMessage {
+                Text(err)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            } else if let assessment = aiAssessment {
                 Text(assessment)
                     .font(.callout)
                     .padding(12)
@@ -212,7 +229,7 @@ struct ContributorDetailView: View {
                     .background(Color(.systemGray6))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
             } else {
-                Text("AI assessment not available.")
+                Text("No assessment returned.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
@@ -224,7 +241,7 @@ struct ContributorDetailView: View {
     private var loadingView: some View {
         VStack(spacing: 12) {
             ProgressView()
-            Text("Analyzing \(displayName)…")
+            Text("Loading \(displayName)…")
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }
@@ -275,15 +292,79 @@ struct ContributorDetailView: View {
         return String(format: "%.2f", value)
     }
 
+    private func displayValue(for row: ContributorDetailField) -> String {
+        if let iso = row.localDisplayIso, let d = Self.parseIsoInstant(iso) {
+            return Self.localTimeFormatter.string(from: d)
+        }
+        if let mins = row.utcMinutesFromMidnight {
+            return Self.formatUtcMinutesAsLocalTime(mins)
+        }
+        return row.value
+    }
+
+    private static let localTimeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.timeStyle = .short
+        f.dateStyle = .none
+        f.locale = .current
+        return f
+    }()
+
+    private static func parseIsoInstant(_ s: String) -> Date? {
+        let withFrac = ISO8601DateFormatter()
+        withFrac.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let d = withFrac.date(from: s) { return d }
+        let noFrac = ISO8601DateFormatter()
+        noFrac.formatOptions = [.withInternetDateTime]
+        return noFrac.date(from: s)
+    }
+
+    /// Map a UTC time-of-day (minutes since UTC midnight) to a display string in the user's timezone.
+    private static func formatUtcMinutesAsLocalTime(_ mins: Double) -> String {
+        let raw = Int(round(mins))
+        let total = ((raw % (24 * 60)) + (24 * 60)) % (24 * 60)
+        let h = total / 60
+        let m = total % 60
+        var utcCal = Calendar(identifier: .gregorian)
+        utcCal.timeZone = TimeZone(secondsFromGMT: 0)!
+        var comp = DateComponents()
+        comp.year = 2000
+        comp.month = 6
+        comp.day = 15
+        comp.hour = h
+        comp.minute = m
+        comp.second = 0
+        guard let utcDate = utcCal.date(from: comp) else { return "—" }
+        return localTimeFormatter.string(from: utcDate)
+    }
+
     private func fetchDetail() async {
         isLoading = true
         errorMessage = nil
+        aiAssessment = nil
+        aiErrorMessage = nil
+        aiLoading = false
         do {
             detail = try await sleepService.getContributorDetail(date: date, key: contributorKey)
             isLoading = false
+            aiLoading = true
+            Task {
+                await fetchAIAssessment()
+            }
         } catch {
             errorMessage = error.localizedDescription
             isLoading = false
+            aiLoading = false
+        }
+    }
+
+    private func fetchAIAssessment() async {
+        defer { aiLoading = false }
+        do {
+            let r = try await sleepService.getContributorDetailAssessment(date: date, key: contributorKey)
+            aiAssessment = r.aiAssessment
+        } catch {
+            aiErrorMessage = error.localizedDescription
         }
     }
 }

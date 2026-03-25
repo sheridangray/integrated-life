@@ -8,6 +8,32 @@ function requestId(req: Request): string | undefined {
 	return (req as Request & { id?: string }).id
 }
 
+const CONTRIBUTOR_DETAIL_KEYS = [
+	'durationAdequacy',
+	'consistency',
+	'fragmentation',
+	'recoveryPhysiology',
+	'structure',
+	'timingAlignment',
+] as const
+
+function parseContributorDetailQuery(req: Request):
+	| { ok: true; date: string; key: string }
+	| { ok: false; message: string } {
+	const date = req.query.date as string
+	const key = req.query.key as string
+	if (!date || !key) {
+		return { ok: false, message: 'date and key query params are required' }
+	}
+	if (!(CONTRIBUTOR_DETAIL_KEYS as readonly string[]).includes(key)) {
+		return {
+			ok: false,
+			message: `key must be one of: ${CONTRIBUTOR_DETAIL_KEYS.join(', ')}`,
+		}
+	}
+	return { ok: true, date, key }
+}
+
 export async function submitNightly(req: Request, res: Response) {
 	const authReq = req as AuthenticatedRequest
 	const parsed = submitNightlyValidator.safeParse(req.body)
@@ -82,32 +108,15 @@ export async function recomputeBaseline(req: Request, res: Response) {
 
 export async function getContributorDetail(req: Request, res: Response) {
 	const authReq = req as AuthenticatedRequest
-	const date = req.query.date as string
-	const key = req.query.key as string
-
-	if (!date || !key) {
+	const parsed = parseContributorDetailQuery(req)
+	if (!parsed.ok) {
 		return res.status(400).json({
-			error: { code: 'VALIDATION_ERROR', message: 'date and key query params are required' },
+			error: { code: 'VALIDATION_ERROR', message: parsed.message },
 			requestId: requestId(req),
 		})
 	}
 
-	const validKeys = [
-		'durationAdequacy',
-		'consistency',
-		'fragmentation',
-		'recoveryPhysiology',
-		'structure',
-		'timingAlignment',
-	]
-	if (!validKeys.includes(key)) {
-		return res.status(400).json({
-			error: { code: 'VALIDATION_ERROR', message: `key must be one of: ${validKeys.join(', ')}` },
-			requestId: requestId(req),
-		})
-	}
-
-	const detail = await sleepService.getContributorDetailForDate(authReq.user!.userId, date, key)
+	const detail = await sleepService.getContributorDetailForDate(authReq.user!.userId, parsed.date, parsed.key)
 	if (!detail) {
 		return res.status(404).json({
 			error: { code: 'NOT_FOUND', message: 'No metrics found for the given date or contributor unavailable' },
@@ -116,6 +125,31 @@ export async function getContributorDetail(req: Request, res: Response) {
 	}
 
 	return res.status(200).json(detail)
+}
+
+export async function getContributorDetailAssessment(req: Request, res: Response) {
+	const authReq = req as AuthenticatedRequest
+	const parsed = parseContributorDetailQuery(req)
+	if (!parsed.ok) {
+		return res.status(400).json({
+			error: { code: 'VALIDATION_ERROR', message: parsed.message },
+			requestId: requestId(req),
+		})
+	}
+
+	const result = await sleepService.getContributorDetailAssessmentForDate(
+		authReq.user!.userId,
+		parsed.date,
+		parsed.key
+	)
+	if (!result) {
+		return res.status(404).json({
+			error: { code: 'NOT_FOUND', message: 'No metrics found for the given date or contributor unavailable' },
+			requestId: requestId(req),
+		})
+	}
+
+	return res.status(200).json(result)
 }
 
 export async function getSyncStatus(req: Request, res: Response) {

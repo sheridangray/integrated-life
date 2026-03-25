@@ -36,11 +36,27 @@ final class SleepService {
         )
     }
 
+    private func percentEncodeQuery(_ s: String) -> String {
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "&=?+")
+        return s.addingPercentEncoding(withAllowedCharacters: allowed) ?? s
+    }
+
     func getContributorDetail(date: String, key: String) async throws -> ContributorDetail {
-        try await api.get(
-            path: "/v1/sleep/contributor-detail?date=\(date)&key=\(key)",
+        let q = "date=\(percentEncodeQuery(date))&key=\(percentEncodeQuery(key))"
+        return try await api.get(
+            path: "/v1/sleep/contributor-detail?\(q)",
             token: try await token(),
             as: ContributorDetail.self
+        )
+    }
+
+    func getContributorDetailAssessment(date: String, key: String) async throws -> ContributorDetailAssessmentResponse {
+        let q = "date=\(percentEncodeQuery(date))&key=\(percentEncodeQuery(key))"
+        return try await api.get(
+            path: "/v1/sleep/contributor-detail/assessment?\(q)",
+            token: try await token(),
+            as: ContributorDetailAssessmentResponse.self
         )
     }
 }

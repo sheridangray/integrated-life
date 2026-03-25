@@ -100,6 +100,8 @@ struct ContributorSubComponent: Codable {
 struct ContributorDetailField: Codable {
     let label: String
     let value: String
+    let localDisplayIso: String?
+    let utcMinutesFromMidnight: Double?
 }
 
 struct ContributorDetail: Codable {
@@ -114,6 +116,9 @@ struct ContributorDetail: Codable {
     let weight: Double
     let detailFields: [ContributorDetailField]?
     let subComponents: [ContributorSubComponent]?
+}
+
+struct ContributorDetailAssessmentResponse: Codable {
     let aiAssessment: String?
 }
 

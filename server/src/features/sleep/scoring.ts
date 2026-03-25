@@ -343,6 +343,10 @@ export function computeSleepScore(
 export type ContributorDetailField = {
 	label: string
 	value: string
+	/** ISO8601 instant; clients should format in the user's local timezone when present. */
+	localDisplayIso?: string
+	/** UTC time-of-day as minutes since midnight (scoring uses this); clients map to local clock for display. */
+	utcMinutesFromMidnight?: number
 }
 
 export type ContributorDetail = {
@@ -448,12 +452,17 @@ export function computeContributorDetail(
 				score: Math.round(ctx.C),
 				weight: w.C,
 				rawValue: Math.round(delta * 10) / 10,
-				rawLabel: `${formatMinutes(delta)} from your typical onset (UTC)`,
+				rawLabel: `${formatMinutes(delta)} from your typical onset`,
 				detailFields: [
-					{ label: 'Sleep onset (this night)', value: `${utcClockLabelFromIso(metrics.sleepStartTime)} UTC` },
+					{
+						label: 'Sleep onset (this night)',
+						value: utcClockLabelFromIso(metrics.sleepStartTime),
+						localDisplayIso: metrics.sleepStartTime,
+					},
 					{
 						label: 'Typical onset (28-night median)',
-						value: `${utcClockLabelFromMinutesSinceMidnight(medOnset)} UTC`,
+						value: utcClockLabelFromMinutesSinceMidnight(medOnset),
+						utcMinutesFromMidnight: medOnset,
 					},
 					{ label: 'Deviation (shortest arc)', value: formatMinutes(delta) },
 				],
@@ -649,12 +658,17 @@ export function computeContributorDetail(
 				score: Math.round(ctx.T),
 				weight: w.T,
 				rawValue: Math.round(delta * 10) / 10,
-				rawLabel: `${formatMinutes(delta)} from typical sleep midpoint (UTC)`,
+				rawLabel: `${formatMinutes(delta)} from typical sleep midpoint`,
 				detailFields: [
-					{ label: 'Sleep midpoint (this night)', value: `${utcClockLabelFromIso(metrics.sleepMidpoint)} UTC` },
+					{
+						label: 'Sleep midpoint (this night)',
+						value: utcClockLabelFromIso(metrics.sleepMidpoint),
+						localDisplayIso: metrics.sleepMidpoint,
+					},
 					{
 						label: 'Typical midpoint (28-night median)',
-						value: `${utcClockLabelFromMinutesSinceMidnight(medMid)} UTC`,
+						value: utcClockLabelFromMinutesSinceMidnight(medMid),
+						utcMinutesFromMidnight: medMid,
 					},
 					{ label: 'Deviation (shortest arc)', value: formatMinutes(delta) },
 				],
