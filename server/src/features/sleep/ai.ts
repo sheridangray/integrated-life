@@ -15,7 +15,7 @@ Rules:
 const CONTRIBUTOR_LABELS: Record<string, string> = {
 	durationAdequacy: 'Sleep Duration Adequacy',
 	consistency: 'Sleep Onset Consistency',
-	fragmentation: 'Sleep Fragmentation',
+	fragmentation: 'Sleep Interruptions',
 	recoveryPhysiology: 'Recovery Physiology',
 	structure: 'Sleep Structure (Stages)',
 	timingAlignment: 'Timing Alignment',
@@ -42,6 +42,11 @@ export async function getContributorAssessment(
 			.map(s => `${s.name}: ${s.rawValue} (score ${s.score}/100)`)
 			.join(', ')
 		context += `\nSub-components: ${subSummary}`
+	}
+
+	if (detail.detailFields && detail.detailFields.length > 0) {
+		const lines = detail.detailFields.map(f => `${f.label}: ${f.value}`).join('; ')
+		context += `\nDetails: ${lines}`
 	}
 
 	context += `\n\nProvide a brief assessment of this contributor and one specific suggestion to improve or maintain it.`

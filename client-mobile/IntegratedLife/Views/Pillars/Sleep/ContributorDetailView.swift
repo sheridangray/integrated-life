@@ -41,6 +41,10 @@ struct ContributorDetailView: View {
                 scoreHeader(detail)
                 Divider()
                 valueSection(detail)
+                if let fields = detail.detailFields, !fields.isEmpty {
+                    Divider()
+                    detailFieldsSection(fields)
+                }
                 if detail.baselineMean != nil {
                     Divider()
                     baselineSection(detail)
@@ -92,10 +96,33 @@ struct ContributorDetailView: View {
 
     private func valueSection(_ detail: ContributorDetail) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Your Value").font(.subheadline.weight(.semibold))
+            Text("Summary").font(.subheadline.weight(.semibold))
             Text(detail.rawLabel)
                 .font(.title3)
                 .foregroundStyle(.primary)
+        }
+    }
+
+    private func detailFieldsSection(_ fields: [ContributorDetailField]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Values").font(.subheadline.weight(.semibold))
+            ForEach(Array(fields.enumerated()), id: \.offset) { _, row in
+                HStack(alignment: .top, spacing: 12) {
+                    Text(row.label)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Text(row.value)
+                        .font(.callout.weight(.medium))
+                        .multilineTextAlignment(.trailing)
+                }
+            }
+            if contributorKey == "consistency" || contributorKey == "timingAlignment" {
+                Text("Clock times use UTC—the same reference used to compute this score.")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .padding(.top, 4)
+            }
         }
     }
 
@@ -217,7 +244,7 @@ struct ContributorDetailView: View {
         let names: [String: String] = [
             "durationAdequacy": "Duration adequacy",
             "consistency": "Consistency",
-            "fragmentation": "Fragmentation",
+            "fragmentation": "Interruptions",
             "recoveryPhysiology": "Recovery physiology",
             "structure": "Sleep structure",
             "timingAlignment": "Timing alignment",

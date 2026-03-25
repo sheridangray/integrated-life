@@ -340,6 +340,11 @@ export function computeSleepScore(
 
 // MARK: - Contributor Detail
 
+export type ContributorDetailField = {
+	label: string
+	value: string
+}
+
 export type ContributorDetail = {
 	key: string
 	score: number
@@ -350,6 +355,8 @@ export type ContributorDetail = {
 	zScore?: number
 	formula: string
 	weight: number
+	/** Extra labeled values for the detail screen (e.g. tonight vs baseline onset). */
+	detailFields?: ContributorDetailField[]
 	subComponents?: Array<{
 		name: string
 		rawValue: number
@@ -361,9 +368,23 @@ export type ContributorDetail = {
 }
 
 function formatMinutes(mins: number): string {
-	const h = Math.floor(mins / 60)
-	const m = Math.round(mins % 60)
-	return h > 0 ? `${h}h ${m}m` : `${m}m`
+	const total = Math.max(0, Math.round(mins))
+	const h = Math.floor(total / 60)
+	const m = total % 60
+	if (h > 0 && m > 0) return `${h}h ${m}m`
+	if (h > 0) return `${h}h`
+	return `${m}m`
+}
+
+/** Wall-clock label in UTC (matches onset/midpoint math in scoring). */
+function utcClockLabelFromIso(iso: string): string {
+	const d = new Date(iso)
+	const h24 = d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600
+	return midpointToTimeLabel(h24)
+}
+
+function utcClockLabelFromMinutesSinceMidnight(mins: number): string {
+	return midpointToTimeLabel(mins / 60)
 }
 
 function midpointToTimeLabel(hour: number): string {
@@ -395,7 +416,14 @@ export function computeContributorDetail(
 				score: Math.round(ctx.D),
 				weight: w.D,
 				rawValue: tst,
-				rawLabel: `${formatMinutes(tst)} vs need ${formatMinutes(need)}`,
+				rawLabel: `${formatMinutes(tst)} asleep vs ${formatMinutes(need)} need`,
+				detailFields: [
+					{ label: 'Total sleep time', value: formatMinutes(tst) },
+					{
+						label: 'Personalized need',
+						value: `${formatMinutes(need)} (median of last 28 nights, clamped 7–9h)`,
+					},
+				],
 				formula:
 					'D = 100 × min(1, TST/Need), minus oversleep penalty beyond Need+90m; Need = median(TST last 28 nights), clamped 7–9h.',
 			}
@@ -420,7 +448,15 @@ export function computeContributorDetail(
 				score: Math.round(ctx.C),
 				weight: w.C,
 				rawValue: Math.round(delta * 10) / 10,
-				rawLabel: `${Math.round(delta)}m from your typical onset`,
+				rawLabel: `${formatMinutes(delta)} from your typical onset (UTC)`,
+				detailFields: [
+					{ label: 'Sleep onset (this night)', value: `${utcClockLabelFromIso(metrics.sleepStartTime)} UTC` },
+					{
+						label: 'Typical onset (28-night median)',
+						value: `${utcClockLabelFromMinutesSinceMidnight(medOnset)} UTC`,
+					},
+					{ label: 'Deviation (shortest arc)', value: formatMinutes(delta) },
+				],
 				formula: 'C = 100 × exp(−(Δonset/75)^1.6) vs median sleep onset (UTC clock) over up to 28 prior nights.',
 			}
 		}
@@ -434,7 +470,12 @@ export function computeContributorDetail(
 					score: Math.round(ctx.I),
 					weight: w.I,
 					rawValue: an,
-					rawLabel: `${an} episodes >2m, ${Math.round(at)}m awake, longest ${Math.round(lmax)}m`,
+					rawLabel: `${an} awakenings >2m · ${formatMinutes(at)} awake · longest ${formatMinutes(lmax)}`,
+					detailFields: [
+						{ label: 'Awakenings over 2 minutes', value: String(an) },
+						{ label: 'Total awake after sleep onset', value: formatMinutes(at) },
+						{ label: 'Longest awake episode', value: formatMinutes(lmax) },
+					],
 					formula: 'I = 100 − (3×A_n + 0.8×A_t + 0.7×L_max), post sleep onset.',
 				}
 			}
@@ -443,7 +484,13 @@ export function computeContributorDetail(
 				score: Math.round(ctx.I),
 				weight: w.I,
 				rawValue: metrics.wasoDuration ?? 0,
-				rawLabel: `WASO ~${Math.round(metrics.wasoDuration ?? 0)}m (estimated)`,
+				rawLabel: `WASO ~${formatMinutes(metrics.wasoDuration ?? 0)} (estimated)`,
+				detailFields: [
+					{
+						label: 'WASO (in-bed estimate)',
+						value: formatMinutes(metrics.wasoDuration ?? 0),
+					},
+				],
 				formula: 'Fallback: WASO and efficiency-based estimate when post-onset fragmentation fields are missing.',
 			}
 		}
@@ -521,12 +568,36 @@ export function computeContributorDetail(
 				}
 			}
 
+			const physioFields: ContributorDetailField[] = [
+				{ label: 'Nights in rolling window', value: `${prior30.length} (up to 30 prior nights)` },
+				{ label: 'Sleep heart rate (avg)', value: `${Math.round(metrics.avgHr * 10) / 10} bpm` },
+			]
+			if (metrics.hrvMean !== undefined) {
+				physioFields.push({
+					label: 'HRV (SDNN, mean)',
+					value: `${Math.round(metrics.hrvMean * 10) / 10} ms`,
+				})
+			}
+			if (metrics.respiratoryRateMean !== undefined) {
+				physioFields.push({
+					label: 'Respiratory rate (mean)',
+					value: `${Math.round(metrics.respiratoryRateMean * 10) / 10} br/min`,
+				})
+			}
+			if (metrics.temperatureDeviation !== undefined) {
+				physioFields.push({
+					label: 'Wrist temp deviation',
+					value: String(Math.round(metrics.temperatureDeviation * 1000) / 1000),
+				})
+			}
+
 			return {
 				key,
 				score: Math.round(r),
 				weight: w.R,
 				rawValue: Math.round(r * 10) / 10,
 				rawLabel: `${Math.round(r)}/100`,
+				detailFields: physioFields,
 				formula: 'Average of sigmoid z-scores vs your last 30 nights (HRV, HR, RR, temperature when present).',
 				subComponents: subs.length > 0 ? subs : undefined,
 			}
@@ -537,12 +608,23 @@ export function computeContributorDetail(
 				return null
 			}
 			const eff = metrics.totalInBedDuration > 0 ? (metrics.totalAsleepDuration / metrics.totalInBedDuration) * 100 : 0
+			const tst = metrics.totalAsleepDuration
+			const deepPct = metrics.deepDuration !== undefined && tst > 0 ? (metrics.deepDuration / tst) * 100 : 0
+			const remPct = metrics.remDuration !== undefined && tst > 0 ? (metrics.remDuration / tst) * 100 : 0
+			const corePct = metrics.coreDuration !== undefined && tst > 0 ? (metrics.coreDuration / tst) * 100 : 0
+			const awakePct = Math.max(0, 100 - deepPct - remPct - corePct)
 			return {
 				key,
 				score: s,
 				weight: w.S,
 				rawValue: Math.round(eff * 10) / 10,
-				rawLabel: `${Math.round(eff)}% efficiency`,
+				rawLabel: `${Math.round(eff)}% sleep efficiency`,
+				detailFields: [
+					{ label: 'Sleep efficiency', value: `${Math.round(eff * 10) / 10}%` },
+					{ label: 'Deep sleep', value: `${Math.round(deepPct * 10) / 10}% of asleep time` },
+					{ label: 'REM sleep', value: `${Math.round(remPct * 10) / 10}% of asleep time` },
+					{ label: 'Awake (within asleep window)', value: `${Math.round(awakePct * 10) / 10}% of asleep time` },
+				],
 				formula:
 					'S = 100 × clamp(0.5 + 0.25×z_eff + 0.25×z_stage) using efficiency, deep%, REM%, awake% vs baselines.',
 			}
@@ -562,13 +644,20 @@ export function computeContributorDetail(
 			const medMid = median(window.map(m => minutesSinceUtcMidnight(m.sleepMidpoint)))
 			const tonight = minutesSinceUtcMidnight(metrics.sleepMidpoint)
 			const delta = circularDeltaMinutes(medMid, tonight)
-			const hour = medMid / 60
 			return {
 				key,
 				score: Math.round(ctx.T),
 				weight: w.T,
 				rawValue: Math.round(delta * 10) / 10,
-				rawLabel: `${Math.round(delta)}m from typical midpoint (${midpointToTimeLabel(hour)})`,
+				rawLabel: `${formatMinutes(delta)} from typical sleep midpoint (UTC)`,
+				detailFields: [
+					{ label: 'Sleep midpoint (this night)', value: `${utcClockLabelFromIso(metrics.sleepMidpoint)} UTC` },
+					{
+						label: 'Typical midpoint (28-night median)',
+						value: `${utcClockLabelFromMinutesSinceMidnight(medMid)} UTC`,
+					},
+					{ label: 'Deviation (shortest arc)', value: formatMinutes(delta) },
+				],
 				formula: 'T = 100 × exp(−(Δmidpoint/90)^1.5) vs median sleep midpoint (UTC clock) over up to 28 prior nights.',
 			}
 		}

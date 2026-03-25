@@ -97,6 +97,11 @@ struct ContributorSubComponent: Codable {
     let zScore: Double?
 }
 
+struct ContributorDetailField: Codable {
+    let label: String
+    let value: String
+}
+
 struct ContributorDetail: Codable {
     let key: String
     let score: Int
@@ -107,6 +112,7 @@ struct ContributorDetail: Codable {
     let zScore: Double?
     let formula: String
     let weight: Double
+    let detailFields: [ContributorDetailField]?
     let subComponents: [ContributorSubComponent]?
     let aiAssessment: String?
 }
