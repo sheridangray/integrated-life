@@ -312,13 +312,14 @@ export function computeSleepScore(
 		penaltyFlags.push('low_consistency_low_recovery')
 	}
 
-	const debtNights = lastNightsUpTo(recentMetrics, metrics.date, 7)
-	const debtSum = debtNights.reduce((s, m) => s + Math.max(0, ctx.need - m.totalAsleepDuration), 0)
-	if (debtSum > 0) {
-		const p = Math.min(18, debtSum * 0.06)
-		penalty += p
-		penaltyFlags.push('sleep_debt_7d')
-	}
+	// Sleep debt moved to Readiness Score — it's cumulative, not night-specific
+	// const debtNights = lastNightsUpTo(recentMetrics, metrics.date, 7)
+	// const debtSum = debtNights.reduce((s, m) => s + Math.max(0, ctx.need - m.totalAsleepDuration), 0)
+	// if (debtSum > 0) {
+	// 	const p = Math.min(18, debtSum * 0.06)
+	// 	penalty += p
+	// 	penaltyFlags.push('sleep_debt_7d')
+	// }
 
 	const penaltyTotal = Math.round(penalty)
 	const score = clamp(preliminary - penaltyTotal, 0, 100)
@@ -334,7 +335,7 @@ export function computeSleepScore(
 		penaltyTotal,
 		penaltyFlags,
 		sleepNeedMinutes: ctx.need,
-		sleepDebt7dSumMinutes: Math.round(debtSum),
+		// sleepDebt7dSumMinutes removed — sleep debt now only in Readiness Score
 		nightAvgHr: metrics.avgHr,
 		nightMinHr: metrics.minHrValue,
 		...(metrics.hrvMean !== undefined ? { nightHrvMean: metrics.hrvMean } : {}),
