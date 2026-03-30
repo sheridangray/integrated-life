@@ -23,7 +23,7 @@ struct SleepDisplayView: View {
                         .buttonStyle(.bordered)
                 }
                 .padding(.top, 40)
-            } else if state.currentNights.isEmpty {
+            } else if state.currentNights.isEmpty { 
                 ContentUnavailableView {
                     Label("No Sleep Data", systemImage: "moon.zzz")
                 } description: {
@@ -36,7 +36,7 @@ struct SleepDisplayView: View {
                     topSummarySection
                     graphSection
                     stagesSection
-                    if let score = scoreResponse {
+                    if state.selectedPeriod == .day, let score = scoreResponse {
                         sleepScoringSection(score)
                     }
                 }
@@ -60,10 +60,10 @@ struct SleepDisplayView: View {
         .pickerStyle(.segmented)
     }
 
-    /// Time asleep with sleep score (colored number) on the right when a score is loaded.
+    /// Day view: time asleep + today’s sleep score. Other periods: avg. time asleep only (score is per-night, not the range).
     @ViewBuilder
     private var topSummarySection: some View {
-        if let score = scoreResponse {
+        if state.selectedPeriod == .day, let score = scoreResponse {
             HStack(alignment: .center, spacing: 20) {
                 timeAsleepColumn
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -124,6 +124,20 @@ struct SleepDisplayView: View {
     private var dayGraph: some View {
         if let night = state.dayData, !night.stageSegments.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .top, spacing: 12) {
+                    Text("Sleep")
+                        .font(.headline)
+                    chartSelectionSlot {
+                        if let time = selectedTime,
+                           let segment = night.stageSegments.first(where: { $0.start <= time && time <= $0.end }) {
+                            selectionBadge(
+                                stage: segment.stage,
+                                detail: time.formatted(date: .omitted, time: .shortened)
+                            )
+                        }
+                    }
+                }
+
                 Chart {
                     ForEach(night.stageSegments) { segment in
                         RectangleMark(
@@ -159,14 +173,6 @@ struct SleepDisplayView: View {
                 }
                 .chartXSelection(value: $selectedTime)
                 .frame(height: 140)
-
-                if let time = selectedTime,
-                   let segment = night.stageSegments.first(where: { $0.start <= time && time <= $0.end }) {
-                    selectionBadge(
-                        stage: segment.stage,
-                        detail: time.formatted(date: .omitted, time: .shortened)
-                    )
-                }
             }
             .padding()
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
@@ -180,6 +186,17 @@ struct SleepDisplayView: View {
         let nights = state.currentNights
         if !nights.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .top, spacing: 12) {
+                    Text("Sleep")
+                        .font(.headline)
+                    chartSelectionSlot {
+                        if let selected = selectedDate,
+                           let night = nearestNight(to: selected, in: nights) {
+                            selectedNightDetail(night)
+                        }
+                    }
+                }
+
                 Chart {
                     ForEach(nights) { night in
                         if night.stageSegments.isEmpty {
@@ -224,11 +241,6 @@ struct SleepDisplayView: View {
                 }
                 .chartXSelection(value: $selectedDate)
                 .frame(height: 200)
-
-                if let selected = selectedDate,
-                   let night = nearestNight(to: selected, in: nights) {
-                    selectedNightDetail(night)
-                }
             }
             .padding()
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
@@ -242,6 +254,17 @@ struct SleepDisplayView: View {
         let nights = state.currentNights
         if !nights.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .top, spacing: 12) {
+                    Text("Sleep")
+                        .font(.headline)
+                    chartSelectionSlot {
+                        if let selected = selectedDate,
+                           let night = nearestNight(to: selected, in: nights) {
+                            selectedNightDetail(night)
+                        }
+                    }
+                }
+
                 Chart(nights) { night in
                     BarMark(
                         x: .value("Date", night.date, unit: .day),
@@ -260,11 +283,6 @@ struct SleepDisplayView: View {
                 }
                 .chartXSelection(value: $selectedDate)
                 .frame(height: 160)
-
-                if let selected = selectedDate,
-                   let night = nearestNight(to: selected, in: nights) {
-                    selectedNightDetail(night)
-                }
             }
             .padding()
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
@@ -310,8 +328,7 @@ struct SleepDisplayView: View {
             VStack(alignment: .leading, spacing: 0) {
                 SleepContributorsView(
                     breakdown: score.sleepBreakdown,
-                    scoreDate: score.date,
-                    nightData: state.dayData
+                    scoreDate: score.date
                 )
             }
             .padding()
@@ -319,12 +336,21 @@ struct SleepDisplayView: View {
 
             if score.sleepBreakdown.penaltyTotal > 0 || !score.sleepBreakdown.penaltyFlags.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {
-                    SleepPenaltiesView(breakdown: score.sleepBreakdown, nightData: state.dayData)
+                    SleepPenaltiesView(breakdown: score.sleepBreakdown, scoreDate: score.date)
                 }
                 .padding()
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
             }
         }
+    }
+
+    // MARK: - Chart selection slot (fixed height so layout doesn’t jump)
+
+    private func chartSelectionSlot(@ViewBuilder content: () -> some View) -> some View {
+        ZStack(alignment: .topTrailing) {
+            content()
+        }
+        .frame(maxWidth: .infinity, minHeight: 52, alignment: .topTrailing)
     }
 
     // MARK: - Selection Views

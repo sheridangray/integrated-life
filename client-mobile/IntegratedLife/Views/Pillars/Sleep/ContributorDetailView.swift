@@ -1,67 +1,50 @@
 import SwiftUI
 
-struct ContributorDetailView: View {
+// MARK: - Shared panel (contributor sheet + penalty detail)
+
+/// Full contributor breakdown UI after `ContributorDetail` is loaded. Matches the former contributor sheet body.
+struct ContributorDetailPanelView: View {
     let contributorKey: String
     let date: String
+    let detail: ContributorDetail
+    /// When `true`, shows the same title pattern as the Contributors card, e.g. `Duration (35%)`.
+    var showMetricTitle: Bool = false
 
-    @State private var detail: ContributorDetail?
-    @State private var isLoading = true
-    @State private var errorMessage: String?
     @State private var aiAssessment: String?
     @State private var aiLoading = false
     @State private var aiErrorMessage: String?
-    @Environment(\.dismiss) private var dismiss
 
     private let sleepService = SleepService.shared
 
     var body: some View {
-        NavigationView {
-            Group {
-                if isLoading {
-                    loadingView
-                } else if let error = errorMessage {
-                    errorView(error)
-                } else if let detail {
-                    detailContent(detail)
-                }
+        VStack(alignment: .leading, spacing: 20) {
+            if showMetricTitle {
+                Text(Self.metricTitleWithWeight(for: contributorKey))
+                    .font(.title3.weight(.semibold))
             }
-            .navigationTitle(displayName)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
-                }
+
+            scoreHeader(detail)
+            Divider()
+            valueSection(detail)
+            if let fields = detail.detailFields, !fields.isEmpty {
+                Divider()
+                detailFieldsSection(fields)
             }
+            if detail.baselineMean != nil {
+                Divider()
+                baselineSection(detail)
+            }
+            Divider()
+            formulaSection(detail)
+            if let subs = detail.subComponents, !subs.isEmpty {
+                Divider()
+                subComponentsSection(subs)
+            }
+            Divider()
+            aiSection()
         }
-        .task { await fetchDetail() }
-    }
-
-    // MARK: - Content
-
-    private func detailContent(_ detail: ContributorDetail) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                scoreHeader(detail)
-                Divider()
-                valueSection(detail)
-                if let fields = detail.detailFields, !fields.isEmpty {
-                    Divider()
-                    detailFieldsSection(fields)
-                }
-                if detail.baselineMean != nil {
-                    Divider()
-                    baselineSection(detail)
-                }
-                Divider()
-                formulaSection(detail)
-                if let subs = detail.subComponents, !subs.isEmpty {
-                    Divider()
-                    subComponentsSection(subs)
-                }
-                Divider()
-                aiSection()
-            }
-            .padding()
+        .task(id: contributorKey) {
+            await fetchAIAssessment()
         }
     }
 
@@ -94,8 +77,6 @@ struct ContributorDetailView: View {
                 .foregroundStyle(.secondary)
         }
     }
-
-    // MARK: - Value Section
 
     private func valueSection(_ detail: ContributorDetail) -> some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -130,8 +111,6 @@ struct ContributorDetailView: View {
             }
         }
     }
-
-    // MARK: - Baseline Section
 
     private func baselineSection(_ detail: ContributorDetail) -> some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -168,8 +147,6 @@ struct ContributorDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
-    // MARK: - Formula Section
-
     private func formulaSection(_ detail: ContributorDetail) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("How It's Calculated").font(.subheadline.weight(.semibold))
@@ -178,8 +155,6 @@ struct ContributorDetailView: View {
                 .foregroundStyle(.secondary)
         }
     }
-
-    // MARK: - Sub-components
 
     private func subComponentsSection(_ subs: [ContributorSubComponent]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -201,8 +176,6 @@ struct ContributorDetailView: View {
             }
         }
     }
-
-    // MARK: - AI Assessment
 
     private func aiSection() -> some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -234,39 +207,6 @@ struct ContributorDetailView: View {
                     .foregroundStyle(.secondary)
             }
         }
-    }
-
-    // MARK: - Loading / Error
-
-    private var loadingView: some View {
-        VStack(spacing: 12) {
-            ProgressView()
-            Text("Loading \(displayName)…")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    private func errorView(_ message: String) -> some View {
-        ContentUnavailableView(
-            "Unable to Load",
-            systemImage: "exclamationmark.triangle",
-            description: Text(message)
-        )
-    }
-
-    // MARK: - Helpers
-
-    private var displayName: String {
-        let names: [String: String] = [
-            "durationAdequacy": "Duration adequacy",
-            "consistency": "Consistency",
-            "fragmentation": "Interruptions",
-            "recoveryPhysiology": "Recovery physiology",
-            "structure": "Sleep structure",
-            "timingAlignment": "Timing alignment",
-        ]
-        return names[contributorKey] ?? contributorKey
     }
 
     private func scoreColor(_ score: Int) -> Color {
@@ -302,6 +242,47 @@ struct ContributorDetailView: View {
         return row.value
     }
 
+    private func fetchAIAssessment() async {
+        aiAssessment = nil
+        aiErrorMessage = nil
+        aiLoading = true
+        defer { aiLoading = false }
+        do {
+            let r = try await sleepService.getContributorDetailAssessment(date: date, key: contributorKey)
+            aiAssessment = r.aiAssessment
+        } catch {
+            aiErrorMessage = error.localizedDescription
+        }
+    }
+
+    /// Aligns with `SleepContributorsView` row labels and weights.
+    static func metricTitleWithWeight(for key: String) -> String {
+        let w = weightPercent(for: key)
+        let base: String
+        switch key {
+        case "durationAdequacy": base = "Duration"
+        case "consistency": base = "Consistency"
+        case "fragmentation": base = "Interruptions"
+        case "recoveryPhysiology": base = "Recovery physiology"
+        case "structure": base = "Sleep structure"
+        case "timingAlignment": base = "Timing alignment"
+        default: base = key
+        }
+        return "\(base) (\(w)%)"
+    }
+
+    private static func weightPercent(for key: String) -> Int {
+        switch key {
+        case "durationAdequacy": return 35
+        case "consistency": return 20
+        case "fragmentation": return 15
+        case "recoveryPhysiology": return 15
+        case "structure": return 10
+        case "timingAlignment": return 5
+        default: return 0
+        }
+    }
+
     private static let localTimeFormatter: DateFormatter = {
         let f = DateFormatter()
         f.timeStyle = .short
@@ -319,7 +300,6 @@ struct ContributorDetailView: View {
         return noFrac.date(from: s)
     }
 
-    /// Map a UTC time-of-day (minutes since UTC midnight) to a display string in the user's timezone.
     private static func formatUtcMinutesAsLocalTime(_ mins: Double) -> String {
         let raw = Int(round(mins))
         let total = ((raw % (24 * 60)) + (24 * 60)) % (24 * 60)
@@ -337,34 +317,89 @@ struct ContributorDetailView: View {
         guard let utcDate = utcCal.date(from: comp) else { return "—" }
         return localTimeFormatter.string(from: utcDate)
     }
+}
+
+// MARK: - Contributor detail sheet
+
+struct ContributorDetailView: View {
+    let contributorKey: String
+    let date: String
+
+    @State private var detail: ContributorDetail?
+    @State private var isLoading = true
+    @State private var errorMessage: String?
+    @Environment(\.dismiss) private var dismiss
+
+    private let sleepService = SleepService.shared
+
+    var body: some View {
+        NavigationView {
+            Group {
+                if isLoading {
+                    loadingView
+                } else if let error = errorMessage {
+                    errorView(error)
+                } else if let detail {
+                    ScrollView {
+                        ContributorDetailPanelView(
+                            contributorKey: contributorKey,
+                            date: date,
+                            detail: detail,
+                            showMetricTitle: false
+                        )
+                        .padding()
+                    }
+                }
+            }
+            .navigationTitle(displayName)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .task { await fetchDetail() }
+    }
+
+    private var loadingView: some View {
+        VStack(spacing: 12) {
+            ProgressView()
+            Text("Loading \(displayName)…")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func errorView(_ message: String) -> some View {
+        ContentUnavailableView(
+            "Unable to Load",
+            systemImage: "exclamationmark.triangle",
+            description: Text(message)
+        )
+    }
+
+    private var displayName: String {
+        let names: [String: String] = [
+            "durationAdequacy": "Duration adequacy",
+            "consistency": "Consistency",
+            "fragmentation": "Interruptions",
+            "recoveryPhysiology": "Recovery physiology",
+            "structure": "Sleep structure",
+            "timingAlignment": "Timing alignment",
+        ]
+        return names[contributorKey] ?? contributorKey
+    }
 
     private func fetchDetail() async {
         isLoading = true
         errorMessage = nil
-        aiAssessment = nil
-        aiErrorMessage = nil
-        aiLoading = false
         do {
             detail = try await sleepService.getContributorDetail(date: date, key: contributorKey)
             isLoading = false
-            aiLoading = true
-            Task {
-                await fetchAIAssessment()
-            }
         } catch {
             errorMessage = error.localizedDescription
             isLoading = false
-            aiLoading = false
-        }
-    }
-
-    private func fetchAIAssessment() async {
-        defer { aiLoading = false }
-        do {
-            let r = try await sleepService.getContributorDetailAssessment(date: date, key: contributorKey)
-            aiAssessment = r.aiAssessment
-        } catch {
-            aiErrorMessage = error.localizedDescription
         }
     }
 }

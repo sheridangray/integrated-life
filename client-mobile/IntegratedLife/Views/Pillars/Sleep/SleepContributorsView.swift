@@ -1,12 +1,15 @@
 import SwiftUI
 
+private struct ContributorSheetItem: Identifiable {
+    let contributorKey: String
+    var id: String { contributorKey }
+}
+
 struct SleepContributorsView: View {
     let breakdown: SleepBreakdown
     let scoreDate: String
-    var nightData: SleepNightDisplay?
 
-    @State private var selectedContributor: String?
-    @State private var showDetail = false
+    @State private var contributorSheet: ContributorSheetItem?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -14,102 +17,91 @@ struct SleepContributorsView: View {
                 Text("Contributors")
                     .font(.headline)
                 Spacer()
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("Contributor score")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text("\(breakdown.preliminaryScore)")
-                        .font(.title3.weight(.semibold))
-                        .foregroundStyle(.black)
-                }
+                Text("\(breakdown.preliminaryScore)")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(.black)
             }
             .padding(.bottom, 12)
 
             contributorRow(
-                "Duration adequacy",
+                labelWithWeight: durationLabelWithWeight,
                 key: "durationAdequacy",
                 score: breakdown.durationAdequacy,
-                subtitle: durationSubtitle,
                 fraction: barFraction(breakdown.durationAdequacy)
             )
             divider
             contributorRow(
-                "Consistency",
+                labelWithWeight: labelWithWeight("Consistency", key: "consistency"),
                 key: "consistency",
                 score: breakdown.consistency,
-                subtitle: nil,
                 fraction: barFraction(breakdown.consistency)
             )
             divider
             contributorRow(
-                "Interruptions",
+                labelWithWeight: labelWithWeight("Interruptions", key: "fragmentation"),
                 key: "fragmentation",
                 score: breakdown.fragmentation,
-                subtitle: nil,
                 fraction: barFraction(breakdown.fragmentation)
             )
             divider
             contributorRow(
-                "Recovery physiology",
+                labelWithWeight: labelWithWeight("Recovery physiology", key: "recoveryPhysiology"),
                 key: "recoveryPhysiology",
                 score: breakdown.recoveryPhysiology,
-                subtitle: nil,
                 fraction: barFraction(breakdown.recoveryPhysiology)
             )
             divider
 
             if let structure = breakdown.structure {
                 contributorRow(
-                    "Sleep structure",
+                    labelWithWeight: labelWithWeight("Sleep structure", key: "structure"),
                     key: "structure",
                     score: structure,
-                    subtitle: nil,
                     fraction: barFraction(structure)
                 )
                 divider
             }
 
             contributorRow(
-                "Timing alignment",
+                labelWithWeight: labelWithWeight("Timing alignment", key: "timingAlignment"),
                 key: "timingAlignment",
                 score: breakdown.timingAlignment,
-                subtitle: nil,
                 fraction: barFraction(breakdown.timingAlignment)
             )
         }
-        .sheet(isPresented: $showDetail) {
-            if let key = selectedContributor {
-                ContributorDetailView(contributorKey: key, date: scoreDate)
-            }
+        .sheet(item: $contributorSheet) { item in
+            ContributorDetailView(contributorKey: item.contributorKey, date: scoreDate)
         }
+    }
+
+    private var durationLabelWithWeight: String {
+        let w = Self.weightPercent(for: "durationAdequacy")
+        return "Duration (\(w)%)"
+    }
+
+    private func labelWithWeight(_ name: String, key: String) -> String {
+        let w = Self.weightPercent(for: key)
+        return "\(name) (\(w)%)"
     }
 
     // MARK: - Row
 
     private func contributorRow(
-        _ label: String,
+        labelWithWeight: String,
         key: String,
         score: Int,
-        subtitle: String?,
         fraction: Double
     ) -> some View {
         let clamped = max(0.02, min(1.0, fraction))
         let barScore = Int(clamped * 100)
-        let w = Self.weightPercent(for: key)
         return VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .top) {
-                Text(label).font(.subheadline)
+                Text(labelWithWeight)
+                    .font(.subheadline)
                 Spacer()
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("\(score)/100 · \(w)% weight")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    if let subtitle, !subtitle.isEmpty {
-                        Text(subtitle)
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    }
-                }
+                Text("\(score)/100")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
             GeometryReader { geo in
                 RoundedRectangle(cornerRadius: 3)
@@ -121,8 +113,7 @@ struct SleepContributorsView: View {
         .padding(.vertical, 10)
         .contentShape(Rectangle())
         .onTapGesture {
-            selectedContributor = key
-            showDetail = true
+            contributorSheet = ContributorSheetItem(contributorKey: key)
         }
     }
 
@@ -143,17 +134,6 @@ struct SleepContributorsView: View {
     }
 
     private var divider: some View { Divider() }
-
-    private var durationSubtitle: String? {
-        guard let night = nightData else { return nil }
-        return "\(formatMin(night.totalAsleepMinutes)) asleep"
-    }
-
-    private func formatMin(_ mins: Double) -> String {
-        let h = Int(mins) / 60
-        let m = Int(mins) % 60
-        return h > 0 ? "\(h)h \(m)m" : "\(m)m"
-    }
 
     private func barColor(_ score: Int) -> Color {
         switch score {
