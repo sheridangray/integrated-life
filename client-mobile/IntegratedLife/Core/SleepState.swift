@@ -34,6 +34,22 @@ final class SleepState: ObservableObject {
         isLoading = false
     }
 
+    /// Loads today + history together for the Pillars overview (single loading cycle, parallel fetches).
+    func loadForOverview() async {
+        isLoading = true
+        error = nil
+        defer { isLoading = false }
+        do {
+            async let today = sleepService.getTodayScores()
+            async let hist = sleepService.getScoreHistory(days: 14)
+            let (t, h) = try await (today, hist)
+            todayScore = t
+            history = h
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
     /// Syncs all unsynced HealthKit nights to the server, then loads today's score.
     func syncIfNeeded() async {
         guard !isSyncing else { return }
