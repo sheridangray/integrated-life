@@ -42,6 +42,14 @@ schemes:
       config: Release
     archive:
       config: Release
+  IntegratedLifeTests:
+    build:
+      targets:
+        IntegratedLifeTests: all
+    test:
+      config: Debug
+      targets:
+        - IntegratedLifeTests
 
 targets:
   IntegratedLife:
@@ -88,3 +96,15 @@ targets:
           - CFBundleTypeRole: Editor
             CFBundleURLSchemes:
               - "$(REVERSED_CLIENT_ID)"
+
+  IntegratedLifeTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: IntegratedLifeTests
+    dependencies:
+      - target: IntegratedLife
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.integratedlife.tests
+        ENABLE_TESTABILITY: YES

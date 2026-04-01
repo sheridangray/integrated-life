@@ -139,7 +139,7 @@ enum PillarOverviewPresentationBuilder {
 		)
 	}
 
-	private static func sleepAttention(score: Int, sleepDebtComponent: Int) -> PillarAttentionLevel {
+	static func sleepAttention(score: Int, sleepDebtComponent: Int) -> PillarAttentionLevel {
 		if score < 40 || sleepDebtComponent < sleepDebtStressThreshold {
 			return .needsAttention
 		}
@@ -149,7 +149,7 @@ enum PillarOverviewPresentationBuilder {
 		return .good
 	}
 
-	private static func sleepDeltaShort(todayScore: SleepScoreResponse, history: [SleepScoreResponse]) -> String? {
+	static func sleepDeltaShort(todayScore: SleepScoreResponse, history: [SleepScoreResponse]) -> String? {
 		let sortedAsc = history.sorted { $0.date < $1.date }
 		let prevScore: Int? = {
 			if let idx = sortedAsc.firstIndex(where: { $0.date == todayScore.date }) {
@@ -165,7 +165,7 @@ enum PillarOverviewPresentationBuilder {
 		return "\(arrow) \(abs(d)) pts"
 	}
 
-	private static func sparklineFromSleepHistory(_ history: [SleepScoreResponse]) -> [Double] {
+	static func sparklineFromSleepHistory(_ history: [SleepScoreResponse]) -> [Double] {
 		let sortedAsc = history.sorted { $0.date < $1.date }
 		return sortedAsc.suffix(7).map { Double($0.sleepScore) }
 	}
@@ -222,7 +222,7 @@ enum PillarOverviewPresentationBuilder {
 	}
 
 	/// v1: total workouts in trailing 7 days; targets for color bands.
-	private static func healthAttention(totalWorkouts7d: Int) -> PillarAttentionLevel {
+	static func healthAttention(totalWorkouts7d: Int) -> PillarAttentionLevel {
 		if totalWorkouts7d == 0 { return .needsAttention }
 		if totalWorkouts7d < 3 { return .caution }
 		return .good
@@ -285,7 +285,7 @@ enum PillarOverviewPresentationBuilder {
 		)
 	}
 
-	private static func staleSuffix(_ last: Date?) -> String? {
+	static func staleSuffix(_ last: Date?) -> String? {
 		guard let last else { return nil }
 		let secs = Date().timeIntervalSince(last)
 		if secs < 120 { return nil }
