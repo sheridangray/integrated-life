@@ -90,6 +90,8 @@
 		F32DDE56C2AEA2FF0BB30AA5 /* HealthKitIntegrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 952C811DD97A65436093967C /* HealthKitIntegrationView.swift */; };
 		F4175675B4BE13D0614D5843 /* IntegrationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D9DB39F45C52D374DF0293A /* IntegrationsView.swift */; };
 		F770B53826A3E79E1BE45FDF /* PillarsOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 931D1968BC86A3D09146DD4E /* PillarsOverviewView.swift */; };
+		AABB11CCDDEEFF0011223301 /* PillarOrderStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB11CCDDEEFF0011223300 /* PillarOrderStore.swift */; };
+		AABB11CCDDEEFF0011223303 /* PillarOverviewModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB11CCDDEEFF0011223302 /* PillarOverviewModels.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -131,6 +133,8 @@
 		81D3CE6F7E8870B6BBE0F815 /* HealthState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthState.swift; sourceTree = "<group>"; };
 		843E7211D9CD2EAF4217AB48 /* RecurrenceExpander.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrenceExpander.swift; sourceTree = "<group>"; };
 		931D1968BC86A3D09146DD4E /* PillarsOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillarsOverviewView.swift; sourceTree = "<group>"; };
+		AABB11CCDDEEFF0011223300 /* PillarOrderStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillarOrderStore.swift; sourceTree = "<group>"; };
+		AABB11CCDDEEFF0011223302 /* PillarOverviewModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillarOverviewModels.swift; sourceTree = "<group>"; };
 		952C811DD97A65436093967C /* HealthKitIntegrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitIntegrationView.swift; sourceTree = "<group>"; };
 		A1314C46C4328007315D8F09 /* SleepModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepModels.swift; sourceTree = "<group>"; };
 		A18103C8DA7DFD94F7F258A3 /* WorkoutLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLog.swift; sourceTree = "<group>"; };
@@ -400,9 +404,11 @@
 			isa = PBXGroup;
 			children = (
 				EAE5BE453C4E6B25D27EFDBB /* Health */,
+				AABB11CCDDEEFF0011223302 /* PillarOverviewModels.swift */,
+				AABB11CCDDEEFF0011223300 /* PillarOrderStore.swift */,
+				931D1968BC86A3D09146DD4E /* PillarsOverviewView.swift */,
 				A5E6E1C031EF392142C35318 /* Sleep */,
 				CC33DD44EE55FF66AA77BB02 /* Time */,
-				931D1968BC86A3D09146DD4E /* PillarsOverviewView.swift */,
 			);
 			path = Pillars;
 			sourceTree = "<group>";
@@ -572,6 +578,8 @@
 				D2EA4337BB1D635A54A18D67 /* NotificationSettingsView.swift in Sources */,
 				5236E1FE991234A6241A5C29 /* NotificationState.swift in Sources */,
 				EE11AA22BB33CC44DD55EE01 /* PushTokenRegistration.swift in Sources */,
+				AABB11CCDDEEFF0011223301 /* PillarOrderStore.swift in Sources */,
+				AABB11CCDDEEFF0011223303 /* PillarOverviewModels.swift in Sources */,
 				F770B53826A3E79E1BE45FDF /* PillarsOverviewView.swift in Sources */,
 				E18F2E9BBAF71DAFF62D6650 /* ProfileView.swift in Sources */,
 				7E8F5EE92B091077BF159766 /* RecurrenceExpander.swift in Sources */,
