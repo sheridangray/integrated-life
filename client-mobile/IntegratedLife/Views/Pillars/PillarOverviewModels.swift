@@ -252,7 +252,7 @@ enum PillarOverviewPresentationBuilder {
 
 		let df = DateFormatter()
 		df.calendar = cal
-		df.timeZone = cal.timeZone
+		df.timeZone = TimeZone(identifier: "UTC")! // Server sends UTC dates
 		df.dateFormat = "yyyy-MM-dd"
 
 		for item in items where item.type == "workout" {
