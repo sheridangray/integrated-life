@@ -10,7 +10,7 @@ enum SleepTab: String, CaseIterable, Identifiable {
 
 struct SleepPillarView: View {
     @ObservedObject var healthKitService: HealthKitService
-    @StateObject private var sleepState = SleepState()
+    @ObservedObject var sleepState: SleepState
     @State private var selectedTab: SleepTab = .sleep
 
     var body: some View {

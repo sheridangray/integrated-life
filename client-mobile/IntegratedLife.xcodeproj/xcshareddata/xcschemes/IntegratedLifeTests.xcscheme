@@ -15,9 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "A940E6CCD12AA99354CDC775"
-               BuildableName = "IntegratedLife.app"
-               BlueprintName = "IntegratedLife"
+               BlueprintIdentifier = "6AF0642DF947AE86F608374B"
+               BuildableName = "IntegratedLifeTests.xctest"
+               BlueprintName = "IntegratedLifeTests"
                ReferencedContainer = "container:IntegratedLife.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,14 +32,27 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A940E6CCD12AA99354CDC775"
-            BuildableName = "IntegratedLife.app"
-            BlueprintName = "IntegratedLife"
+            BlueprintIdentifier = "6AF0642DF947AE86F608374B"
+            BuildableName = "IntegratedLifeTests.xctest"
+            BlueprintName = "IntegratedLifeTests"
             ReferencedContainer = "container:IntegratedLife.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "6AF0642DF947AE86F608374B"
+               BuildableName = "IntegratedLifeTests.xctest"
+               BlueprintName = "IntegratedLifeTests"
+               ReferencedContainer = "container:IntegratedLife.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
+      <CommandLineArguments>
+      </CommandLineArguments>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -51,18 +64,15 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A940E6CCD12AA99354CDC775"
-            BuildableName = "IntegratedLife.app"
-            BlueprintName = "IntegratedLife"
+            BlueprintIdentifier = "6AF0642DF947AE86F608374B"
+            BuildableName = "IntegratedLifeTests.xctest"
+            BlueprintName = "IntegratedLifeTests"
             ReferencedContainer = "container:IntegratedLife.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
-      <CommandLineArguments>
-      </CommandLineArguments>
+      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -70,18 +80,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A940E6CCD12AA99354CDC775"
-            BuildableName = "IntegratedLife.app"
-            BlueprintName = "IntegratedLife"
+            BlueprintIdentifier = "6AF0642DF947AE86F608374B"
+            BuildableName = "IntegratedLifeTests.xctest"
+            BlueprintName = "IntegratedLifeTests"
             ReferencedContainer = "container:IntegratedLife.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
-      <CommandLineArguments>
-      </CommandLineArguments>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

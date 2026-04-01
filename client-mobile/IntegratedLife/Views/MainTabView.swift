@@ -5,6 +5,8 @@ struct MainTabView: View {
 	@EnvironmentObject private var appNavigation: AppNavigationState
 	@StateObject private var healthKitService = HealthKitService.shared
 	@StateObject private var timeState = TimeState()
+	@StateObject private var sleepState = SleepState()
+	@StateObject private var healthState = HealthState()
 
 	var body: some View {
 		TabView(selection: $appNavigation.selectedTabIndex) {
@@ -17,7 +19,9 @@ struct MainTabView: View {
 			PillarsOverviewView(
 				pillarsPath: $appNavigation.pillarsPath,
 				healthKitService: healthKitService,
-				timeState: timeState
+				timeState: timeState,
+				sleepState: sleepState,
+				healthState: healthState
 			)
 				.tabItem {
 					Label("Pillars", systemImage: "square.grid.2x2")

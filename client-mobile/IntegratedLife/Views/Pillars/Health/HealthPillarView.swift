@@ -17,7 +17,7 @@ enum HealthNavDestination: Hashable {
 }
 
 struct HealthPillarView: View {
-	@StateObject private var healthState = HealthState()
+	@ObservedObject var healthState: HealthState
 	@ObservedObject var healthKitService: HealthKitService
 
 	@State private var selectedTab: HealthTab = .workouts
