@@ -4,11 +4,15 @@ struct ExerciseDetailView: View {
 	let exerciseId: String
 	@ObservedObject var healthState: HealthState
 
+	@Environment(\.dismiss) private var dismiss
+
 	@State private var exercise: Exercise?
 	@State private var isLoading = true
 	@State private var showLogSheet = false
 	@State private var savedHistoryItem: HistoryItem?
 	@State private var showHistoryDetail = false
+	/// After logging from a workout, pop this detail so the user returns to the workout (not the exercise screen).
+	@State private var dismissDetailAfterWorkoutLog = false
 
 	private let healthService = HealthService.shared
 
@@ -38,7 +42,10 @@ struct ExerciseDetailView: View {
 			await loadExercise()
 		}
 		.sheet(isPresented: $showLogSheet, onDismiss: {
-			if !isInWorkout, savedHistoryItem != nil {
+			if dismissDetailAfterWorkoutLog {
+				dismissDetailAfterWorkoutLog = false
+				dismiss()
+			} else if !isInWorkout, savedHistoryItem != nil {
 				showHistoryDetail = true
 			}
 		}) {
@@ -49,6 +56,7 @@ struct ExerciseDetailView: View {
 				) { log in
 					if let session = workoutSession {
 						session.recordExerciseLog(exerciseId: exerciseId, logId: log.id)
+						dismissDetailAfterWorkoutLog = true
 					} else {
 						savedHistoryItem = HistoryItem(
 							type: "exercise",
