@@ -79,4 +79,20 @@ final class HealthState: ObservableObject {
 			self.error = error.localizedDescription
 		}
 	}
+
+	// MARK: - Active workout session
+
+	/// Creates a session for this workout, or keeps the existing one when resuming the same workout (preserves logged exercises).
+	func ensureActiveWorkoutSession(workoutId: String, workoutName: String) {
+		if activeWorkoutSession?.workoutId != workoutId {
+			activeWorkoutSession = WorkoutSession(workoutId: workoutId, workoutName: workoutName)
+		}
+	}
+
+	/// Clears the in-memory session when it matches `workoutId`. Use after finishing, dismissing summary, or explicit cancel — not from `onDisappear` (navigation covers the view without leaving the workout).
+	func endActiveWorkoutSessionIfOwned(workoutId: String) {
+		if activeWorkoutSession?.workoutId == workoutId {
+			activeWorkoutSession = nil
+		}
+	}
 }

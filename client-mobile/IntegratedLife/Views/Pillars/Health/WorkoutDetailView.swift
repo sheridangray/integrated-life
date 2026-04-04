@@ -47,9 +47,13 @@ struct WorkoutDetailView: View {
 		.onAppear {
 			ensureSession()
 		}
-		.onDisappear {
-			if workoutSummaryData == nil {
-				clearSessionIfOwned()
+		.toolbar {
+			ToolbarItem(placement: .cancellationAction) {
+				Button("Cancel Workout") {
+					healthState.endActiveWorkoutSessionIfOwned(workoutId: workoutId)
+					dismiss()
+				}
+				.accessibilityLabel("Cancel workout and discard in-memory session")
 			}
 		}
 		.sheet(isPresented: $showEditSheet) {
@@ -80,18 +84,7 @@ struct WorkoutDetailView: View {
 
 	private func ensureSession() {
 		guard let workout else { return }
-		if healthState.activeWorkoutSession?.workoutId != workoutId {
-			healthState.activeWorkoutSession = WorkoutSession(
-				workoutId: workoutId,
-				workoutName: workout.name
-			)
-		}
-	}
-
-	private func clearSessionIfOwned() {
-		if healthState.activeWorkoutSession?.workoutId == workoutId {
-			healthState.activeWorkoutSession = nil
-		}
+		healthState.ensureActiveWorkoutSession(workoutId: workoutId, workoutName: workout.name)
 	}
 
 	private func headerSection(_ workout: Workout) -> some View {

@@ -110,6 +110,6 @@ final class PillarOrderStoreTests: XCTestCase {
         let loaded = PillarOrderStore.loadOrder()
         
         // Then: Should match
-        XCTAssertEqual(loaded.prefix(3), customOrder, "Round-trip should preserve order")
+        XCTAssertEqual(Array(loaded.prefix(3)), customOrder, "Round-trip should preserve order")
     }
 }
