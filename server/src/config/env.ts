@@ -1,8 +1,26 @@
+import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
 import { z } from 'zod'
 
-dotenv.config({ path: path.resolve(__dirname, '../../../../.env') })
+// Monorepo `.env` lives at repo root. `__dirname` is `server/src/config` (tsx) or
+// `server/dist/src/config` (compiled) — old code used one extra `..` and loaded
+// the parent folder, so variables were never applied.
+function loadRootDotenv() {
+	const candidates = [
+		path.resolve(__dirname, '../../../.env'),
+		path.resolve(__dirname, '../../../../.env'),
+	]
+	for (const p of candidates) {
+		if (fs.existsSync(p)) {
+			dotenv.config({ path: p })
+			return
+		}
+	}
+	dotenv.config()
+}
+
+loadRootDotenv()
 
 const envSchema = z.object({
 	NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
