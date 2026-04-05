@@ -71,6 +71,7 @@ struct WorkoutDetailView: View {
 			}
 		}
 		.sheet(item: $workoutSummaryData, onDismiss: {
+			healthState.endActiveWorkoutSessionIfOwned(workoutId: workoutId)
 			selectedTab = .history
 			dismiss()
 		}) { data in
