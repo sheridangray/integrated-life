@@ -1,6 +1,7 @@
 import XCTest
 @testable import IntegratedLife
 
+@MainActor
 final class PillarOverviewPresentationBuilderTests: XCTestCase {
     
     // MARK: - Attention Level Tests
