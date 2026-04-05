@@ -11,7 +11,79 @@ final class TimeService {
 		try await auth.getValidAccessToken()
 	}
 
-	// MARK: - Time Entries
+	// MARK: - Tasks (day planning)
+
+	func fetchTasks(date: String) async throws -> [TimeTask] {
+		try await api.get(
+			path: "/v1/time/tasks?date=\(date)",
+			token: try await token(),
+			as: [TimeTask].self
+		)
+	}
+
+	func fetchInboxTasks() async throws -> [TimeTask] {
+		try await api.get(
+			path: "/v1/time/tasks?inbox=true",
+			token: try await token(),
+			as: [TimeTask].self
+		)
+	}
+
+	func createTask(_ request: CreateTimeTaskRequest) async throws -> TimeTask {
+		try await api.post(
+			path: "/v1/time/tasks",
+			body: request,
+			token: try await token(),
+			as: TimeTask.self
+		)
+	}
+
+	func updateTask(id: String, _ request: UpdateTimeTaskRequest) async throws -> TimeTask {
+		try await api.put(
+			path: "/v1/time/tasks/\(id)",
+			body: request,
+			token: try await token(),
+			as: TimeTask.self
+		)
+	}
+
+	func deleteTask(id: String) async throws {
+		try await api.delete(path: "/v1/time/tasks/\(id)", token: try await token())
+	}
+
+	// MARK: - Routines
+
+	func fetchRoutines() async throws -> [TimeRoutine] {
+		try await api.get(
+			path: "/v1/time/routines",
+			token: try await token(),
+			as: [TimeRoutine].self
+		)
+	}
+
+	func createRoutine(_ request: CreateRoutineRequest) async throws -> TimeRoutine {
+		try await api.post(
+			path: "/v1/time/routines",
+			body: request,
+			token: try await token(),
+			as: TimeRoutine.self
+		)
+	}
+
+	func updateRoutine(id: String, _ request: UpdateRoutineRequest) async throws -> TimeRoutine {
+		try await api.put(
+			path: "/v1/time/routines/\(id)",
+			body: request,
+			token: try await token(),
+			as: TimeRoutine.self
+		)
+	}
+
+	func deleteRoutine(id: String) async throws {
+		try await api.delete(path: "/v1/time/routines/\(id)", token: try await token())
+	}
+
+	// MARK: - Time Entries (legacy)
 
 	func startEntry(categoryId: Int, notes: String? = nil) async throws -> TimeEntry {
 		let request = StartTimeEntryRequest(categoryId: categoryId, notes: notes)
@@ -42,7 +114,7 @@ final class TimeService {
 		try await api.delete(path: "/v1/time/entries/\(id)", token: try await token())
 	}
 
-	// MARK: - Time Budget
+	// MARK: - Time Budget (legacy)
 
 	func fetchBudget() async throws -> [TimeBudgetItem] {
 		let response = try await api.get(path: "/v1/time/budget", token: try await token(), as: TimeBudgetResponse.self)
