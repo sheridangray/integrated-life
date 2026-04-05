@@ -1,7 +1,16 @@
 import { Request, Response } from 'express'
 import type { AuthenticatedRequest } from '../../middleware/auth'
 import * as timeService from './service'
-import { startTimeEntrySchema, timeEntryQuerySchema, timeBudgetSchema } from './validators'
+import {
+	startTimeEntrySchema,
+	timeEntryQuerySchema,
+	timeBudgetSchema,
+	createTaskSchema,
+	updateTaskSchema,
+	taskQuerySchema,
+	createRoutineSchema,
+	updateRoutineSchema
+} from './validators'
 import { TIME_CATEGORIES, META_BUCKETS } from './constants'
 
 function requestId(req: Request): string | undefined {
@@ -24,6 +33,83 @@ function unauthorizedError(res: Response, req: Request) {
 		error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
 		requestId: requestId(req)
 	})
+}
+
+// --- Tasks (day planning) ---
+
+export async function getTasks(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) return unauthorizedError(res, req)
+
+	const parsed = taskQuerySchema.safeParse(req.query)
+	if (!parsed.success) return validationError(res, req, parsed.error)
+
+	const tasks = parsed.data.inbox === 'true'
+		? await timeService.getInboxTasks(req.user.userId)
+		: await timeService.getTasksByDate(req.user.userId, parsed.data.date!)
+	return res.json(tasks)
+}
+
+export async function createTask(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) return unauthorizedError(res, req)
+
+	const parsed = createTaskSchema.safeParse(req.body)
+	if (!parsed.success) return validationError(res, req, parsed.error)
+
+	const task = await timeService.createTask(req.user.userId, parsed.data)
+	return res.status(201).json(task)
+}
+
+export async function updateTask(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) return unauthorizedError(res, req)
+
+	const parsed = updateTaskSchema.safeParse(req.body)
+	if (!parsed.success) return validationError(res, req, parsed.error)
+
+	const task = await timeService.updateTask(req.user.userId, req.params.id, parsed.data)
+	return res.json(task)
+}
+
+export async function deleteTask(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) return unauthorizedError(res, req)
+
+	await timeService.deleteTask(req.user.userId, req.params.id)
+	return res.status(204).send()
+}
+
+// --- Routines ---
+
+export async function getRoutines(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) return unauthorizedError(res, req)
+
+	const routines = await timeService.getRoutines(req.user.userId)
+	return res.json(routines)
+}
+
+export async function createRoutine(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) return unauthorizedError(res, req)
+
+	const parsed = createRoutineSchema.safeParse(req.body)
+	if (!parsed.success) return validationError(res, req, parsed.error)
+
+	const routine = await timeService.createRoutine(req.user.userId, parsed.data)
+	return res.status(201).json(routine)
+}
+
+export async function updateRoutine(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) return unauthorizedError(res, req)
+
+	const parsed = updateRoutineSchema.safeParse(req.body)
+	if (!parsed.success) return validationError(res, req, parsed.error)
+
+	const routine = await timeService.updateRoutine(req.user.userId, req.params.id, parsed.data)
+	return res.json(routine)
+}
+
+export async function deleteRoutine(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) return unauthorizedError(res, req)
+
+	await timeService.deleteRoutine(req.user.userId, req.params.id)
+	return res.status(204).send()
 }
 
 // --- Categories (static) ---

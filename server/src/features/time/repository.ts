@@ -1,8 +1,141 @@
 import mongoose from 'mongoose'
 import { TimeEntry, TimeEntryDocument } from '../../models/TimeEntry'
 import { TimeBudget, TimeBudgetDocument } from '../../models/TimeBudget'
+import { Task, TaskDocument } from '../../models/Task'
+import { Routine, RoutineDocument } from '../../models/Routine'
 
-// --- Time Entries ---
+// --- Routines ---
+
+export async function createRoutine(data: {
+	userId: string
+	title: string
+	defaultTime: string | null
+	defaultDuration: number
+	color: string
+	icon: string
+	notes?: string
+	recurrenceRule: { frequency: string; interval: number; daysOfWeek?: number[]; dayOfMonth?: number }
+}): Promise<RoutineDocument> {
+	return Routine.create(data)
+}
+
+export async function findRoutines(userId: string): Promise<RoutineDocument[]> {
+	return Routine.find({ userId }).sort({ createdAt: -1 }).exec()
+}
+
+export async function findActiveRoutines(userId: string): Promise<RoutineDocument[]> {
+	return Routine.find({ userId, isActive: true }).exec()
+}
+
+export async function findRoutineById(userId: string, id: string): Promise<RoutineDocument | null> {
+	if (!mongoose.isValidObjectId(id)) return null
+	return Routine.findOne({ _id: id, userId }).exec()
+}
+
+export async function updateRoutine(
+	userId: string,
+	id: string,
+	updates: Partial<{
+		title: string
+		defaultTime: string | null
+		defaultDuration: number
+		color: string
+		icon: string
+		notes: string | null
+		recurrenceRule: { frequency: string; interval: number; daysOfWeek?: number[]; dayOfMonth?: number }
+		isActive: boolean
+	}>
+): Promise<RoutineDocument | null> {
+	if (!mongoose.isValidObjectId(id)) return null
+	return Routine.findOneAndUpdate(
+		{ _id: id, userId },
+		{ $set: updates },
+		{ new: true }
+	).exec()
+}
+
+export async function deleteRoutine(userId: string, id: string): Promise<boolean> {
+	if (!mongoose.isValidObjectId(id)) return false
+	const result = await Routine.deleteOne({ _id: id, userId }).exec()
+	return result.deletedCount > 0
+}
+
+export async function addSkippedDate(userId: string, routineId: string, date: string): Promise<RoutineDocument | null> {
+	if (!mongoose.isValidObjectId(routineId)) return null
+	return Routine.findOneAndUpdate(
+		{ _id: routineId, userId },
+		{ $addToSet: { skippedDates: date } },
+		{ new: true }
+	).exec()
+}
+
+export async function findRoutineTaskByDate(userId: string, routineId: string, date: string): Promise<TaskDocument | null> {
+	return Task.findOne({ userId, routineId, date, source: 'routine' }).exec()
+}
+
+// --- Tasks (day planning) ---
+
+export async function findInboxTasks(userId: string): Promise<TaskDocument[]> {
+	return Task.find({ userId, date: null }).sort({ createdAt: -1 }).exec()
+}
+
+export async function createTask(data: {
+	userId: string
+	title: string
+	date: string | null
+	startTime: string | null
+	durationMinutes: number
+	color: string
+	icon: string
+	notes?: string
+	source?: 'manual' | 'routine' | 'calendar'
+	routineId?: string
+	isRecurring?: boolean
+	recurrenceRule?: { frequency: string; interval: number; daysOfWeek?: number[]; dayOfMonth?: number }
+}): Promise<TaskDocument> {
+	return Task.create(data)
+}
+
+export async function findTasksByDate(userId: string, date: string): Promise<TaskDocument[]> {
+	return Task.find({ userId, date }).sort({ startTime: 1, createdAt: 1 }).exec()
+}
+
+export async function findTaskById(userId: string, id: string): Promise<TaskDocument | null> {
+	if (!mongoose.isValidObjectId(id)) return null
+	return Task.findOne({ _id: id, userId }).exec()
+}
+
+export async function updateTask(
+	userId: string,
+	id: string,
+	updates: Partial<{
+		title: string
+		date: string | null
+		startTime: string | null
+		durationMinutes: number
+		color: string
+		icon: string
+		notes: string | null
+		completedAt: Date | null
+		isRecurring: boolean
+		recurrenceRule: { frequency: string; interval: number; daysOfWeek?: number[]; dayOfMonth?: number } | null
+	}>
+): Promise<TaskDocument | null> {
+	if (!mongoose.isValidObjectId(id)) return null
+	return Task.findOneAndUpdate(
+		{ _id: id, userId, source: { $ne: 'calendar' } },
+		{ $set: updates },
+		{ new: true }
+	).exec()
+}
+
+export async function deleteTask(userId: string, id: string): Promise<boolean> {
+	if (!mongoose.isValidObjectId(id)) return false
+	const result = await Task.deleteOne({ _id: id, userId, source: { $ne: 'calendar' } }).exec()
+	return result.deletedCount > 0
+}
+
+// --- Time Entries (legacy) ---
 
 export async function createTimeEntry(data: {
 	userId: string
