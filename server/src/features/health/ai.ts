@@ -11,7 +11,8 @@ Rules:
 - Reference specific numbers when available (weights, reps, durations)
 - Focus on actionable suggestions
 - Never give medical advice
-- Use a warm, supportive tone`
+- Use a warm, supportive tone
+- When recommending weights for MI7Smith cable exercises, only suggest increments of 10 lbs per side (or 20 lbs total for lifts using both sides)`
 
 export async function getExerciseInsight(
 	userId: string,
@@ -402,6 +403,7 @@ Rules:
 - Highlight improvements, consistency, or areas to focus on next time
 - Never give medical advice
 - Use a warm, supportive tone
+- When recommending weights for MI7Smith cable exercises, only suggest increments of 10 lbs per side (or 20 lbs total for lifts using both sides)
 - Output valid JSON only, with no extra text
 
 Output format:
