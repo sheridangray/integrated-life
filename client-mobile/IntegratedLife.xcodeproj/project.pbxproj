@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -180,7 +180,7 @@
 		A18103C8DA7DFD94F7F258A3 /* WorkoutLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLog.swift; sourceTree = "<group>"; };
 		A22CD6337718753B9BE22D12 /* CreateWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateWorkoutView.swift; sourceTree = "<group>"; };
 		A45AF448BCED4097134CF96B /* HealthKitDataTypeMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitDataTypeMetadata.swift; sourceTree = "<group>"; };
-		A593755613AD7F085ED55B53 /* IntegratedLife.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = IntegratedLife.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A593755613AD7F085ED55B53 /* IntegratedLife.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IntegratedLife.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6DF7817DC127893228954F4 /* NotificationCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCategory.swift; sourceTree = "<group>"; };
 		A78B0F4E40BBC472820159CF /* ContributorDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContributorDetailView.swift; sourceTree = "<group>"; };
 		A8E2A77820841D7D254125C1 /* TimelineComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineComponents.swift; sourceTree = "<group>"; };
@@ -309,6 +309,7 @@
 				33CF8C58620D9633302BA451 /* IntegratedLife */,
 				0A9AAC9C4BB4B086AF4C586C /* IntegratedLifeTests */,
 				48BBF3434DE890351FE89E6D /* Products */,
+				AC6E2DB72F82BB6A001BF237 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -412,6 +413,15 @@
 			path = Sleep;
 			sourceTree = "<group>";
 		};
+		AC6E2DB72F82BB6A001BF237 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_77137B2A-D3D5-46D3-B1B4-14CD0602ABD1" /* Config.xcconfig */,
+				"TEMP_17B6F15C-4125-4D89-ACED-F37730D7B1FA" /* Config.Release.xcconfig */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		D76CC8912721410F562B6C35 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
@@ -501,15 +511,6 @@
 			path = Home;
 			sourceTree = "<group>";
 		};
-		"TEMP_3486D5BE-2D57-474D-A0FF-2DA7D48D25C6" /* client-mobile */ = {
-			isa = PBXGroup;
-			children = (
-				"TEMP_77137B2A-D3D5-46D3-B1B4-14CD0602ABD1" /* Config.xcconfig */,
-				"TEMP_17B6F15C-4125-4D89-ACED-F37730D7B1FA" /* Config.Release.xcconfig */,
-			);
-			path = "client-mobile";
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -561,7 +562,6 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					A940E6CCD12AA99354CDC775 = {
-						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -579,7 +579,6 @@
 			packageReferences = (
 				DE89FF47D7ABD24251E58CA9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -730,7 +729,7 @@
 				CODE_SIGN_ENTITLEMENTS = IntegratedLife/IntegratedLife.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 29XGJ7H3RU;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IntegratedLife/Info.plist;
@@ -829,7 +828,7 @@
 				CODE_SIGN_ENTITLEMENTS = IntegratedLife/IntegratedLife.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 29XGJ7H3RU;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IntegratedLife/Info.plist;

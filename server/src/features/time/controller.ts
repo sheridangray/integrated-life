@@ -112,6 +112,30 @@ export async function deleteRoutine(req: AuthenticatedRequest, res: Response) {
 	return res.status(204).send()
 }
 
+// --- Calendar settings ---
+
+export async function getCalendarSettings(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) return unauthorizedError(res, req)
+
+	const settings = await timeService.getCalendarSettings(req.user.userId)
+	return res.json(settings)
+}
+
+export async function updateCalendarSettings(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) return unauthorizedError(res, req)
+
+	const { enabled } = req.body as { enabled?: boolean }
+	if (typeof enabled !== 'boolean') {
+		return res.status(400).json({
+			error: { code: 'VALIDATION_ERROR', message: '"enabled" must be a boolean' },
+			requestId: requestId(req)
+		})
+	}
+
+	const settings = await timeService.setCalendarEnabled(req.user.userId, enabled)
+	return res.json(settings)
+}
+
 // --- Categories (static) ---
 
 export async function getCategories(_req: Request, res: Response) {

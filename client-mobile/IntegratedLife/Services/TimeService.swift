@@ -83,6 +83,25 @@ final class TimeService {
 		try await api.delete(path: "/v1/time/routines/\(id)", token: try await token())
 	}
 
+	// MARK: - Calendar settings
+
+	func fetchCalendarSettings() async throws -> CalendarSettings {
+		try await api.get(
+			path: "/v1/time/calendar/settings",
+			token: try await token(),
+			as: CalendarSettings.self
+		)
+	}
+
+	func setCalendarEnabled(_ enabled: Bool) async throws -> CalendarSettings {
+		try await api.put(
+			path: "/v1/time/calendar/settings",
+			body: ["enabled": enabled],
+			token: try await token(),
+			as: CalendarSettings.self
+		)
+	}
+
 	// MARK: - Time Entries (legacy)
 
 	func startEntry(categoryId: Int, notes: String? = nil) async throws -> TimeEntry {

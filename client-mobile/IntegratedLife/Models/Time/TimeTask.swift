@@ -50,6 +50,11 @@ struct TimeTask: Codable, Identifiable, Equatable {
 	}
 }
 
+struct CalendarSettings: Codable {
+	let enabled: Bool
+	let hasTokens: Bool
+}
+
 struct CreateTimeTaskRequest: Encodable {
 	let title: String
 	let date: String?

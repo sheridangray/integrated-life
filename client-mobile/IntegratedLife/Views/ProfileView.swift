@@ -64,9 +64,9 @@ struct ProfileView: View {
 				NavigationLink("Notifications") {
 					NotificationSettingsView(notificationState: notificationState, healthKitService: healthKitService)
 				}
-				NavigationLink("Integrations") {
-					IntegrationsView(healthKitService: healthKitService)
-				}
+			NavigationLink("Integrations") {
+				IntegrationsView(healthKitService: healthKitService, authState: authState)
+			}
 				NavigationLink("History") {
 					ActivityHistoryPlaceholderView()
 				}

@@ -58,6 +58,7 @@ const taskSchema = new Schema<TaskDocument>(
 
 taskSchema.index({ userId: 1, date: 1 })
 taskSchema.index({ userId: 1, routineId: 1, date: 1 })
+taskSchema.index({ userId: 1, calendarEventId: 1 }, { sparse: true })
 
 export const Task: Model<TaskDocument> =
 	mongoose.models.Task ?? mongoose.model<TaskDocument>('Task', taskSchema)
