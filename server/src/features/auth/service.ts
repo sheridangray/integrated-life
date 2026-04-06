@@ -5,7 +5,11 @@ import { env } from '../../config'
 import * as authRepository from './repository'
 import type { User } from '@integrated-life/shared'
 
-const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID_WEB)
+const googleClient = new OAuth2Client(
+	env.GOOGLE_CLIENT_ID_WEB,
+	env.GOOGLE_CLIENT_SECRET_WEB,
+	'postmessage'
+)
 
 const ACCESS_TOKEN_EXPIRY = 60 * 15 // 15 minutes
 const REFRESH_TOKEN_EXPIRY_DAYS = 7
@@ -19,7 +23,7 @@ function toUserResponse(doc: { _id: { toString(): string }; email: string; name:
 	}
 }
 
-export async function authenticateWithGoogle(idToken: string): Promise<{
+export async function authenticateWithGoogle(idToken: string, serverAuthCode?: string): Promise<{
 	accessToken: string
 	refreshToken: string
 	expiresIn: number
@@ -46,6 +50,25 @@ export async function authenticateWithGoogle(idToken: string): Promise<{
 		name: payload.name ?? payload.email,
 		avatarUrl: payload.picture
 	})
+
+	if (serverAuthCode) {
+		try {
+			const { tokens } = await googleClient.getToken(serverAuthCode)
+			if (tokens.access_token) {
+				const expiresAt = tokens.expiry_date
+					? new Date(tokens.expiry_date)
+					: new Date(Date.now() + 3600 * 1000)
+
+				await authRepository.updateGoogleTokens(user._id.toString(), {
+					accessToken: tokens.access_token,
+					refreshToken: tokens.refresh_token ?? undefined,
+					expiresAt
+				})
+			}
+		} catch (err) {
+			console.error('Failed to exchange Google auth code for tokens:', err)
+		}
+	}
 
 	const accessToken = jwt.sign(
 		{ userId: user._id.toString(), email: user.email },

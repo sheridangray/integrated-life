@@ -68,8 +68,10 @@ final class AuthService {
 		return response.accessToken
 	}
 
-	func authenticateWithGoogle(idToken: String) async throws -> AuthResponse {
-		try await apiClient.post(path: "/v1/auth/google", body: ["idToken": idToken], as: AuthResponse.self)
+	func authenticateWithGoogle(idToken: String, serverAuthCode: String? = nil) async throws -> AuthResponse {
+		var body: [String: String] = ["idToken": idToken]
+		if let serverAuthCode { body["serverAuthCode"] = serverAuthCode }
+		return try await apiClient.post(path: "/v1/auth/google", body: body, as: AuthResponse.self)
 	}
 
 	func fetchCurrentUser() async throws -> User {

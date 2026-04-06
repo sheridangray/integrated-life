@@ -9,6 +9,10 @@ export type UserDocument = Document & {
 	dateOfBirth?: Date
 	/** Hex APNs device tokens (most recent first), max ~8 */
 	iosPushDeviceTokens?: string[]
+	googleAccessToken?: string
+	googleRefreshToken?: string
+	googleTokenExpiresAt?: Date
+	googleCalendarEnabled: boolean
 	createdAt: Date
 	updatedAt: Date
 }
@@ -21,7 +25,11 @@ const userSchema = new Schema<UserDocument>(
 		avatarUrl: { type: String },
 		gender: { type: String, enum: ['female', 'male', 'other'] },
 		dateOfBirth: { type: Date },
-		iosPushDeviceTokens: { type: [String], default: [] }
+		iosPushDeviceTokens: { type: [String], default: [] },
+		googleAccessToken: { type: String },
+		googleRefreshToken: { type: String },
+		googleTokenExpiresAt: { type: Date },
+		googleCalendarEnabled: { type: Boolean, default: false }
 	},
 	{ timestamps: true }
 )
