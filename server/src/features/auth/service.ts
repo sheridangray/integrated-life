@@ -8,7 +8,7 @@ import type { User } from '@integrated-life/shared'
 const googleClient = new OAuth2Client(
 	env.GOOGLE_CLIENT_ID_WEB,
 	env.GOOGLE_CLIENT_SECRET_WEB,
-	'postmessage'
+	''
 )
 
 const ACCESS_TOKEN_EXPIRY = 60 * 15 // 15 minutes
