@@ -24,7 +24,7 @@ function createOAuth2Client(accessToken: string, refreshToken?: string): Auth.OA
 	const client = new google.auth.OAuth2(
 		env.GOOGLE_CLIENT_ID_WEB,
 		env.GOOGLE_CLIENT_SECRET_WEB,
-		'postmessage'
+		''
 	)
 	client.setCredentials({
 		access_token: accessToken,
