@@ -48,6 +48,32 @@ struct TimeTask: Codable, Identifiable, Equatable {
 		guard let start = startMinuteOfDay else { return nil }
 		return start + durationMinutes
 	}
+
+	var startTimeFormatted: String? {
+		guard let m = startMinuteOfDay else { return nil }
+		return Self.formatMinute(m)
+	}
+
+	var endTimeFormatted: String? {
+		guard let m = endMinuteOfDay else { return nil }
+		return Self.formatMinute(m)
+	}
+
+	var timeRangeLabel: String? {
+		guard let start = startTimeFormatted, let end = endTimeFormatted else { return nil }
+		let durLabel = durationMinutes >= 60
+			? "\(durationMinutes / 60) hr\(durationMinutes % 60 > 0 ? " \(durationMinutes % 60) min" : "")"
+			: "\(durationMinutes) min"
+		return "\(start) \u{2013} \(end) (\(durLabel))"
+	}
+
+	private static func formatMinute(_ totalMinutes: Int) -> String {
+		let h = (totalMinutes / 60) % 24
+		let m = totalMinutes % 60
+		let suffix = h < 12 ? "AM" : "PM"
+		let h12 = h % 12 == 0 ? 12 : h % 12
+		return String(format: "%d:%02d %@", h12, m, suffix)
+	}
 }
 
 struct CalendarSettings: Codable {

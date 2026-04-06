@@ -8,26 +8,31 @@ struct DayTimelineView: View {
 
 	var body: some View {
 		VStack(spacing: 0) {
-			TimelineDateHeader(
-				date: timeState.selectedDate,
-				onPrevious: { Task { await timeState.navigateDay(offset: -1) } },
-				onNext: { Task { await timeState.navigateDay(offset: 1) } },
-				onToday: { Task { await timeState.loadTasks(for: Date()) } }
+			StructuredDateHeader(date: timeState.selectedDate)
+
+			TimelineWeekStrip(
+				selectedDate: $timeState.selectedDate,
+				onSelect: { date in
+					Task { await timeState.loadTasks(for: date) }
+				}
 			)
 
 			Divider()
+				.padding(.top, 4)
 
 			if timeState.isLoading && timeState.tasks.isEmpty {
 				Spacer()
 				ProgressView("Loading schedule...")
 				Spacer()
+			} else if timeState.timedTasks.isEmpty && timeState.allDayTasks.isEmpty {
+				emptyState
 			} else {
 				ScrollViewReader { proxy in
 					ScrollView {
 						allDaySection
-						timedSection
+						taskListSection
 					}
-					.onAppear { scrollToCurrentHour(proxy: proxy) }
+					.onAppear { scrollToNearestTask(proxy: proxy) }
 				}
 			}
 		}
@@ -45,6 +50,25 @@ struct DayTimelineView: View {
 		.overlay(alignment: .bottomTrailing) {
 			addButton
 		}
+	}
+
+	// MARK: - Empty State
+
+	private var emptyState: some View {
+		VStack(spacing: 12) {
+			Spacer()
+			Image(systemName: "calendar.badge.plus")
+				.font(.system(size: 40))
+				.foregroundStyle(.secondary)
+			Text("No tasks scheduled")
+				.font(.headline)
+				.foregroundStyle(.secondary)
+			Text("Tap + to add a task to your day")
+				.font(.subheadline)
+				.foregroundStyle(.tertiary)
+			Spacer()
+		}
+		.frame(maxWidth: .infinity)
 	}
 
 	// MARK: - All-Day Section
@@ -82,96 +106,27 @@ struct DayTimelineView: View {
 		}
 	}
 
-	// MARK: - Timed Section
+	// MARK: - Task List
 
-	private var timedSection: some View {
-		ZStack(alignment: .topLeading) {
-			HourMarkerGrid()
-
-			currentTimeLine
-
-			ForEach(timeState.timedTasks) { task in
-				if let startMinute = task.startMinuteOfDay {
-					TimelineTaskBlock(
-						task: task,
-						onTap: {
-							editingTask = task
-							showingTaskEditor = true
-						},
-						onToggleComplete: {
-							Task { await timeState.toggleCompletion(task: task) }
-						}
-					)
-					.frame(
-						height: TimelineLayout.blockHeight(durationMinutes: task.durationMinutes)
-					)
-					.padding(.leading, TimelineLayout.gutterWidth + 8)
-					.padding(.trailing, TimelineLayout.blockHorizontalPadding)
-					.offset(y: TimelineLayout.yOffset(forMinute: startMinute))
-				}
+	private var taskListSection: some View {
+		LazyVStack(spacing: 0) {
+			ForEach(Array(timeState.timedTasks.enumerated()), id: \.element.id) { index, task in
+				StructuredTaskRow(
+					task: task,
+					isLast: index == timeState.timedTasks.count - 1,
+					onTap: {
+						editingTask = task
+						showingTaskEditor = true
+					},
+					onToggleComplete: {
+						Task { await timeState.toggleCompletion(task: task) }
+					}
+				)
+				.id(task.id)
 			}
-
-			tapTargets
 		}
-		.frame(
-			height: CGFloat(TimelineLayout.totalHours) * TimelineLayout.hourHeight,
-			alignment: .topLeading
-		)
+		.padding(.vertical, 8)
 		.padding(.bottom, 80)
-	}
-
-	// MARK: - Current Time Indicator
-
-	@ViewBuilder
-	private var currentTimeLine: some View {
-		if Calendar.current.isDateInToday(timeState.selectedDate) {
-			let now = Date()
-			let cal = Calendar.current
-			let minute = cal.component(.hour, from: now) * 60 + cal.component(.minute, from: now)
-
-			DayTimelineView.CurrentTimeIndicator()
-				.offset(y: TimelineLayout.yOffset(forMinute: minute))
-				.id("currentTime")
-		}
-	}
-
-	struct CurrentTimeIndicator: View {
-		var body: some View {
-			HStack(spacing: 0) {
-				Circle()
-					.fill(.red)
-					.frame(width: 8, height: 8)
-					.padding(.leading, TimelineLayout.gutterWidth - 4)
-				Rectangle()
-					.fill(.red)
-					.frame(height: 1)
-			}
-		}
-	}
-
-	// MARK: - Tap Targets (invisible) for empty time slots
-
-	private var tapTargets: some View {
-		ForEach(TimelineLayout.startHour..<TimelineLayout.endHour, id: \.self) { hour in
-			Color.clear
-				.frame(height: TimelineLayout.hourHeight)
-				.contentShape(Rectangle())
-				.onTapGesture {
-					let h = String(format: "%02d", hour)
-					prefillStartTime = "\(h):00"
-					editingTask = nil
-					showingTaskEditor = true
-				}
-				.offset(y: CGFloat(hour - TimelineLayout.startHour) * TimelineLayout.hourHeight)
-				.padding(.leading, TimelineLayout.gutterWidth + 8)
-				.allowsHitTesting(!timeState.timedTasks.contains { t in
-					guard let start = t.startMinuteOfDay else { return false }
-					let end = start + t.durationMinutes
-					let slotStart = hour * 60
-					let slotEnd = slotStart + 60
-					return start < slotEnd && end > slotStart
-				})
-		}
 	}
 
 	// MARK: - FAB
@@ -194,9 +149,21 @@ struct DayTimelineView: View {
 
 	// MARK: - Helpers
 
-	private func scrollToCurrentHour(proxy: ScrollViewProxy) {
+	private func scrollToNearestTask(proxy: ScrollViewProxy) {
 		guard Calendar.current.isDateInToday(timeState.selectedDate) else { return }
-		proxy.scrollTo("currentTime", anchor: .center)
+		let now = Date()
+		let cal = Calendar.current
+		let currentMinute = cal.component(.hour, from: now) * 60 + cal.component(.minute, from: now)
+
+		let nearest = timeState.timedTasks.first { task in
+			guard let end = task.endMinuteOfDay else { return false }
+			return end > currentMinute
+		}
+		if let nearest {
+			withAnimation {
+				proxy.scrollTo(nearest.id, anchor: .center)
+			}
+		}
 	}
 
 	private func clearEditorState() {

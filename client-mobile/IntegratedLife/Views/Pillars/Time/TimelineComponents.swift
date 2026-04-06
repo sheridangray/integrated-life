@@ -1,32 +1,9 @@
 import SwiftUI
 
-// MARK: - Constants
-
-enum TimelineLayout {
-	static let hourHeight: CGFloat = 60
-	static let startHour = 6
-	static let endHour = 23
-	static let totalHours: Int = endHour - startHour
-	static let gutterWidth: CGFloat = 52
-	static let blockHorizontalPadding: CGFloat = 4
-
-	static func yOffset(forMinute minute: Int) -> CGFloat {
-		let minutesSinceStart = CGFloat(minute - startHour * 60)
-		return minutesSinceStart * (hourHeight / 60.0)
-	}
-
-	static func blockHeight(durationMinutes: Int) -> CGFloat {
-		max(CGFloat(durationMinutes) * (hourHeight / 60.0), 28)
-	}
-}
-
 // MARK: - Date Header
 
-struct TimelineDateHeader: View {
+struct StructuredDateHeader: View {
 	let date: Date
-	let onPrevious: () -> Void
-	let onNext: () -> Void
-	let onToday: () -> Void
 
 	private var isToday: Bool {
 		Calendar.current.isDateInToday(date)
@@ -34,138 +11,132 @@ struct TimelineDateHeader: View {
 
 	var body: some View {
 		HStack {
-			Button(action: onPrevious) {
-				Image(systemName: "chevron.left")
-					.font(.body.weight(.medium))
-			}
-
-			Spacer()
-
-			VStack(spacing: 2) {
+			VStack(alignment: .leading, spacing: 2) {
 				if isToday {
 					Text("Today")
-						.font(.caption.weight(.semibold))
+						.font(.subheadline.weight(.semibold))
 						.foregroundStyle(.blue)
-				} else {
-					Text(date, format: .dateTime.weekday(.wide))
-						.font(.caption)
-						.foregroundStyle(.secondary)
 				}
-				Text(date, format: .dateTime.month(.wide).day().year())
-					.font(.headline)
+				Text(date, format: .dateTime.day().month(.wide).year())
+					.font(.title2.weight(.bold))
 			}
-			.onTapGesture(perform: onToday)
-
 			Spacer()
-
-			Button(action: onNext) {
-				Image(systemName: "chevron.right")
-					.font(.body.weight(.medium))
-			}
 		}
 		.padding(.horizontal)
-		.padding(.vertical, 8)
+		.padding(.top, 8)
+		.padding(.bottom, 4)
 	}
 }
 
-// MARK: - Hour Marker Grid
+// MARK: - Structured Task Row
 
-struct HourMarkerGrid: View {
-	var body: some View {
-		VStack(spacing: 0) {
-			ForEach(TimelineLayout.startHour..<TimelineLayout.endHour, id: \.self) { hour in
-				HStack(alignment: .top, spacing: 0) {
-					Text(Self.hourLabel(hour))
-						.font(.caption2)
-						.foregroundStyle(.tertiary)
-						.frame(width: TimelineLayout.gutterWidth, alignment: .trailing)
-						.padding(.trailing, 6)
-						.offset(y: -6)
-
-					VStack(spacing: 0) {
-						Divider()
-						Spacer()
-					}
-				}
-				.frame(height: TimelineLayout.hourHeight)
-			}
-		}
-	}
-
-	private static func hourLabel(_ hour: Int) -> String {
-		let h = hour % 12 == 0 ? 12 : hour % 12
-		let suffix = hour < 12 ? "AM" : "PM"
-		return "\(h) \(suffix)"
-	}
-}
-
-// MARK: - Task Block
-
-struct TimelineTaskBlock: View {
+struct StructuredTaskRow: View {
 	let task: TimeTask
+	let isLast: Bool
 	let onTap: () -> Void
 	var onToggleComplete: (() -> Void)?
 
-	private var blockColor: Color {
+	private var taskColor: Color {
 		Color(hex: task.color) ?? .blue
 	}
 
 	var body: some View {
 		Button(action: onTap) {
-			HStack(spacing: 8) {
-				Image(systemName: task.icon)
-					.font(.caption)
-					.foregroundStyle(.white.opacity(0.9))
+			HStack(alignment: .top, spacing: 12) {
+				iconBubbleWithLine
 
-				VStack(alignment: .leading, spacing: 2) {
+				VStack(alignment: .leading, spacing: 3) {
+					if let timeRange = task.timeRangeLabel {
+						Text(timeRange)
+							.font(.caption)
+							.foregroundStyle(.secondary)
+					}
+
 					Text(task.title)
-						.font(.caption.weight(.semibold))
-						.foregroundStyle(.white)
-						.lineLimit(1)
+						.font(.body.weight(.medium))
+						.foregroundStyle(.primary)
+						.lineLimit(2)
 						.strikethrough(task.isCompleted)
 
-					if let start = task.startTime {
-						Text("\(start) · \(task.durationMinutes)m")
-							.font(.caption2)
-							.foregroundStyle(.white.opacity(0.75))
-					}
+					badgeRow
 				}
+				.padding(.vertical, 4)
 
 				Spacer(minLength: 0)
 
-				if task.isRoutineInstance {
-					Image(systemName: "arrow.triangle.2.circlepath")
-						.font(.caption2)
-						.foregroundStyle(.white.opacity(0.6))
-				}
-
-				if task.source == "calendar" {
-					Image(systemName: "calendar")
-						.font(.caption2)
-						.foregroundStyle(.white.opacity(0.6))
-				}
-
-				if task.isEditable, let toggle = onToggleComplete {
-					Button {
-						toggle()
-					} label: {
-						Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-							.font(.body)
-							.foregroundStyle(.white.opacity(0.8))
-					}
-					.buttonStyle(.plain)
-				}
+				completionButton
+					.padding(.top, 6)
 			}
-			.padding(.horizontal, 10)
-			.padding(.vertical, 6)
-			.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-			.background(
-				RoundedRectangle(cornerRadius: 8)
-					.fill(task.source == "calendar" ? blockColor.opacity(0.5) : blockColor)
-			)
-			.opacity(task.isCompleted ? 0.6 : 1.0)
+			.padding(.horizontal, 16)
+			.opacity(task.isCompleted ? 0.5 : 1.0)
 		}
 		.buttonStyle(.plain)
+	}
+
+	// MARK: - Icon Bubble + Connecting Line
+
+	private var iconBubbleWithLine: some View {
+		VStack(spacing: 0) {
+			ZStack {
+				Circle()
+					.fill(taskColor)
+					.frame(width: 36, height: 36)
+				Image(systemName: task.icon)
+					.font(.system(size: 14, weight: .semibold))
+					.foregroundStyle(.white)
+			}
+
+			if !isLast {
+				Rectangle()
+					.fill(.quaternary)
+					.frame(width: 2)
+					.frame(maxHeight: .infinity)
+			}
+		}
+		.frame(width: 36)
+	}
+
+	// MARK: - Badge Row
+
+	@ViewBuilder
+	private var badgeRow: some View {
+		let hasBadges = task.isRoutineInstance || task.source == "calendar"
+		if hasBadges {
+			HStack(spacing: 6) {
+				if task.isRoutineInstance {
+					Label("Repeating", systemImage: "arrow.triangle.2.circlepath")
+						.font(.caption2)
+						.foregroundStyle(.secondary)
+				}
+				if task.source == "calendar" {
+					Label("Calendar", systemImage: "calendar")
+						.font(.caption2)
+						.foregroundStyle(.secondary)
+				}
+			}
+			.labelStyle(.iconOnly)
+		}
+	}
+
+	// MARK: - Completion Button
+
+	private var completionButton: some View {
+		Group {
+			if task.isEditable, let toggle = onToggleComplete {
+				Button {
+					toggle()
+				} label: {
+					Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
+						.font(.title3)
+						.foregroundStyle(task.isCompleted ? taskColor : .secondary.opacity(0.5))
+				}
+				.buttonStyle(.plain)
+			} else {
+				Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
+					.font(.title3)
+					.foregroundStyle(task.isCompleted ? taskColor : .secondary.opacity(0.3))
+			}
+		}
 	}
 }
 
@@ -195,10 +166,6 @@ struct AllDayTaskRow: View {
 					.strikethrough(task.isCompleted)
 
 				Spacer()
-
-				Text("\(task.durationMinutes)m")
-					.font(.caption)
-					.foregroundStyle(.secondary)
 
 				if task.isEditable, let toggle = onToggleComplete {
 					Button {
