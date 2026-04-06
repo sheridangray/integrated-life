@@ -1,8 +1,12 @@
 import { AppError } from '../../lib/errors'
 import * as repo from './repository'
+import { syncCalendarForDate } from './calendarSync'
 import type { TimeEntryResponse, TimeBudgetItem, TaskResponse, RoutineResponse } from './types'
 import type { TaskDocument } from '../../models/Task'
 import type { RoutineDocument } from '../../models/Routine'
+
+const CALENDAR_SYNC_THROTTLE_MS = 15 * 60 * 1000
+const calendarSyncCache = new Map<string, number>()
 
 // --- Tasks (day planning) ---
 
@@ -68,8 +72,22 @@ export async function getInboxTasks(userId: string): Promise<TaskResponse[]> {
  */
 export async function getTasksByDate(userId: string, date: string): Promise<TaskResponse[]> {
 	await ensureRoutineTasksForDate(userId, date)
+	await throttledCalendarSync(userId, date)
 	const docs = await repo.findTasksByDate(userId, date)
 	return docs.map(formatTask)
+}
+
+async function throttledCalendarSync(userId: string, date: string): Promise<void> {
+	const cacheKey = `${userId}:${date}`
+	const lastSync = calendarSyncCache.get(cacheKey) ?? 0
+	if (Date.now() - lastSync < CALENDAR_SYNC_THROTTLE_MS) return
+
+	calendarSyncCache.set(cacheKey, Date.now())
+	try {
+		await syncCalendarForDate(userId, date)
+	} catch (err) {
+		console.error('Calendar sync failed for', userId, date, err)
+	}
 }
 
 async function ensureRoutineTasksForDate(userId: string, date: string): Promise<void> {
@@ -173,6 +191,23 @@ export async function updateTask(
 export async function deleteTask(userId: string, taskId: string): Promise<void> {
 	const deleted = await repo.deleteTask(userId, taskId)
 	if (!deleted) throw new AppError('Task not found or not deletable', 404)
+}
+
+// --- Calendar settings ---
+
+export async function getCalendarSettings(userId: string): Promise<{ enabled: boolean; hasTokens: boolean }> {
+	const { findUserById } = await import('../auth/repository')
+	const user = await findUserById(userId)
+	return {
+		enabled: user?.googleCalendarEnabled ?? false,
+		hasTokens: !!(user?.googleRefreshToken)
+	}
+}
+
+export async function setCalendarEnabled(userId: string, enabled: boolean): Promise<{ enabled: boolean; hasTokens: boolean }> {
+	const { User } = await import('../../models/User')
+	await User.findByIdAndUpdate(userId, { $set: { googleCalendarEnabled: enabled } }).exec()
+	return getCalendarSettings(userId)
 }
 
 // --- Routines ---

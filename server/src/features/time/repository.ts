@@ -135,6 +135,41 @@ export async function deleteTask(userId: string, id: string): Promise<boolean> {
 	return result.deletedCount > 0
 }
 
+// --- Calendar tasks ---
+
+export async function upsertCalendarTask(
+	userId: string,
+	calendarEventId: string,
+	data: {
+		title: string
+		date: string
+		startTime: string | null
+		durationMinutes: number
+		color: string
+		icon: string
+	}
+): Promise<TaskDocument> {
+	return Task.findOneAndUpdate(
+		{ userId, calendarEventId, source: 'calendar' },
+		{ $set: { ...data, userId } },
+		{ new: true, upsert: true, runValidators: true }
+	).exec() as Promise<TaskDocument>
+}
+
+export async function deleteStaleCalendarTasks(
+	userId: string,
+	date: string,
+	activeEventIds: string[]
+): Promise<number> {
+	const result = await Task.deleteMany({
+		userId,
+		date,
+		source: 'calendar',
+		calendarEventId: { $nin: activeEventIds }
+	}).exec()
+	return result.deletedCount
+}
+
 // --- Time Entries (legacy) ---
 
 export async function createTimeEntry(data: {

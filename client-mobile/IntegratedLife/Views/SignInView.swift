@@ -71,10 +71,18 @@ struct SignInView: View {
 
 		Task {
 			do {
-				let config = GIDConfiguration(clientID: Config.googleClientID)
+				let config = GIDConfiguration(
+					clientID: Config.googleClientID,
+					serverClientID: Config.googleServerClientID.isEmpty ? nil : Config.googleServerClientID
+				)
 				GIDSignIn.sharedInstance.configuration = config
 
-				let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController)
+				let calendarScope = "https://www.googleapis.com/auth/calendar.readonly"
+				let result = try await GIDSignIn.sharedInstance.signIn(
+					withPresenting: rootViewController,
+					hint: nil,
+					additionalScopes: [calendarScope]
+				)
 
 				guard let idToken = result.user.idToken?.tokenString else {
 					await MainActor.run {
@@ -84,7 +92,10 @@ struct SignInView: View {
 					return
 				}
 
-				try await authState.signInWithGoogle(idToken: idToken)
+				try await authState.signInWithGoogle(
+					idToken: idToken,
+					serverAuthCode: result.serverAuthCode
+				)
 
 				await MainActor.run {
 					isSigningIn = false

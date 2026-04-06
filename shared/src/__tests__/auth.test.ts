@@ -26,6 +26,22 @@ describe('GoogleAuthRequestSchema', () => {
 		const result = GoogleAuthRequestSchema.safeParse({ idToken: 123 })
 		expect(result.success).toBe(false)
 	})
+
+	it('accepts idToken with optional serverAuthCode', () => {
+		const result = GoogleAuthRequestSchema.safeParse({ idToken: 'abc123', serverAuthCode: 'code456' })
+		expect(result.success).toBe(true)
+		if (result.success) {
+			expect(result.data.serverAuthCode).toBe('code456')
+		}
+	})
+
+	it('accepts idToken without serverAuthCode', () => {
+		const result = GoogleAuthRequestSchema.safeParse({ idToken: 'abc123' })
+		expect(result.success).toBe(true)
+		if (result.success) {
+			expect(result.data.serverAuthCode).toBeUndefined()
+		}
+	})
 })
 
 describe('UserSchema', () => {

@@ -80,7 +80,7 @@ describe('googleAuth controller', () => {
 
 		await googleAuth(req, res)
 
-		expect(authService.authenticateWithGoogle).toHaveBeenCalledWith('valid-token')
+		expect(authService.authenticateWithGoogle).toHaveBeenCalledWith('valid-token', undefined)
 		expect(res.json).toHaveBeenCalledWith(mockResult)
 	})
 })

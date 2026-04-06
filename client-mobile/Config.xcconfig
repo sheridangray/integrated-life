@@ -1,4 +1,5 @@
 SLASH = /
 API_BASE_URL = http:$(SLASH)/localhost:3001
 GOOGLE_CLIENT_ID = 121966432796-lepr06d0q4112v0g11s5a6gep2um7tip.apps.googleusercontent.com
+GOOGLE_SERVER_CLIENT_ID = 121966432796-giekqdqhfjnl364ifbc7q7io17j95eiv.apps.googleusercontent.com
 REVERSED_CLIENT_ID = com.googleusercontent.apps.121966432796-lepr06d0q4112v0g11s5a6gep2um7tip

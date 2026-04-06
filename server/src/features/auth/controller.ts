@@ -13,7 +13,7 @@ export async function googleAuth(req: Request, res: Response) {
 		})
 	}
 
-	const result = await authService.authenticateWithGoogle(parsed.data.idToken)
+	const result = await authService.authenticateWithGoogle(parsed.data.idToken, parsed.data.serverAuthCode)
 	return res.json(result)
 }
 

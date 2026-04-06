@@ -45,8 +45,8 @@ final class AuthState: ObservableObject {
 		}
 	}
 
-	func signInWithGoogle(idToken: String) async throws {
-		let response = try await authService.authenticateWithGoogle(idToken: idToken)
+	func signInWithGoogle(idToken: String, serverAuthCode: String? = nil) async throws {
+		let response = try await authService.authenticateWithGoogle(idToken: idToken, serverAuthCode: serverAuthCode)
 		authService.storeTokens(
 			accessToken: response.accessToken,
 			refreshToken: response.refreshToken,

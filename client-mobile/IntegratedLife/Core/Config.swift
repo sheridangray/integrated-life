@@ -18,4 +18,9 @@ enum Config {
 	static var googleClientID: String {
 		(info?["GOOGLE_CLIENT_ID"] as? String) ?? ""
 	}
+
+	/// Web client ID used as serverClientID so GIDSignIn returns a serverAuthCode.
+	static var googleServerClientID: String {
+		(info?["GOOGLE_SERVER_CLIENT_ID"] as? String) ?? ""
+	}
 }

@@ -1,7 +1,8 @@
 import { z } from 'zod'
 
 export const GoogleAuthRequestSchema = z.object({
-	idToken: z.string().min(1, 'idToken is required')
+	idToken: z.string().min(1, 'idToken is required'),
+	serverAuthCode: z.string().optional()
 })
 
 export type GoogleAuthRequest = z.infer<typeof GoogleAuthRequestSchema>

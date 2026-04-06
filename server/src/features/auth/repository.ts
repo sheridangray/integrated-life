@@ -56,3 +56,21 @@ export async function deleteRefreshToken(token: string): Promise<void> {
 	const tokenHash = hashToken(token)
 	await RefreshTokenModel.deleteOne({ tokenHash }).exec()
 }
+
+export async function updateGoogleTokens(
+	userId: string,
+	tokens: { accessToken: string; refreshToken?: string; expiresAt: Date }
+): Promise<void> {
+	const update: Record<string, unknown> = {
+		googleAccessToken: tokens.accessToken,
+		googleTokenExpiresAt: tokens.expiresAt
+	}
+	if (tokens.refreshToken) {
+		update.googleRefreshToken = tokens.refreshToken
+	}
+	await UserModel.findByIdAndUpdate(userId, { $set: update }).exec()
+}
+
+export async function findUserById(userId: string): Promise<UserDocument | null> {
+	return UserModel.findById(userId).exec()
+}

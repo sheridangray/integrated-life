@@ -21,6 +21,10 @@ timeRoutes.post('/routines', asyncHandler(controller.createRoutine))
 timeRoutes.put('/routines/:id', asyncHandler(controller.updateRoutine))
 timeRoutes.delete('/routines/:id', asyncHandler(controller.deleteRoutine))
 
+// Calendar settings
+timeRoutes.get('/calendar/settings', asyncHandler(controller.getCalendarSettings))
+timeRoutes.put('/calendar/settings', asyncHandler(controller.updateCalendarSettings))
+
 // Legacy time-tracking entries
 timeRoutes.post('/entries/start', asyncHandler(controller.startEntry))
 timeRoutes.post('/entries/:id/stop', asyncHandler(controller.stopEntry))
