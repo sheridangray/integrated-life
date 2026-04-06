@@ -37,20 +37,30 @@ function parseEventTimes(event: { start?: { dateTime?: string | null; date?: str
 	startTime: string | null
 	durationMinutes: number
 	isAllDay: boolean
+	localDate: string | null
 } {
 	if (event.start?.dateTime && event.end?.dateTime) {
+		const startMatch = event.start.dateTime.match(/T(\d{2}):(\d{2})/)
+		if (!startMatch) return { startTime: null, durationMinutes: 1440, isAllDay: true, localDate: null }
+
+		const startTime = `${startMatch[1]}:${startMatch[2]}`
+
 		const start = new Date(event.start.dateTime)
 		const end = new Date(event.end.dateTime)
 		const diffMs = end.getTime() - start.getTime()
 		const durationMinutes = Math.max(1, Math.round(diffMs / 60000))
 
-		const hours = start.getHours().toString().padStart(2, '0')
-		const minutes = start.getMinutes().toString().padStart(2, '0')
+		const dateMatch = event.start.dateTime.match(/^(\d{4}-\d{2}-\d{2})/)
+		const localDate = dateMatch ? dateMatch[1] : null
 
-		return { startTime: `${hours}:${minutes}`, durationMinutes, isAllDay: false }
+		return { startTime, durationMinutes, isAllDay: false, localDate }
 	}
 
-	return { startTime: null, durationMinutes: 1440, isAllDay: true }
+	if (event.start?.date) {
+		return { startTime: null, durationMinutes: 1440, isAllDay: true, localDate: event.start.date }
+	}
+
+	return { startTime: null, durationMinutes: 1440, isAllDay: true, localDate: null }
 }
 
 export async function syncCalendarForDate(userId: string, date: string): Promise<void> {
@@ -61,8 +71,10 @@ export async function syncCalendarForDate(userId: string, date: string): Promise
 
 	const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
 
-	const dayStart = new Date(`${date}T00:00:00`)
-	const dayEnd = new Date(`${date}T23:59:59`)
+	const dayStart = new Date(`${date}T00:00:00Z`)
+	dayStart.setUTCHours(dayStart.getUTCHours() - 14)
+	const dayEnd = new Date(`${date}T23:59:59Z`)
+	dayEnd.setUTCHours(dayEnd.getUTCHours() + 14)
 
 	let events
 	try {
@@ -89,9 +101,12 @@ export async function syncCalendarForDate(userId: string, date: string): Promise
 		if (!event.id || !event.summary) continue
 		if (event.status === 'cancelled') continue
 
+		const { startTime, durationMinutes, localDate } = parseEventTimes(event)
+
+		if (localDate && localDate !== date) continue
+
 		activeEventIds.push(event.id)
 
-		const { startTime, durationMinutes } = parseEventTimes(event)
 		const color = event.colorId
 			? (GOOGLE_CALENDAR_COLOR_MAP[event.colorId] ?? DEFAULT_CALENDAR_COLOR)
 			: DEFAULT_CALENDAR_COLOR

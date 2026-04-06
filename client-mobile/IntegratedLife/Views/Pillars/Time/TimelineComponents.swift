@@ -158,7 +158,7 @@ struct TimelineTaskBlock: View {
 			}
 			.padding(.horizontal, 10)
 			.padding(.vertical, 6)
-			.frame(maxWidth: .infinity, alignment: .leading)
+			.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 			.background(
 				RoundedRectangle(cornerRadius: 8)
 					.fill(task.source == "calendar" ? blockColor.opacity(0.5) : blockColor)
