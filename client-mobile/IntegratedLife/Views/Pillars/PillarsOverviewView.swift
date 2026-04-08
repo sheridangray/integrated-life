@@ -10,6 +10,7 @@ struct PillarsOverviewView: View {
 	@ObservedObject var sleepState: SleepState
 	@ObservedObject var healthState: HealthState
 	@ObservedObject var foodState: FoodState
+	@ObservedObject var householdState: HouseholdState
 
 	@State private var pillarOrder: [Pillar] = PillarOrderStore.loadOrder()
 	@State private var draggedPillar: Pillar?
@@ -28,6 +29,7 @@ struct PillarsOverviewView: View {
 							sleepState: sleepState,
 							healthState: healthState,
 							foodState: foodState,
+							householdState: householdState,
 							lastDataRefresh: lastDataRefresh
 						)
 						NavigationLink(value: pillar) {
@@ -61,6 +63,7 @@ struct PillarsOverviewView: View {
 					group.addTask { await sleepState.loadForOverview() }
 					group.addTask { await healthState.loadHistory(page: 1) }
 					group.addTask { await foodState.loadForOverview() }
+					group.addTask { await householdState.loadForOverview() }
 				}
 				lastDataRefresh = Date()
 			}
@@ -78,6 +81,8 @@ struct PillarsOverviewView: View {
 			SleepPillarView(healthKitService: healthKitService, sleepState: sleepState)
 		case .food:
 			FoodPillarView(foodState: foodState)
+		case .household:
+			HouseholdPillarView(householdState: householdState)
 		default:
 			PillarOverviewPlaceholder(pillar: pillar)
 		}
@@ -137,7 +142,7 @@ enum Pillar: String, CaseIterable, Hashable {
 		case .relationships: return "person.2"
 		case .money: return "dollarsign"
 		case .sleep: return "bed.double"
-		case .household: return "building.2"
+		case .household: return "house.fill"
 		}
 	}
 }
@@ -176,6 +181,10 @@ private struct PillarMetricCard: View {
 						.foregroundStyle(.secondary)
 				} else if presentation.pillar == .sleep {
 					Text("Sleep score")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				} else if presentation.pillar == .household {
+					Text("Tasks due")
 						.font(.caption)
 						.foregroundStyle(.secondary)
 				}
