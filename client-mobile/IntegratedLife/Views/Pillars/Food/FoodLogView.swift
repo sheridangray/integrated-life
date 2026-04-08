@@ -210,7 +210,7 @@ private struct FoodLogEntryRow: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 6)
-        .swipeActions(edge: .trailing) {
+        .contextMenu {
             Button(role: .destructive, action: onDelete) {
                 Label("Delete", systemImage: "trash")
             }
