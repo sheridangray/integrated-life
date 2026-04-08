@@ -26,16 +26,9 @@ struct RecipeListView: View {
             }
         }
         .searchable(text: $searchText, prompt: "Search recipes")
-        .onChange(of: searchText) { _, newValue in
-            Task {
-                try? await Task.sleep(for: .milliseconds(300))
-                await foodState.loadRecipes(search: newValue.isEmpty ? nil : newValue)
-            }
-        }
-        .task {
-            if foodState.recipes.isEmpty {
-                await foodState.loadRecipes()
-            }
+        .task(id: searchText) {
+            try? await Task.sleep(for: .milliseconds(300))
+            await foodState.loadRecipes(search: searchText.isEmpty ? nil : searchText)
         }
     }
 }

@@ -113,7 +113,10 @@ struct GroceryListDetailView: View {
         }
         .confirmationDialog("Start Shopping?", isPresented: $showShoppingConfirm) {
             Button("Send to Instacart") {
-                Task { await foodState.initiateShopping(groceryListId: groceryListId) }
+                Task {
+                    _ = await foodState.initiateShopping(groceryListId: groceryListId)
+                    await foodState.loadGroceryList(id: groceryListId)
+                }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
