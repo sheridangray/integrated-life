@@ -1,0 +1,15 @@
+import {
+	CreateMaintenanceTemplateSchema,
+	UpdateMaintenanceTemplateSchema,
+	CreateHouseholdTaskSchema,
+	HouseholdTaskFiltersSchema,
+	UpdateCleanerRotationSchema,
+	UpdatePropertyProfileSchema
+} from '@integrated-life/shared'
+
+export const createTemplateValidator = CreateMaintenanceTemplateSchema
+export const updateTemplateValidator = UpdateMaintenanceTemplateSchema
+export const createHouseholdTaskValidator = CreateHouseholdTaskSchema
+export const householdTaskFiltersValidator = HouseholdTaskFiltersSchema
+export const updateCleanerRotationValidator = UpdateCleanerRotationSchema
+export const updatePropertyProfileValidator = UpdatePropertyProfileSchema
