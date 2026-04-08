@@ -3,6 +3,12 @@ import Foundation
 @MainActor
 final class FoodState: ObservableObject {
     private let foodService = FoodService.shared
+    private let healthKitFoodService = HealthKitFoodService.shared
+
+    // MARK: - HealthKit Sync
+
+    @Published var syncToHealthKit = true
+    @Published var healthKitWriteError: String?
 
     // MARK: - Recipes
 
@@ -174,7 +180,7 @@ final class FoodState: ObservableObject {
 
     func createFoodLog(mealType: MealType, food: Food, servingSize: String, servings: Double, notes: String? = nil) async {
         do {
-            let entry = try await foodService.createFoodLog(CreateFoodLogRequest(
+            var entry = try await foodService.createFoodLog(CreateFoodLogRequest(
                 date: selectedDateString,
                 mealType: mealType,
                 food: food,
@@ -182,6 +188,7 @@ final class FoodState: ObservableObject {
                 servings: servings,
                 notes: notes
             ))
+            await writeToHealthKitIfEnabled(&entry)
             dailyNutrition?.entries.append(entry)
             await loadDailyNutrition()
         } catch {
@@ -194,7 +201,8 @@ final class FoodState: ObservableObject {
         error = nil
         defer { isLoading = false }
         do {
-            let entry = try await foodService.scanBarcode(BarcodeScanRequest(barcode: barcode, mealType: mealType))
+            var entry = try await foodService.scanBarcode(BarcodeScanRequest(barcode: barcode, mealType: mealType))
+            await writeToHealthKitIfEnabled(&entry)
             await loadDailyNutrition()
             return entry
         } catch {
@@ -208,12 +216,34 @@ final class FoodState: ObservableObject {
         error = nil
         defer { isLoading = false }
         do {
-            let entry = try await foodService.scanMealPhoto(imageData: imageData, mealType: mealType)
+            var entry = try await foodService.scanMealPhoto(imageData: imageData, mealType: mealType)
+            await writeToHealthKitIfEnabled(&entry)
             await loadDailyNutrition()
             return entry
         } catch {
             self.error = error.localizedDescription
             return nil
+        }
+    }
+
+    /// Write a food log entry to HealthKit if sync is enabled and permissions are granted.
+    func syncEntryToHealthKit(_ entry: FoodLogEntry) async {
+        var mutableEntry = entry
+        await writeToHealthKitIfEnabled(&mutableEntry)
+        if let index = dailyNutrition?.entries.firstIndex(where: { $0.id == entry.id }) {
+            dailyNutrition?.entries[index] = mutableEntry
+        }
+    }
+
+    private func writeToHealthKitIfEnabled(_ entry: inout FoodLogEntry) async {
+        guard syncToHealthKit, healthKitFoodService.hasWritePermission else { return }
+        healthKitWriteError = nil
+        do {
+            try await healthKitFoodService.writeFoodLogEntry(entry)
+            entry.writtenToHealthKit = true
+        } catch {
+            healthKitWriteError = error.localizedDescription
+            entry.writtenToHealthKit = false
         }
     }
 

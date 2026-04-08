@@ -14,6 +14,7 @@ enum FoodNavDestination: Hashable {
     case groceryListDetail(String)
     case barcodeScanner
     case mealScanner
+    case nutritionDetail(String)
 }
 
 struct FoodPillarView: View {
@@ -55,6 +56,10 @@ struct FoodPillarView: View {
                 BarcodeScannerView(foodState: foodState)
             case .mealScanner:
                 MealScannerView(foodState: foodState)
+            case .nutritionDetail(let entryId):
+                if let entry = foodState.dailyNutrition?.entries.first(where: { $0.id == entryId }) {
+                    NutritionDetailView(entry: entry)
+                }
             }
         }
     }

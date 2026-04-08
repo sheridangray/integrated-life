@@ -81,11 +81,57 @@ enum Store: String, Codable, CaseIterable, Identifiable {
 // MARK: - Core Objects
 
 struct Nutrition: Codable, Equatable {
+    // Basic macros
     let calories: Double
-    let protein: Double
-    let carbs: Double
-    let fat: Double
-    let fiber: Double
+    let protein: Double // grams
+    let carbs: Double // grams
+    let fat: Double // grams
+    let fiber: Double // grams
+
+    // Expanded macros
+    var sugar: Double? // grams
+    var water: Double? // mL
+
+    // Fat breakdown
+    var saturatedFat: Double? // grams
+    var monounsaturatedFat: Double? // grams
+    var polyunsaturatedFat: Double? // grams
+    var cholesterol: Double? // mg
+    var transFat: Double? // grams
+
+    // Vitamins
+    var vitaminA: Double? // mcg
+    var vitaminB6: Double? // mg
+    var vitaminB12: Double? // mcg
+    var vitaminC: Double? // mg
+    var vitaminD: Double? // mcg
+    var vitaminE: Double? // mg
+    var vitaminK: Double? // mcg
+    var thiamin: Double? // mg (B1)
+    var riboflavin: Double? // mg (B2)
+    var niacin: Double? // mg (B3)
+    var folate: Double? // mcg
+    var pantothenicAcid: Double? // mg (B5)
+    var biotin: Double? // mcg
+
+    // Minerals
+    var calcium: Double? // mg
+    var iron: Double? // mg
+    var magnesium: Double? // mg
+    var manganese: Double? // mg
+    var phosphorus: Double? // mg
+    var potassium: Double? // mg
+    var zinc: Double? // mg
+    var selenium: Double? // mcg
+    var copper: Double? // mg
+    var chromium: Double? // mcg
+    var molybdenum: Double? // mcg
+    var chloride: Double? // mg
+    var iodine: Double? // mcg
+    var sodium: Double? // mg
+
+    // Other
+    var caffeine: Double? // mg
 }
 
 struct Ingredient: Codable, Identifiable, Equatable {
@@ -231,6 +277,7 @@ struct FoodLogEntry: Codable, Identifiable, Equatable {
     let servingSize: String
     let servings: Double
     let notes: String?
+    var writtenToHealthKit: Bool?
 
     var totalCalories: Double {
         food.nutrition.calories * servings
