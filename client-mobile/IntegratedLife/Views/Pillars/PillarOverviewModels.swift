@@ -61,6 +61,7 @@ enum PillarOverviewPresentationBuilder {
 		for pillar: Pillar,
 		sleepState: SleepState,
 		healthState: HealthState,
+		foodState: FoodState,
 		lastDataRefresh: Date?
 	) -> PillarCardPresentation {
 		switch pillar {
@@ -70,7 +71,9 @@ enum PillarOverviewPresentationBuilder {
 			return healthPresentation(healthState: healthState, lastDataRefresh: lastDataRefresh)
 		case .time:
 			return timePresentation(lastDataRefresh: lastDataRefresh)
-		case .food, .relationships, .money, .household:
+		case .food:
+			return foodPresentation(foodState: foodState, lastDataRefresh: lastDataRefresh)
+		case .relationships, .money, .household:
 			return .placeholder(pillar: pillar)
 		}
 	}
@@ -269,6 +272,55 @@ enum PillarOverviewPresentationBuilder {
 			}
 		}
 		return result
+	}
+
+	private static func foodPresentation(
+		foodState: FoodState,
+		lastDataRefresh: Date?
+	) -> PillarCardPresentation {
+		if foodState.foodLogLoading && foodState.dailyNutrition == nil {
+			return PillarCardPresentation(
+				pillar: .food,
+				isPlaceholder: false,
+				scoreText: "—",
+				deltaText: nil,
+				sparklineValues: [],
+				attention: .neutral,
+				isLoading: true,
+				errorMessage: nil,
+				lastUpdatedText: staleSuffix(lastDataRefresh)
+			)
+		}
+
+		guard let daily = foodState.dailyNutrition else {
+			return PillarCardPresentation(
+				pillar: .food,
+				isPlaceholder: false,
+				scoreText: "—",
+				deltaText: nil,
+				sparklineValues: [],
+				attention: .neutral,
+				isLoading: false,
+				errorMessage: foodState.error,
+				lastUpdatedText: staleSuffix(lastDataRefresh)
+			)
+		}
+
+		let cals = Int(daily.totals.calories)
+		let attention: PillarAttentionLevel = cals == 0 ? .needsAttention : cals < 1200 ? .caution : .good
+		let protein = Int(daily.totals.protein)
+
+		return PillarCardPresentation(
+			pillar: .food,
+			isPlaceholder: false,
+			scoreText: "\(cals)",
+			deltaText: "\(protein)g protein",
+			sparklineValues: [],
+			attention: attention,
+			isLoading: false,
+			errorMessage: nil,
+			lastUpdatedText: staleSuffix(lastDataRefresh)
+		)
 	}
 
 	private static func timePresentation(lastDataRefresh: Date?) -> PillarCardPresentation {
