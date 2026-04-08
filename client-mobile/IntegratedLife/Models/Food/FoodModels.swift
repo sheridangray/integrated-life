@@ -46,6 +46,15 @@ enum GroceryListStatus: String, Codable {
 enum FoodLogSource: String, Codable {
     case barcode, photo, manual, recipe
     var displayName: String { rawValue.capitalized }
+
+    var icon: String {
+        switch self {
+        case .barcode: return "barcode"
+        case .photo: return "camera"
+        case .manual: return "square.and.pencil"
+        case .recipe: return "book"
+        }
+    }
 }
 
 enum Store: String, Codable, CaseIterable, Identifiable {
