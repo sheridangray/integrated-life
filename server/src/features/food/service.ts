@@ -369,13 +369,7 @@ export async function lookupBarcode(barcode: string, userId: string, mealType?: 
 		product?: {
 			product_name?: string
 			brands?: string
-			nutriments?: {
-				'energy-kcal_100g'?: number
-				proteins_100g?: number
-				carbohydrates_100g?: number
-				fat_100g?: number
-				fiber_100g?: number
-			}
+			nutriments?: Record<string, number | undefined>
 			serving_size?: string
 		}
 	}
@@ -385,7 +379,7 @@ export async function lookupBarcode(barcode: string, userId: string, mealType?: 
 	}
 
 	const product = data.product
-	const nutriments = product.nutriments ?? {}
+	const nm = product.nutriments ?? {}
 
 	const entry = await repo.createFoodLogEntry(userId, {
 		date: new Date(),
@@ -395,11 +389,45 @@ export async function lookupBarcode(barcode: string, userId: string, mealType?: 
 			name: product.product_name ?? 'Unknown product',
 			brand: product.brands ?? undefined,
 			nutrition: {
-				calories: nutriments['energy-kcal_100g'] ?? 0,
-				protein: nutriments.proteins_100g ?? 0,
-				carbs: nutriments.carbohydrates_100g ?? 0,
-				fat: nutriments.fat_100g ?? 0,
-				fiber: nutriments.fiber_100g ?? 0
+				calories: nm['energy-kcal_100g'] ?? 0,
+				protein: nm.proteins_100g ?? 0,
+				carbs: nm.carbohydrates_100g ?? 0,
+				fat: nm.fat_100g ?? 0,
+				fiber: nm.fiber_100g ?? 0,
+				sugar: nm.sugars_100g ?? 0,
+				saturatedFat: nm['saturated-fat_100g'] ?? 0,
+				monounsaturatedFat: nm['monounsaturated-fat_100g'] ?? 0,
+				polyunsaturatedFat: nm['polyunsaturated-fat_100g'] ?? 0,
+				cholesterol: nm.cholesterol_100g ?? 0,
+				transFat: nm['trans-fat_100g'] ?? 0,
+				vitaminA: nm['vitamin-a_100g'] ?? 0,
+				vitaminB6: nm['vitamin-b6_100g'] ?? 0,
+				vitaminB12: nm['vitamin-b12_100g'] ?? 0,
+				vitaminC: nm['vitamin-c_100g'] ?? 0,
+				vitaminD: nm['vitamin-d_100g'] ?? 0,
+				vitaminE: nm['vitamin-e_100g'] ?? 0,
+				vitaminK: nm['vitamin-k_100g'] ?? 0,
+				thiamin: nm['vitamin-b1_100g'] ?? 0,
+				riboflavin: nm['vitamin-b2_100g'] ?? 0,
+				niacin: nm['vitamin-pp_100g'] ?? 0,
+				folate: nm['vitamin-b9_100g'] ?? 0,
+				pantothenicAcid: nm['pantothenic-acid_100g'] ?? 0,
+				biotin: nm.biotin_100g ?? 0,
+				calcium: nm.calcium_100g ?? 0,
+				iron: nm.iron_100g ?? 0,
+				magnesium: nm.magnesium_100g ?? 0,
+				manganese: nm.manganese_100g ?? 0,
+				phosphorus: nm.phosphorus_100g ?? 0,
+				potassium: nm.potassium_100g ?? 0,
+				zinc: nm.zinc_100g ?? 0,
+				selenium: nm.selenium_100g ?? 0,
+				copper: nm.copper_100g ?? 0,
+				chromium: nm.chromium_100g ?? 0,
+				molybdenum: nm.molybdenum_100g ?? 0,
+				chloride: nm.chloride_100g ?? 0,
+				iodine: nm.iodine_100g ?? 0,
+				sodium: nm.sodium_100g ?? 0,
+				caffeine: nm.caffeine_100g ?? 0
 			}
 		},
 		servingSize: product.serving_size ?? '100g',
@@ -435,23 +463,33 @@ export async function scanPhoto(imageBuffer: Buffer, mimeType: string, userId: s
 export async function getDailyNutrition(userId: string, date: string) {
 	const entries = await repo.findFoodLogByDate(userId, date)
 
-	const totals = { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
+	const nutritionKeys = [
+		'calories', 'protein', 'carbs', 'fat', 'fiber',
+		'sugar', 'water',
+		'saturatedFat', 'monounsaturatedFat', 'polyunsaturatedFat', 'cholesterol', 'transFat',
+		'vitaminA', 'vitaminB6', 'vitaminB12', 'vitaminC', 'vitaminD', 'vitaminE', 'vitaminK',
+		'thiamin', 'riboflavin', 'niacin', 'folate', 'pantothenicAcid', 'biotin',
+		'calcium', 'iron', 'magnesium', 'manganese', 'phosphorus', 'potassium',
+		'zinc', 'selenium', 'copper', 'chromium', 'molybdenum', 'chloride', 'iodine',
+		'sodium', 'caffeine'
+	] as const
+
+	const totals = Object.fromEntries(nutritionKeys.map((k) => [k, 0])) as Record<(typeof nutritionKeys)[number], number>
 
 	for (const entry of entries) {
-		const n = entry.food.nutrition
+		const n = entry.food.nutrition as Record<string, number | undefined>
 		const s = entry.servings
-		totals.calories += n.calories * s
-		totals.protein += n.protein * s
-		totals.carbs += n.carbs * s
-		totals.fat += n.fat * s
-		totals.fiber += n.fiber * s
+		for (const key of nutritionKeys) {
+			totals[key] += (n[key] ?? 0) * s
+		}
 	}
 
 	totals.calories = Math.round(totals.calories)
-	totals.protein = Math.round(totals.protein * 10) / 10
-	totals.carbs = Math.round(totals.carbs * 10) / 10
-	totals.fat = Math.round(totals.fat * 10) / 10
-	totals.fiber = Math.round(totals.fiber * 10) / 10
+	for (const key of nutritionKeys) {
+		if (key !== 'calories') {
+			totals[key] = Math.round(totals[key] * 10) / 10
+		}
+	}
 
 	return {
 		date,

@@ -33,11 +33,57 @@ export type Store = z.infer<typeof StoreEnum>
 // --- Core Objects ---
 
 export const NutritionSchema = z.object({
+	// Basic macros (existing)
 	calories: z.number().min(0),
-	protein: z.number().min(0),
-	carbs: z.number().min(0),
-	fat: z.number().min(0),
-	fiber: z.number().min(0)
+	protein: z.number().min(0), // grams
+	carbs: z.number().min(0), // grams
+	fat: z.number().min(0), // grams
+	fiber: z.number().min(0), // grams
+
+	// Expanded macros
+	sugar: z.number().optional().default(0), // grams
+	water: z.number().optional().default(0), // mL
+
+	// Fat breakdown
+	saturatedFat: z.number().optional().default(0), // grams
+	monounsaturatedFat: z.number().optional().default(0), // grams
+	polyunsaturatedFat: z.number().optional().default(0), // grams
+	cholesterol: z.number().optional().default(0), // mg
+	transFat: z.number().optional().default(0), // grams
+
+	// Vitamins
+	vitaminA: z.number().optional().default(0), // mcg
+	vitaminB6: z.number().optional().default(0), // mg
+	vitaminB12: z.number().optional().default(0), // mcg
+	vitaminC: z.number().optional().default(0), // mg
+	vitaminD: z.number().optional().default(0), // mcg
+	vitaminE: z.number().optional().default(0), // mg
+	vitaminK: z.number().optional().default(0), // mcg
+	thiamin: z.number().optional().default(0), // mg (B1)
+	riboflavin: z.number().optional().default(0), // mg (B2)
+	niacin: z.number().optional().default(0), // mg (B3)
+	folate: z.number().optional().default(0), // mcg
+	pantothenicAcid: z.number().optional().default(0), // mg (B5)
+	biotin: z.number().optional().default(0), // mcg
+
+	// Minerals
+	calcium: z.number().optional().default(0), // mg
+	iron: z.number().optional().default(0), // mg
+	magnesium: z.number().optional().default(0), // mg
+	manganese: z.number().optional().default(0), // mg
+	phosphorus: z.number().optional().default(0), // mg
+	potassium: z.number().optional().default(0), // mg
+	zinc: z.number().optional().default(0), // mg
+	selenium: z.number().optional().default(0), // mcg
+	copper: z.number().optional().default(0), // mg
+	chromium: z.number().optional().default(0), // mcg
+	molybdenum: z.number().optional().default(0), // mcg
+	chloride: z.number().optional().default(0), // mg
+	iodine: z.number().optional().default(0), // mcg
+	sodium: z.number().optional().default(0), // mg
+
+	// Other
+	caffeine: z.number().optional().default(0) // mg
 })
 export type Nutrition = z.infer<typeof NutritionSchema>
 

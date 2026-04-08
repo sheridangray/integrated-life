@@ -351,7 +351,12 @@ describe('Daily Nutrition', () => {
 
 		const result = await service.getDailyNutrition('user-1', '2025-01-15')
 
-		expect(result.totals).toEqual({ calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 })
+		expect(result.totals.calories).toBe(0)
+		expect(result.totals.protein).toBe(0)
+		expect(result.totals.carbs).toBe(0)
+		expect(result.totals.fat).toBe(0)
+		expect(result.totals.fiber).toBe(0)
+		expect(result.totals.sodium).toBe(0)
 		expect(result.entries).toHaveLength(0)
 	})
 })
