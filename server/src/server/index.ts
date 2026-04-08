@@ -4,6 +4,7 @@ import { logger } from '../lib/logger'
 import { createApp } from './app'
 import { errorHandler } from '../middleware/errorHandler'
 import { seedHealthData } from '../seeds/health'
+import { seedHouseholdData } from '../seeds/household'
 import { initializeJobs } from '../jobs'
 
 async function start() {
@@ -11,6 +12,7 @@ async function start() {
 	logger.info('Connected to MongoDB')
 
 	await seedHealthData()
+	await seedHouseholdData()
 
 	const app = createApp()
 	app.use(errorHandler)
