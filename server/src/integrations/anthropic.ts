@@ -26,11 +26,46 @@ Respond with ONLY valid JSON in this exact format (no markdown, no explanation):
     "protein": <number in grams>,
     "carbs": <number in grams>,
     "fat": <number in grams>,
-    "fiber": <number in grams>
+    "fiber": <number in grams>,
+    "sugar": <number in grams>,
+    "saturatedFat": <number in grams>,
+    "monounsaturatedFat": <number in grams>,
+    "polyunsaturatedFat": <number in grams>,
+    "cholesterol": <number in mg>,
+    "transFat": <number in grams>,
+    "vitaminA": <number in mcg>,
+    "vitaminB6": <number in mg>,
+    "vitaminB12": <number in mcg>,
+    "vitaminC": <number in mg>,
+    "vitaminD": <number in mcg>,
+    "vitaminE": <number in mg>,
+    "vitaminK": <number in mcg>,
+    "thiamin": <number in mg>,
+    "riboflavin": <number in mg>,
+    "niacin": <number in mg>,
+    "folate": <number in mcg>,
+    "pantothenicAcid": <number in mg>,
+    "biotin": <number in mcg>,
+    "calcium": <number in mg>,
+    "iron": <number in mg>,
+    "magnesium": <number in mg>,
+    "manganese": <number in mg>,
+    "phosphorus": <number in mg>,
+    "potassium": <number in mg>,
+    "zinc": <number in mg>,
+    "selenium": <number in mcg>,
+    "copper": <number in mg>,
+    "chromium": <number in mcg>,
+    "molybdenum": <number in mcg>,
+    "chloride": <number in mg>,
+    "iodine": <number in mcg>,
+    "sodium": <number in mg>,
+    "caffeine": <number in mg>,
+    "water": <number in mL>
   }
 }
 
-Be as accurate as possible with your estimates based on the visible portion sizes.`
+Include all fields. Use 0 for nutrients you cannot reasonably estimate. Be as accurate as possible based on visible portion sizes.`
 
 export type PhotoAnalysisResult = {
 	name: string
@@ -41,6 +76,41 @@ export type PhotoAnalysisResult = {
 		carbs: number
 		fat: number
 		fiber: number
+		sugar?: number
+		water?: number
+		saturatedFat?: number
+		monounsaturatedFat?: number
+		polyunsaturatedFat?: number
+		cholesterol?: number
+		transFat?: number
+		vitaminA?: number
+		vitaminB6?: number
+		vitaminB12?: number
+		vitaminC?: number
+		vitaminD?: number
+		vitaminE?: number
+		vitaminK?: number
+		thiamin?: number
+		riboflavin?: number
+		niacin?: number
+		folate?: number
+		pantothenicAcid?: number
+		biotin?: number
+		calcium?: number
+		iron?: number
+		magnesium?: number
+		manganese?: number
+		phosphorus?: number
+		potassium?: number
+		zinc?: number
+		selenium?: number
+		copper?: number
+		chromium?: number
+		molybdenum?: number
+		chloride?: number
+		iodine?: number
+		sodium?: number
+		caffeine?: number
 	}
 }
 
