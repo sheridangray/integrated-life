@@ -8,6 +8,7 @@ struct MainTabView: View {
 	@StateObject private var sleepState = SleepState()
 	@StateObject private var healthState = HealthState()
 	@StateObject private var foodState = FoodState()
+	@StateObject private var householdState = HouseholdState()
 
 	var body: some View {
 		TabView(selection: $appNavigation.selectedTabIndex) {
@@ -23,7 +24,8 @@ struct MainTabView: View {
 				timeState: timeState,
 				sleepState: sleepState,
 				healthState: healthState,
-				foodState: foodState
+				foodState: foodState,
+				householdState: householdState
 			)
 				.tabItem {
 					Label("Pillars", systemImage: "square.grid.2x2")

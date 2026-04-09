@@ -62,6 +62,7 @@ enum PillarOverviewPresentationBuilder {
 		sleepState: SleepState,
 		healthState: HealthState,
 		foodState: FoodState,
+		householdState: HouseholdState,
 		lastDataRefresh: Date?
 	) -> PillarCardPresentation {
 		switch pillar {
@@ -73,7 +74,9 @@ enum PillarOverviewPresentationBuilder {
 			return timePresentation(lastDataRefresh: lastDataRefresh)
 		case .food:
 			return foodPresentation(foodState: foodState, lastDataRefresh: lastDataRefresh)
-		case .relationships, .money, .household:
+		case .household:
+			return householdPresentation(householdState: householdState, lastDataRefresh: lastDataRefresh)
+		case .relationships, .money:
 			return .placeholder(pillar: pillar)
 		}
 	}
@@ -331,6 +334,62 @@ enum PillarOverviewPresentationBuilder {
 			deltaText: nil,
 			sparklineValues: [],
 			attention: .neutral,
+			isLoading: false,
+			errorMessage: nil,
+			lastUpdatedText: staleSuffix(lastDataRefresh)
+		)
+	}
+
+	private static func householdPresentation(
+		householdState: HouseholdState,
+		lastDataRefresh: Date?
+	) -> PillarCardPresentation {
+		if householdState.tasksLoading && householdState.upcomingTasks.isEmpty {
+			return PillarCardPresentation(
+				pillar: .household,
+				isPlaceholder: false,
+				scoreText: "—",
+				deltaText: nil,
+				sparklineValues: [],
+				attention: .neutral,
+				isLoading: true,
+				errorMessage: nil,
+				lastUpdatedText: staleSuffix(lastDataRefresh)
+			)
+		}
+
+		if let err = householdState.error, householdState.upcomingTasks.isEmpty {
+			return PillarCardPresentation(
+				pillar: .household,
+				isPlaceholder: false,
+				scoreText: "—",
+				deltaText: nil,
+				sparklineValues: [],
+				attention: .neutral,
+				isLoading: false,
+				errorMessage: err,
+				lastUpdatedText: staleSuffix(lastDataRefresh)
+			)
+		}
+
+		let pending = householdState.pendingTaskCount
+		let overdue = householdState.overdueTasks.count
+		let attention: PillarAttentionLevel = overdue > 0 ? .needsAttention : pending > 5 ? .caution : .good
+
+		var delta: String?
+		if overdue > 0 {
+			delta = "\(overdue) overdue"
+		} else if pending > 0 {
+			delta = "\(householdState.todayTasks.count) due today"
+		}
+
+		return PillarCardPresentation(
+			pillar: .household,
+			isPlaceholder: false,
+			scoreText: "\(pending)",
+			deltaText: delta,
+			sparklineValues: [],
+			attention: attention,
 			isLoading: false,
 			errorMessage: nil,
 			lastUpdatedText: staleSuffix(lastDataRefresh)
