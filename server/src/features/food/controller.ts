@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import type { AuthenticatedRequest } from '../../middleware/auth'
 import * as foodService from './service'
+import { z } from 'zod'
 import {
 	recipeFiltersValidator,
 	createRecipeValidator,
@@ -362,4 +363,23 @@ export async function deleteFoodLog(req: AuthenticatedRequest, res: Response) {
 
 	await foodService.deleteFoodLog(req.params.id, req.user.userId)
 	return res.status(204).send()
+}
+
+const aiRecipeValidator = z.object({
+	prompt: z.string().min(1, 'Prompt is required').max(2000)
+})
+
+export async function createAIRecipe(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const parsed = aiRecipeValidator.safeParse(req.body)
+	if (!parsed.success) return validationError(res, req, parsed.error)
+
+	const recipe = await foodService.createRecipeFromAI(parsed.data.prompt, req.user.userId)
+	return res.status(201).json(recipe)
 }

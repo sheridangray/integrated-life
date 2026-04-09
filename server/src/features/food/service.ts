@@ -1,6 +1,10 @@
+import Anthropic from '@anthropic-ai/sdk'
 import { AppError } from '../../lib/errors'
 import { logger } from '../../lib/logger'
+import { env } from '../../config'
 import * as anthropic from '../../integrations/anthropic'
+import * as imageGen from '../../services/imageGeneration'
+import * as storage from '../../services/storage'
 import * as repo from './repository'
 import type { PaginatedResult } from './types'
 
@@ -59,6 +63,7 @@ function formatRecipe(doc: Record<string, unknown>) {
 		userId: String(d.userId),
 		name: d.name,
 		description: d.description ?? null,
+		imageUrl: d.imageUrl ?? null,
 		servings: d.servings,
 		prepTime: d.prepTime,
 		cookTime: d.cookTime,
@@ -496,4 +501,85 @@ export async function getDailyNutrition(userId: string, date: string) {
 		totals,
 		entries: entries.map((d) => formatFoodLogEntry(d.toObject()))
 	}
+}
+
+const AI_RECIPE_SYSTEM_PROMPT = `You are a recipe assistant. Parse user requests and return valid JSON for recipe creation.
+
+Schema:
+{
+  "name": string,
+  "description": string,
+  "servings": number,
+  "prepTime": number (minutes),
+  "cookTime": number (minutes),
+  "ingredients": [{ "name": string, "quantity": number, "unit": string, "category": string }],
+  "instructions": string[],
+  "tags": string[],
+  "nutritionPerServing": { "calories": number, "protein": number, "carbs": number, "fat": number, "fiber": number }
+}
+
+Valid ingredient categories: produce, meat, seafood, dairy, bakery, pantry, frozen, beverages, other.
+Valid tags include: quick, kid-friendly, healthy, weeknight, weekend, asian, mediterranean, american, mexican, italian, vegetarian, low-carb, comfort, breakfast, seafood.
+
+When user says "add a recipe for X", create complete recipe JSON.
+When user says "make it vegetarian", modify the recipe to be vegetarian.
+When user says "double the servings", scale quantities accordingly.
+
+Respond with ONLY valid JSON, no markdown, no explanation.`
+
+export async function createRecipeFromAI(prompt: string, userId: string) {
+	if (!env.ANTHROPIC_API_KEY) {
+		throw new AppError('AI recipe creation not available', 503)
+	}
+
+	const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
+
+	let recipeData: Record<string, unknown>
+	try {
+		const response = await client.messages.create({
+			model: 'claude-sonnet-4-6',
+			max_tokens: 2048,
+			messages: [
+				{ role: 'user', content: prompt }
+			],
+			system: AI_RECIPE_SYSTEM_PROMPT
+		})
+
+		const textBlock = response.content.find((b) => b.type === 'text')
+		if (!textBlock || textBlock.type !== 'text') {
+			throw new AppError('AI returned no response', 502)
+		}
+
+		recipeData = JSON.parse(textBlock.text) as Record<string, unknown>
+	} catch (err) {
+		if (err instanceof AppError) throw err
+		logger.error('AI recipe generation failed', { error: (err as Error).message })
+		throw new AppError('Failed to generate recipe from AI', 502)
+	}
+
+	// Generate image for the recipe
+	let imageUrl: string | undefined
+	let imageId: string | undefined
+	try {
+		const imageBuffer = await imageGen.generateRecipeImage(
+			recipeData.name as string,
+			recipeData.description as string | undefined
+		)
+		if (imageBuffer) {
+			imageId = `recipes/${Date.now()}-${(recipeData.name as string).toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`
+			imageUrl = await storage.uploadImage(imageBuffer, imageId, 'image/png')
+		}
+	} catch (err) {
+		logger.warn('Failed to generate/upload recipe image, continuing without image', {
+			error: (err as Error).message
+		})
+	}
+
+	const doc = await repo.createRecipe(userId, {
+		...recipeData,
+		...(imageUrl && { imageUrl }),
+		...(imageId && { imageId })
+	})
+
+	return formatRecipe(doc.toObject())
 }

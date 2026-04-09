@@ -17,6 +17,12 @@ const envSchema = z.object({
 	MOBILE_BUNDLE_ID: z.string().optional().default('com.integratedlife.app'),
 	TOGETHER_AI_API_KEY: z.string().optional().default(''),
 	ANTHROPIC_API_KEY: z.string().optional().default(''),
+	/** Cloudflare R2 image storage */
+	CLOUDFLARE_ACCOUNT_ID: z.string().optional().default(''),
+	R2_ACCESS_KEY_ID: z.string().optional().default(''),
+	R2_SECRET_ACCESS_KEY: z.string().optional().default(''),
+	R2_BUCKET_NAME: z.string().optional().default('integrated-life-images'),
+	R2_PUBLIC_URL: z.string().optional().default(''),
 	/** APNs .p8 key — optional; when set with KEY_ID and TEAM_ID, server sends remote pushes */
 	APNS_KEY_ID: z.string().optional(),
 	APNS_TEAM_ID: z.string().optional(),
