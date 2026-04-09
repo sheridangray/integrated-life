@@ -643,6 +643,10 @@ export async function runRecipeSeed() {
 		// Generate image
 		console.log(`Generating image for "${seed.name}"...`)
 		const imageBuffer = await generateRecipeImage(seed.name, seed.description)
+		if (!imageBuffer) {
+			console.log(`Skipping "${seed.name}" — image generation failed`)
+			continue
+		}
 		
 		// Upload to R2
 		const imageId = `recipes/${seed.name.toLowerCase().replace(/\s+/g, '-')}.png`
