@@ -12,6 +12,7 @@ import { exerciseRoutes, workoutRoutes, historyRoutes, healthInsightRoutes } fro
 import { sleepRoutes } from '../features/sleep/routes'
 import { timeRoutes } from '../features/time/routes'
 import { mealPlanRoutes, recipeRoutes, groceryListRoutes, foodLogRoutes } from '../features/food/routes'
+import { householdRoutes } from '../features/household/routes'
 import { generateOpenAPIDocument } from '../lib/openapi'
 
 export function createApp() {
@@ -55,6 +56,7 @@ export function createApp() {
 	app.use('/v1/food/recipes', recipeRoutes)
 	app.use('/v1/food/grocery-lists', groceryListRoutes)
 	app.use('/v1/food/log', foodLogRoutes)
+	app.use('/v1/household', householdRoutes)
 
 	app.use(notFoundHandler)
 
