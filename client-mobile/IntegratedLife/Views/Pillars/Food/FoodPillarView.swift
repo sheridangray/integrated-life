@@ -46,6 +46,7 @@ struct FoodPillarView: View {
         }
         .navigationTitle("Food")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.hidden, for: .navigationBar)
         .navigationDestination(for: FoodNavDestination.self) { destination in
             switch destination {
             case .recipeDetail(let id):

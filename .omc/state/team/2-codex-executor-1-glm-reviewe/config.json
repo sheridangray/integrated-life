@@ -1,0 +1,41 @@
+{
+  "name": "2-codex-executor-1-glm-reviewe",
+  "task": "2:codex:executor 1:glm:reviewer Food Pillar Enhancement: Read directive at ~/.op",
+  "agent_type": "claude",
+  "worker_launch_mode": "interactive",
+  "policy": {
+    "display_mode": "split_pane",
+    "worker_launch_mode": "interactive",
+    "dispatch_mode": "hook_preferred_with_fallback",
+    "dispatch_ack_timeout_ms": 15000
+  },
+  "governance": {
+    "delegation_only": false,
+    "plan_approval_required": false,
+    "nested_teams_allowed": false,
+    "one_team_per_leader_session": true,
+    "cleanup_requires_all_workers_inactive": true
+  },
+  "worker_count": 1,
+  "max_workers": 20,
+  "workers": [
+    {
+      "name": "worker-1",
+      "index": 1,
+      "role": "architect",
+      "assigned_tasks": [],
+      "working_dir": "/Users/integratedlifeorchestrator/repos/integrated-life",
+      "pane_id": "%10"
+    }
+  ],
+  "created_at": "2026-04-09T06:55:35.696Z",
+  "tmux_session": "food-team:0",
+  "tmux_window_owned": false,
+  "next_task_id": 2,
+  "leader_cwd": "/Users/integratedlifeorchestrator/repos/integrated-life",
+  "team_state_root": "/Users/integratedlifeorchestrator/repos/integrated-life/.omc/state/team/2-codex-executor-1-glm-reviewe",
+  "leader_pane_id": "%9",
+  "hud_pane_id": null,
+  "resize_hook_name": null,
+  "resize_hook_target": null
+}

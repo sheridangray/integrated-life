@@ -1,0 +1,26 @@
+{
+  "taskStatusById": {
+    "1": "pending"
+  },
+  "workerAliveByName": {
+    "worker-1": true
+  },
+  "workerStateByName": {
+    "worker-1": "unknown"
+  },
+  "workerTurnCountByName": {
+    "worker-1": 0
+  },
+  "workerTaskIdByName": {
+    "worker-1": ""
+  },
+  "mailboxNotifiedByMessageId": {},
+  "completedEventTaskIds": {},
+  "monitorTimings": {
+    "list_tasks_ms": 0.2,
+    "worker_scan_ms": 9.28,
+    "mailbox_delivery_ms": 0,
+    "total_ms": 10.16,
+    "updated_at": "2026-04-09T06:55:38.211Z"
+  }
+}
