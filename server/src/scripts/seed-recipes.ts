@@ -1,16 +1,19 @@
 import mongoose from 'mongoose'
-import { config } from 'dotenv'
 import { runRecipeSeed } from '../seeds/recipes'
 
-config()
-
 async function main() {
-	const mongoUrl = process.env.MONGODB_URI || process.env.MONGO_URL
+	// On Render, env vars are injected directly (no .env file)
+	// On local dev, you need a .env file in server/ directory
+	const mongoUrl = process.env.MONGODB_URI
+	
 	if (!mongoUrl) {
-		console.error('MONGODB_URI or MONGO_URL not set')
+		console.error('Error: MONGODB_URI not set')
+		console.error('On Render: Make sure MONGODB_URI is set in Environment tab')
+		console.error('On local: Create server/.env with MONGODB_URI=mongodb://...')
 		process.exit(1)
 	}
 
+	console.log('Connecting to MongoDB...')
 	await mongoose.connect(mongoUrl)
 	console.log('Connected to MongoDB')
 
