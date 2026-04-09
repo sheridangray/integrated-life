@@ -37,39 +37,63 @@ private struct RecipeCardView: View {
     let recipe: Recipe
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(recipe.name)
-                    .font(.headline)
-                Spacer()
-                Text(recipe.totalTimeFormatted)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+        HStack(alignment: .top, spacing: 12) {
+            // Thumbnail image (optional)
+            if let imageUrl = recipe.imageUrl, let url = URL(string: imageUrl) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(1, contentMode: .fill)
+                            .frame(width: 60, height: 60)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    case .failure, .empty:
+                        Color.secondary.opacity(0.2)
+                            .frame(width: 60, height: 60)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    @unknown default:
+                        Color.secondary.opacity(0.2)
+                            .frame(width: 60, height: 60)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+                }
             }
-            if let desc = recipe.description {
-                Text(desc)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-            }
-            HStack(spacing: 12) {
-                NutritionBadge(label: "Cal", value: "\(Int(recipe.nutritionPerServing.calories))")
-                NutritionBadge(label: "P", value: "\(Int(recipe.nutritionPerServing.protein))g")
-                NutritionBadge(label: "C", value: "\(Int(recipe.nutritionPerServing.carbs))g")
-                NutritionBadge(label: "F", value: "\(Int(recipe.nutritionPerServing.fat))g")
-                Spacer()
-                Text("\(recipe.servings) serving\(recipe.servings == 1 ? "" : "s")")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            if !recipe.tags.isEmpty {
-                RecipeTagFlowLayout(spacing: 4) {
-                    ForEach(recipe.tags, id: \.self) { tag in
-                        Text(tag)
-                            .font(.caption2)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.secondary.opacity(0.12), in: Capsule())
+            
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(recipe.name)
+                        .font(.headline)
+                    Spacer()
+                    Text(recipe.totalTimeFormatted)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                if let desc = recipe.description {
+                    Text(desc)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+                HStack(spacing: 12) {
+                    NutritionBadge(label: "Cal", value: "\(Int(recipe.nutritionPerServing.calories))")
+                    NutritionBadge(label: "P", value: "\(Int(recipe.nutritionPerServing.protein))g")
+                    NutritionBadge(label: "C", value: "\(Int(recipe.nutritionPerServing.carbs))g")
+                    NutritionBadge(label: "F", value: "\(Int(recipe.nutritionPerServing.fat))g")
+                    Spacer()
+                    Text("\(recipe.servings) serving\(recipe.servings == 1 ? "" : "s")")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                if !recipe.tags.isEmpty {
+                    FlowLayout(spacing: 4) {
+                        ForEach(recipe.tags, id: \.self) { tag in
+                            Text(tag)
+                                .font(.caption2)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.secondary.opacity(0.12), in: Capsule())
+                        }
                     }
                 }
             }
@@ -97,6 +121,7 @@ struct RecipeDetailView: View {
         }
         .navigationTitle(foodState.selectedRecipe?.name ?? "Recipe")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.hidden, for: .navigationBar)
         .task {
             await foodState.loadRecipe(id: recipeId)
         }
@@ -109,6 +134,28 @@ private struct RecipeDetailContent: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
+                // Recipe Image Header
+                if let imageUrl = recipe.imageUrl, let url = URL(string: imageUrl) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(16/9, contentMode: .fill)
+                                .frame(maxWidth: .infinity)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        case .failure:
+                            EmptyView()
+                        case .empty:
+                            ProgressView()
+                                .frame(height: 200)
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                    .accessibilityLabel("Recipe image for \(recipe.name)")
+                }
+                
                 // Header info
                 VStack(alignment: .leading, spacing: 8) {
                     if let desc = recipe.description {
@@ -175,7 +222,7 @@ private struct RecipeDetailContent: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Tags")
                             .font(.headline)
-                        RecipeTagFlowLayout(spacing: 6) {
+                        FlowLayout(spacing: 6) {
                             ForEach(recipe.tags, id: \.self) { tag in
                                 Text(tag)
                                     .font(.caption)
@@ -226,7 +273,7 @@ struct MacroColumn: View {
 }
 
 /// Simple horizontal flow layout for tags.
-struct RecipeTagFlowLayout: Layout {
+struct FlowLayout: Layout {
     var spacing: CGFloat = 4
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {

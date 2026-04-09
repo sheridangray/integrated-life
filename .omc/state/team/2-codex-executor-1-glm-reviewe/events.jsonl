@@ -1,0 +1,2 @@
+{"event_id":"06d27767-55bf-4eea-8095-4bea387a579b","team":"2-codex-executor-1-glm-reviewe","created_at":"2026-04-09T06:55:38.198Z","type":"team_leader_nudge","worker":"leader-fixed","reason":"startup_manual_intervention_required:worker-1:claude_startup_evidence_missing"}
+{"event_id":"ee6549a1-03ad-44df-b0c4-2150bd57d51f","team":"2-codex-executor-1-glm-reviewe","created_at":"2026-04-09T06:55:38.199Z","type":"team_leader_nudge","worker":"leader-fixed","reason":"start_team_v2: workers=1 tasks=1 panes=1"}
