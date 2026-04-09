@@ -121,7 +121,7 @@ const ingredientSchema = new Schema<RecipeDocument['ingredients'][number]>(
 
 const recipeSchema = new Schema<RecipeDocument>(
 	{
-		userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+		userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
 		name: { type: String, required: true },
 		description: { type: String },
 		imageUrl: { type: String },

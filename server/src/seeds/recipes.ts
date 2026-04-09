@@ -623,3 +623,42 @@ const weekend: RecipeSeed[] = [
 ]
 
 export const recipeSeeds: RecipeSeed[] = [...quickMeals, ...kidFriendly, ...healthy, ...weekend]
+
+// Runner for seeding recipes with AI-generated images
+export async function runRecipeSeed() {
+	const { Recipe } = await import('../models/Recipe')
+	const { generateRecipeImage } = await import('../services/imageGeneration')
+	const { uploadImage } = await import('../services/storage')
+	
+	console.log(`Seeding ${recipeSeeds.length} recipes...`)
+	
+	for (const seed of recipeSeeds) {
+		// Check if recipe already exists
+		const existing = await Recipe.findOne({ name: seed.name })
+		if (existing) {
+			console.log(`Skipping "${seed.name}" — already exists`)
+			continue
+		}
+		
+		// Generate image
+		console.log(`Generating image for "${seed.name}"...`)
+		const imageBuffer = await generateRecipeImage(seed.name, seed.description)
+		
+		// Upload to R2
+		const imageId = `recipes/${seed.name.toLowerCase().replace(/\s+/g, '-')}.png`
+		const imageUrl = await uploadImage(imageBuffer, imageId, 'image/png')
+		
+		// Create recipe
+		await Recipe.create({
+			...seed,
+			imageUrl,
+			imageId,
+			userId: null, // System recipes have no user
+			source: 'seed'
+		})
+		
+		console.log(`✓ Created "${seed.name}"`)
+	}
+	
+	console.log('Done seeding recipes!')
+}
