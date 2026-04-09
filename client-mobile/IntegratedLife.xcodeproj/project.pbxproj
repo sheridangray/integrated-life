@@ -72,7 +72,7 @@
 		F00D00000000000000000018 /* MealPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000017 /* MealPlanView.swift */; };
 		F00D0000000000000000001A /* MealScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000019 /* MealScannerView.swift */; };
 		F00D0000000000000000001C /* RecipeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D0000000000000000001B /* RecipeDetailView.swift */; };
-		F00D0000000000000000001D /* NutritionChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D0000000000000000001C /* NutritionChartView.swift */; };
+		F00D0000000000000000002C /* NutritionChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D0000000000000000002B /* NutritionChartView.swift */; };
 		F00D0000000000000000001E /* CleanerRotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D0000000000000000001D /* CleanerRotationView.swift */; };
 		F00D00000000000000000020 /* HouseholdPillarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D0000000000000000001F /* HouseholdPillarView.swift */; };
 		F00D00000000000000000022 /* HouseholdScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000021 /* HouseholdScheduleView.swift */; };
@@ -207,7 +207,7 @@
 		F00D00000000000000000017 /* MealPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlanView.swift; sourceTree = "<group>"; };
 		F00D00000000000000000019 /* MealScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealScannerView.swift; sourceTree = "<group>"; };
 		F00D0000000000000000001B /* RecipeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeDetailView.swift; sourceTree = "<group>"; };
-		F00D0000000000000000001C /* NutritionChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionChartView.swift; sourceTree = "<group>"; };
+		F00D0000000000000000002B /* NutritionChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionChartView.swift; sourceTree = "<group>"; };
 		F00D0000000000000000001D /* CleanerRotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanerRotationView.swift; sourceTree = "<group>"; };
 		F00D0000000000000000001F /* HouseholdPillarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdPillarView.swift; sourceTree = "<group>"; };
 		F00D00000000000000000021 /* HouseholdScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdScheduleView.swift; sourceTree = "<group>"; };
@@ -580,7 +580,7 @@
 				F00D00000000000000000017 /* MealPlanView.swift */,
 				F00D00000000000000000019 /* MealScannerView.swift */,
 				F00D0000000000000000001B /* RecipeDetailView.swift */,
-				F00D0000000000000000001C /* NutritionChartView.swift */,
+				F00D0000000000000000002B /* NutritionChartView.swift */,
 			);
 			path = Food;
 			sourceTree = "<group>";
@@ -745,7 +745,7 @@
 				F00D0000000000000000000E /* HouseholdService.swift in Sources */,
 				F00D00000000000000000026 /* HouseholdUpcomingView.swift in Sources */,
 				F00D0000000000000000001C /* RecipeDetailView.swift in Sources */,
-				F00D0000000000000000001D /* NutritionChartView.swift in Sources */,
+				F00D0000000000000000002C /* NutritionChartView.swift in Sources */,
 				80BF29C799CA4B90E5B04691 /* HistoricalSyncView.swift in Sources */,
 				12D53505E6958749939EC8ED /* HistoryDetailView.swift in Sources */,
 				4E6F7E4AEB6A3E9D06116802 /* HistoryItem.swift in Sources */,

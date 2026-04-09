@@ -132,6 +132,51 @@ struct Nutrition: Codable, Equatable {
 
     // Other
     var caffeine: Double? // mg
+
+    func scaled(by factor: Double) -> Nutrition {
+        Nutrition(
+            calories: calories * factor,
+            protein: protein * factor,
+            carbs: carbs * factor,
+            fat: fat * factor,
+            fiber: fiber * factor,
+            sugar: sugar.map { $0 * factor },
+            water: water.map { $0 * factor },
+            saturatedFat: saturatedFat.map { $0 * factor },
+            monounsaturatedFat: monounsaturatedFat.map { $0 * factor },
+            polyunsaturatedFat: polyunsaturatedFat.map { $0 * factor },
+            cholesterol: cholesterol.map { $0 * factor },
+            transFat: transFat.map { $0 * factor },
+            vitaminA: vitaminA.map { $0 * factor },
+            vitaminB6: vitaminB6.map { $0 * factor },
+            vitaminB12: vitaminB12.map { $0 * factor },
+            vitaminC: vitaminC.map { $0 * factor },
+            vitaminD: vitaminD.map { $0 * factor },
+            vitaminE: vitaminE.map { $0 * factor },
+            vitaminK: vitaminK.map { $0 * factor },
+            thiamin: thiamin.map { $0 * factor },
+            riboflavin: riboflavin.map { $0 * factor },
+            niacin: niacin.map { $0 * factor },
+            folate: folate.map { $0 * factor },
+            pantothenicAcid: pantothenicAcid.map { $0 * factor },
+            biotin: biotin.map { $0 * factor },
+            calcium: calcium.map { $0 * factor },
+            iron: iron.map { $0 * factor },
+            magnesium: magnesium.map { $0 * factor },
+            manganese: manganese.map { $0 * factor },
+            phosphorus: phosphorus.map { $0 * factor },
+            potassium: potassium.map { $0 * factor },
+            zinc: zinc.map { $0 * factor },
+            selenium: selenium.map { $0 * factor },
+            copper: copper.map { $0 * factor },
+            chromium: chromium.map { $0 * factor },
+            molybdenum: molybdenum.map { $0 * factor },
+            chloride: chloride.map { $0 * factor },
+            iodine: iodine.map { $0 * factor },
+            sodium: sodium.map { $0 * factor },
+            caffeine: caffeine.map { $0 * factor }
+        )
+    }
 }
 
 struct Ingredient: Codable, Identifiable, Equatable {

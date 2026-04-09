@@ -86,7 +86,7 @@ private struct RecipeCardView: View {
                         .foregroundStyle(.secondary)
                 }
                 if !recipe.tags.isEmpty {
-                    FlowLayout(spacing: 4) {
+                    RecipeTagFlowLayout(spacing: 4) {
                         ForEach(recipe.tags, id: \.self) { tag in
                             Text(tag)
                                 .font(.caption2)
@@ -149,49 +149,7 @@ private struct RecipeDetailContent: View {
     }
 
     private func scaledNutrition(_ nutrition: Nutrition) -> Nutrition {
-        var scaled = nutrition
-        let s = scale
-        scaled.calories = nutrition.calories * s
-        scaled.protein = nutrition.protein * s
-        scaled.carbs = nutrition.carbs * s
-        scaled.fat = nutrition.fat * s
-        scaled.fiber = nutrition.fiber * s
-        scaled.sugar = nutrition.sugar.map { $0 * s }
-        scaled.water = nutrition.water.map { $0 * s }
-        scaled.saturatedFat = nutrition.saturatedFat.map { $0 * s }
-        scaled.monounsaturatedFat = nutrition.monounsaturatedFat.map { $0 * s }
-        scaled.polyunsaturatedFat = nutrition.polyunsaturatedFat.map { $0 * s }
-        scaled.cholesterol = nutrition.cholesterol.map { $0 * s }
-        scaled.transFat = nutrition.transFat.map { $0 * s }
-        scaled.vitaminA = nutrition.vitaminA.map { $0 * s }
-        scaled.vitaminB6 = nutrition.vitaminB6.map { $0 * s }
-        scaled.vitaminB12 = nutrition.vitaminB12.map { $0 * s }
-        scaled.vitaminC = nutrition.vitaminC.map { $0 * s }
-        scaled.vitaminD = nutrition.vitaminD.map { $0 * s }
-        scaled.vitaminE = nutrition.vitaminE.map { $0 * s }
-        scaled.vitaminK = nutrition.vitaminK.map { $0 * s }
-        scaled.thiamin = nutrition.thiamin.map { $0 * s }
-        scaled.riboflavin = nutrition.riboflavin.map { $0 * s }
-        scaled.niacin = nutrition.niacin.map { $0 * s }
-        scaled.folate = nutrition.folate.map { $0 * s }
-        scaled.pantothenicAcid = nutrition.pantothenicAcid.map { $0 * s }
-        scaled.biotin = nutrition.biotin.map { $0 * s }
-        scaled.calcium = nutrition.calcium.map { $0 * s }
-        scaled.iron = nutrition.iron.map { $0 * s }
-        scaled.magnesium = nutrition.magnesium.map { $0 * s }
-        scaled.manganese = nutrition.manganese.map { $0 * s }
-        scaled.phosphorus = nutrition.phosphorus.map { $0 * s }
-        scaled.potassium = nutrition.potassium.map { $0 * s }
-        scaled.zinc = nutrition.zinc.map { $0 * s }
-        scaled.selenium = nutrition.selenium.map { $0 * s }
-        scaled.copper = nutrition.copper.map { $0 * s }
-        scaled.chromium = nutrition.chromium.map { $0 * s }
-        scaled.molybdenum = nutrition.molybdenum.map { $0 * s }
-        scaled.chloride = nutrition.chloride.map { $0 * s }
-        scaled.iodine = nutrition.iodine.map { $0 * s }
-        scaled.sodium = nutrition.sodium.map { $0 * s }
-        scaled.caffeine = nutrition.caffeine.map { $0 * s }
-        return scaled
+        nutrition.scaled(by: scale)
     }
 
     var body: some View {
@@ -495,7 +453,7 @@ struct MacroColumn: View {
 }
 
 /// Simple horizontal flow layout for tags.
-struct FlowLayout: Layout {
+struct RecipeTagFlowLayout: Layout {
     var spacing: CGFloat = 4
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {

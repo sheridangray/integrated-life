@@ -22,9 +22,7 @@ struct NutritionChartView: View {
                 }
             }
             .chartXAxis {
-                AxisMarks { _ in
-                    AxisValueLabels()
-                }
+                AxisMarks()
             }
             .chartYAxis {
                 AxisMarks { value in
@@ -112,9 +110,7 @@ struct DailyNutritionChartView: View {
                 .foregroundStyle(data.color.gradient)
             }
             .chartXAxis {
-                AxisMarks { _ in
-                    AxisValueLabels()
-                }
+                AxisMarks()
             }
             .chartYAxis {
                 AxisMarks(position: .leading)
