@@ -360,3 +360,81 @@ describe('Daily Nutrition', () => {
 		expect(result.entries).toHaveLength(0)
 	})
 })
+
+describe('Meal Plan Cook Time', () => {
+	it('calculates total cook time from all meals', async () => {
+		const recipe1 = mockRecipeDoc({ prepTime: 15, cookTime: 30 })
+		const recipe2 = mockRecipeDoc({ _id: { toString: () => 'recipe-2' }, prepTime: 10, cookTime: 20 })
+
+		const plan = mockMealPlanDoc({
+			meals: [
+				{ recipeId: { toString: () => 'recipe-1' }, scheduledDate: new Date('2025-01-06'), mealType: 'dinner', servings: 2 },
+				{ recipeId: { toString: () => 'recipe-2' }, scheduledDate: new Date('2025-01-06'), mealType: 'lunch', servings: 1 }
+			]
+		})
+
+		vi.mocked(repo.findMealPlanById).mockResolvedValue(plan as never)
+		vi.mocked(repo.findRecipesByIds).mockResolvedValue([recipe1, recipe2] as never)
+
+		const result = await service.getMealPlanCookTime('plan-1', 'user-1')
+
+		expect(result.totalMinutes).toBe(75) // (15+30) + (10+20)
+	})
+
+	it('groups cook time by day', async () => {
+		const recipe1 = mockRecipeDoc({ prepTime: 10, cookTime: 20 })
+		const recipe2 = mockRecipeDoc({ _id: { toString: () => 'recipe-2' }, prepTime: 5, cookTime: 15 })
+
+		const plan = mockMealPlanDoc({
+			meals: [
+				{ recipeId: { toString: () => 'recipe-1' }, scheduledDate: new Date('2025-01-06'), mealType: 'dinner', servings: 2 },
+				{ recipeId: { toString: () => 'recipe-2' }, scheduledDate: new Date('2025-01-07'), mealType: 'lunch', servings: 1 }
+			]
+		})
+
+		vi.mocked(repo.findMealPlanById).mockResolvedValue(plan as never)
+		vi.mocked(repo.findRecipesByIds).mockResolvedValue([recipe1, recipe2] as never)
+
+		const result = await service.getMealPlanCookTime('plan-1', 'user-1')
+
+		expect(result.byDay).toHaveLength(2)
+		expect(result.byDay[0]).toEqual({ date: '2025-01-06', minutes: 30, meals: 1 })
+		expect(result.byDay[1]).toEqual({ date: '2025-01-07', minutes: 20, meals: 1 })
+	})
+
+	it('handles missing recipe gracefully', async () => {
+		const recipe = mockRecipeDoc({ prepTime: 10, cookTime: 20 })
+
+		const plan = mockMealPlanDoc({
+			meals: [
+				{ recipeId: { toString: () => 'recipe-1' }, scheduledDate: new Date('2025-01-06'), mealType: 'dinner', servings: 2 },
+				{ recipeId: { toString: () => 'recipe-missing' }, scheduledDate: new Date('2025-01-06'), mealType: 'lunch', servings: 1 }
+			]
+		})
+
+		vi.mocked(repo.findMealPlanById).mockResolvedValue(plan as never)
+		vi.mocked(repo.findRecipesByIds).mockResolvedValue([recipe] as never)
+
+		const result = await service.getMealPlanCookTime('plan-1', 'user-1')
+
+		expect(result.totalMinutes).toBe(30)
+		expect(result.byDay[0].meals).toBe(1)
+	})
+
+	it('throws 404 when meal plan not found', async () => {
+		vi.mocked(repo.findMealPlanById).mockResolvedValue(null as never)
+
+		await expect(service.getMealPlanCookTime('nonexistent', 'user-1')).rejects.toThrow('Meal plan not found')
+	})
+
+	it('returns zero for empty meal plan', async () => {
+		const plan = mockMealPlanDoc({ meals: [] })
+		vi.mocked(repo.findMealPlanById).mockResolvedValue(plan as never)
+		vi.mocked(repo.findRecipesByIds).mockResolvedValue([] as never)
+
+		const result = await service.getMealPlanCookTime('plan-1', 'user-1')
+
+		expect(result.totalMinutes).toBe(0)
+		expect(result.byDay).toHaveLength(0)
+	})
+})
