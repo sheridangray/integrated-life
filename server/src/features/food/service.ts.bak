@@ -58,21 +58,12 @@ function assignStore(category: string): 'costco' | 'safeway' | 'other' {
 
 function formatRecipe(doc: Record<string, unknown>) {
 	const d = doc as Record<string, unknown> & { _id: { toString(): string } }
-	
-	// Migration: convert legacy imageUrl to images array if needed
-	const images = (d.images as Array<{url: string; caption?: string; order: number}> | undefined) ?? []
-	const legacyUrl = d.imageUrl as string | undefined
-	const finalImages = images.length > 0 
-		? images.sort((a, b) => a.order - b.order)
-		: (legacyUrl ? [{ url: legacyUrl, caption: null, order: 0 }] : [])
-	
 	return {
 		id: d._id.toString(),
 		userId: String(d.userId),
 		name: d.name,
 		description: d.description ?? null,
-		imageUrl: d.imageUrl ?? null, // Keep for backward compatibility
-		images: finalImages,
+		imageUrl: d.imageUrl ?? null,
 		servings: d.servings,
 		prepTime: d.prepTime,
 		cookTime: d.cookTime,

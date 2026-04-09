@@ -1,11 +1,18 @@
 import mongoose, { Schema, Document, Model } from 'mongoose'
 
+export type RecipeImage = {
+	url: string
+	caption?: string
+	order: number
+}
+
 export type RecipeDocument = Document & {
 	userId: mongoose.Types.ObjectId
 	name: string
 	description?: string
-	imageUrl?: string
-	imageId?: string
+	imageUrl?: string // DEPRECATED: Use images array instead
+	imageId?: string // DEPRECATED: Use images array instead
+	images: RecipeImage[]
 	servings: number
 	prepTime: number
 	cookTime: number
@@ -119,13 +126,23 @@ const ingredientSchema = new Schema<RecipeDocument['ingredients'][number]>(
 	{ _id: false }
 )
 
+const recipeImageSchema = new Schema<RecipeImage>(
+	{
+		url: { type: String, required: true },
+		caption: { type: String },
+		order: { type: Number, required: true, default: 0 }
+	},
+	{ _id: false }
+)
+
 const recipeSchema = new Schema<RecipeDocument>(
 	{
 		userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
 		name: { type: String, required: true },
 		description: { type: String },
-		imageUrl: { type: String },
-		imageId: { type: String },
+		imageUrl: { type: String }, // DEPRECATED: kept for migration compatibility
+		imageId: { type: String }, // DEPRECATED: kept for migration compatibility
+		images: [recipeImageSchema],
 		servings: { type: Number, required: true },
 		prepTime: { type: Number, required: true },
 		cookTime: { type: Number, required: true },

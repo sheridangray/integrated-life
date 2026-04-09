@@ -658,8 +658,6 @@ export async function runRecipeSeed() {
 		
 		// Create recipe (with or without image)
 		await Recipe.create({
-		// Create images array from generated image
-		images: imageUrl ? [{ url: imageUrl, caption: null, order: 0 }] : [],
 			...seed,
 			imageUrl,
 			imageId,
