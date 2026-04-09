@@ -140,6 +140,24 @@ struct StructuredTaskRow: View {
 	}
 }
 
+// MARK: - Timeline Gap
+
+struct TimelineGapSpacer: View {
+	let height: CGFloat
+
+	var body: some View {
+		HStack(alignment: .top, spacing: 12) {
+			Rectangle()
+				.fill(.quaternary)
+				.frame(width: 2)
+				.frame(width: 36)
+			Spacer(minLength: 0)
+		}
+		.frame(height: height)
+		.padding(.horizontal, 16)
+	}
+}
+
 // MARK: - All-Day Task Row
 
 struct AllDayTaskRow: View {

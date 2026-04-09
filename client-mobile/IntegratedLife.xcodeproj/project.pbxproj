@@ -42,6 +42,7 @@
 		4E6F7E4AEB6A3E9D06116802 /* HistoryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B3B4C00F42968A571709D6 /* HistoryItem.swift */; };
 		5236E1FE991234A6241A5C29 /* NotificationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1ECC5828ACDF51388DFC72 /* NotificationState.swift */; };
 		5572A176034C1E28CD1BFDEF /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4183386631B4E2C3A6BFBD52 /* TimelineView.swift */; };
+		D1A2B3C4E5F6078900112233 /* TimelineWeekStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A2B3C4E5F6078900112234 /* TimelineWeekStrip.swift */; };
 		5B83338996ACC16331A8C565 /* SleepState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5332ACF6A1987ED117D708 /* SleepState.swift */; };
 		6591DD71C2533251F709F791 /* MonitorListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 411018643E9E366A566D94AC /* MonitorListView.swift */; };
 		6B0F5AA426897D9092F3FA47 /* ExerciseListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B997A48D5E4A1EA972A6613B /* ExerciseListView.swift */; };
@@ -142,6 +143,7 @@
 		411018643E9E366A566D94AC /* MonitorListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorListView.swift; sourceTree = "<group>"; };
 		412BD3038835F5401536A29C /* SleepNightSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepNightSyncCoordinator.swift; sourceTree = "<group>"; };
 		4183386631B4E2C3A6BFBD52 /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
+		D1A2B3C4E5F6078900112234 /* TimelineWeekStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineWeekStrip.swift; sourceTree = "<group>"; };
 		4226D67F0A679FD63057FEA8 /* HealthReportDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthReportDetailView.swift; sourceTree = "<group>"; };
 		430B370F548B54644B784513 /* IntegratedLife.Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = IntegratedLife.Release.entitlements; sourceTree = "<group>"; };
 		4337BD9A8D2718A41D95C07E /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
@@ -489,6 +491,7 @@
 				3C393903A958ABB0FD487D26 /* TimeDashboardView.swift */,
 				A8E2A77820841D7D254125C1 /* TimelineComponents.swift */,
 				4183386631B4E2C3A6BFBD52 /* TimelineView.swift */,
+				D1A2B3C4E5F6078900112234 /* TimelineWeekStrip.swift */,
 				56BB18324FFB1129588996D7 /* TimePillarView.swift */,
 			);
 			path = Time;
@@ -689,6 +692,7 @@
 				242D8BEA4427E5BD21050A4E /* TimeTask.swift in Sources */,
 				7B8D6328D413648304961F1E /* TimelineComponents.swift in Sources */,
 				5572A176034C1E28CD1BFDEF /* TimelineView.swift in Sources */,
+				D1A2B3C4E5F6078900112233 /* TimelineWeekStrip.swift in Sources */,
 				8636470B2F5D379E5ED9B20A /* Workout.swift in Sources */,
 				966BC4F8E2400E991D441A15 /* WorkoutDetailView.swift in Sources */,
 				97EEDE4E7871EC1DE004992C /* WorkoutListView.swift in Sources */,

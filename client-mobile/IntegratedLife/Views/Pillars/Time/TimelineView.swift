@@ -108,9 +108,22 @@ struct DayTimelineView: View {
 
 	// MARK: - Task List
 
+	private enum Layout {
+		static let pointsPerMinute: CGFloat = 1.8
+		static let minTaskHeight: CGFloat = 64
+		static let maxGapHeight: CGFloat = 200
+	}
+
 	private var taskListSection: some View {
 		LazyVStack(spacing: 0) {
 			ForEach(Array(timeState.timedTasks.enumerated()), id: \.element.id) { index, task in
+				let gap = gapMinutes(before: index)
+				if gap > 0 {
+					TimelineGapSpacer(
+						height: min(Layout.maxGapHeight, CGFloat(gap) * Layout.pointsPerMinute)
+					)
+				}
+
 				StructuredTaskRow(
 					task: task,
 					isLast: index == timeState.timedTasks.count - 1,
@@ -122,11 +135,22 @@ struct DayTimelineView: View {
 						Task { await timeState.toggleCompletion(task: task) }
 					}
 				)
+				.frame(
+					height: max(Layout.minTaskHeight, CGFloat(task.durationMinutes) * Layout.pointsPerMinute),
+					alignment: .top
+				)
 				.id(task.id)
 			}
 		}
 		.padding(.vertical, 8)
 		.padding(.bottom, 80)
+	}
+
+	private func gapMinutes(before index: Int) -> Int {
+		guard index > 0 else { return 0 }
+		let prevEnd = timeState.timedTasks[index - 1].endMinuteOfDay ?? 0
+		let thisStart = timeState.timedTasks[index].startMinuteOfDay ?? 0
+		return max(0, thisStart - prevEnd)
 	}
 
 	// MARK: - FAB
