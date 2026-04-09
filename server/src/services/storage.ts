@@ -57,8 +57,10 @@ export async function deleteImage(key: string): Promise<void> {
 }
 
 export function getPublicUrl(key: string): string {
-	if (env.R2_PUBLIC_URL) {
-		return `${env.R2_PUBLIC_URL}/${key}`
+	const trimmed = env.R2_PUBLIC_URL?.replace(/\/$/, '')
+	if (trimmed) {
+		const path = key.startsWith('/') ? key : `/${key}`
+		return `${trimmed}${path}`
 	}
 	return `https://${env.R2_BUCKET_NAME}.${env.CLOUDFLARE_ACCOUNT_ID}.r2.dev/${key}`
 }
