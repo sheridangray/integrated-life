@@ -142,6 +142,15 @@ struct Ingredient: Codable, Identifiable, Equatable {
     let category: IngredientCategory
 }
 
+// MARK: - Recipe Image
+
+struct RecipeImage: Codable, Identifiable, Equatable {
+    var id: String { url }
+    let url: String
+    let caption: String?
+    let order: Int
+}
+
 // MARK: - Recipe
 
 struct Recipe: Codable, Identifiable, Equatable {
@@ -149,7 +158,8 @@ struct Recipe: Codable, Identifiable, Equatable {
     let userId: String
     let name: String
     let description: String?
-    let imageUrl: String?
+    let imageUrl: String? // DEPRECATED: Use images array
+    let images: [RecipeImage]
     let servings: Int
     let prepTime: Int
     let cookTime: Int
@@ -166,6 +176,60 @@ struct Recipe: Codable, Identifiable, Equatable {
         let h = total / 60
         let m = total % 60
         return m > 0 ? "\(h)h \(m)m" : "\(h)h"
+    }
+    
+    // Helper to get primary image (first image or legacy imageUrl)
+    var primaryImage: String? {
+        images.first?.url ?? imageUrl
+    }
+    
+    // Coding keys for backward compatibility
+    enum CodingKeys: String, CodingKey {
+        case id, userId, name, description, imageUrl, images
+        case servings, prepTime, cookTime, ingredients, instructions, tags
+        case nutritionPerServing
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        userId = try container.decode(String.self, forKey: .userId)
+        name = try container.decode(String.self, forKey: .name)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        imageUrl = try container.decodeIfPresent(String.self, forKey: .imageUrl)
+        servings = try container.decode(Int.self, forKey: .servings)
+        prepTime = try container.decode(Int.self, forKey: .prepTime)
+        cookTime = try container.decode(Int.self, forKey: .cookTime)
+        ingredients = try container.decode([Ingredient].self, forKey: .ingredients)
+        instructions = try container.decode([String].self, forKey: .instructions)
+        tags = try container.decode([String].self, forKey: .tags)
+        nutritionPerServing = try container.decode(Nutrition.self, forKey: .nutritionPerServing)
+        
+        // Handle images array with migration fallback
+        if let decodedImages = try? container.decode([RecipeImage].self, forKey: .images), !decodedImages.isEmpty {
+            images = decodedImages
+        } else if let legacyUrl = imageUrl {
+            images = [RecipeImage(url: legacyUrl, caption: nil, order: 0)]
+        } else {
+            images = []
+        }
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(userId, forKey: .userId)
+        try container.encode(name, forKey: .name)
+        try container.encodeIfPresent(description, forKey: .description)
+        try container.encodeIfPresent(imageUrl, forKey: .imageUrl)
+        try container.encode(images, forKey: .images)
+        try container.encode(servings, forKey: .servings)
+        try container.encode(prepTime, forKey: .prepTime)
+        try container.encode(cookTime, forKey: .cookTime)
+        try container.encode(ingredients, forKey: .ingredients)
+        try container.encode(instructions, forKey: .instructions)
+        try container.encode(tags, forKey: .tags)
+        try container.encode(nutritionPerServing, forKey: .nutritionPerServing)
     }
 }
 

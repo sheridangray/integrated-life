@@ -1,4 +1,5 @@
 import SwiftUI
+import Charts
 
 struct FoodLogView: View {
     @ObservedObject var foodState: FoodState
@@ -42,9 +43,9 @@ struct FoodLogView: View {
             } else {
                 ScrollView {
                     VStack(spacing: 16) {
-                        // Macro summary card
+                        // Daily nutrition chart (replaces simple macro summary)
                         if let daily = foodState.dailyNutrition {
-                            MacroSummaryCard(nutrition: daily.totals)
+                            DailyNutritionChartView(dailyNutrition: daily)
                         }
 
                         // HealthKit sync toggle

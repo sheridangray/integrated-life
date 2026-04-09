@@ -38,8 +38,8 @@ private struct RecipeCardView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            // Thumbnail image (optional)
-            if let imageUrl = recipe.imageUrl, let url = URL(string: imageUrl) {
+            // Thumbnail image - use primaryImage helper
+            if let imageUrl = recipe.primaryImage, let url = URL(string: imageUrl) {
                 AsyncImage(url: url) { phase in
                     switch phase {
                     case .success(let image):
@@ -133,6 +133,7 @@ private struct RecipeDetailContent: View {
     @State private var scaledServings: Int
     @State private var checkedIngredients: Set<String> = []
     @State private var currentStep: Int? = nil
+    @State private var selectedImageIndex: Int = 0
 
     init(recipe: Recipe) {
         self.recipe = recipe
@@ -196,8 +197,11 @@ private struct RecipeDetailContent: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Recipe Image Header
-                if let imageUrl = recipe.imageUrl, let url = URL(string: imageUrl) {
+                // Recipe Image Gallery
+                if !recipe.images.isEmpty {
+                    RecipeImageGallery(images: recipe.images, selectedIndex: $selectedImageIndex)
+                } else if let imageUrl = recipe.imageUrl, let url = URL(string: imageUrl) {
+                    // Fallback for legacy single image
                     AsyncImage(url: url) { phase in
                         switch phase {
                         case .success(let image):
@@ -386,6 +390,73 @@ private struct RecipeDetailContent: View {
                 }
             }
             .padding()
+        }
+    }
+}
+
+// MARK: - Image Gallery Component
+
+private struct RecipeImageGallery: View {
+    let images: [RecipeImage]
+    @Binding var selectedIndex: Int
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            TabView(selection: $selectedIndex) {
+                ForEach(Array(images.enumerated()), id: \.element.id) { index, image in
+                    AsyncImage(url: URL(string: image.url)) { phase in
+                        switch phase {
+                        case .success(let loadedImage):
+                            loadedImage
+                                .resizable()
+                                .aspectRatio(16/9, contentMode: .fill)
+                                .frame(maxWidth: .infinity)
+                                .clipped()
+                        case .failure:
+                            Color.secondary.opacity(0.2)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 200)
+                                .overlay(
+                                    Image(systemName: "photo")
+                                        .foregroundStyle(.secondary)
+                                )
+                        case .empty:
+                            ProgressView()
+                                .frame(height: 200)
+                        @unknown default:
+                            Color.secondary.opacity(0.2)
+                                .frame(height: 200)
+                        }
+                    }
+                    .tag(index)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .automatic))
+            .frame(height: 250)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            
+            // Caption for selected image
+            if let caption = images[selectedIndex].caption, !caption.isEmpty {
+                Text(caption)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal)
+            }
+            
+            // Page indicator for multiple images
+            if images.count > 1 {
+                HStack(spacing: 6) {
+                    ForEach(Array(images.enumerated()), id: \.element.id) { index, _ in
+                        Circle()
+                            .fill(index == selectedIndex ? Color.accentColor : Color.secondary.opacity(0.3))
+                            .frame(width: 8, height: 8)
+                            .onTapGesture {
+                                withAnimation { selectedIndex = index }
+                            }
+                    }
+                }
+                .padding(.bottom, 4)
+            }
         }
     }
 }
