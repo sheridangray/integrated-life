@@ -149,6 +149,7 @@ struct Recipe: Codable, Identifiable, Equatable {
     let userId: String
     let name: String
     let description: String?
+    let imageUrl: String?
     let servings: Int
     let prepTime: Int
     let cookTime: Int

@@ -4,6 +4,8 @@ export type RecipeDocument = Document & {
 	userId: mongoose.Types.ObjectId
 	name: string
 	description?: string
+	imageUrl?: string
+	imageId?: string
 	servings: number
 	prepTime: number
 	cookTime: number
@@ -122,6 +124,8 @@ const recipeSchema = new Schema<RecipeDocument>(
 		userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 		name: { type: String, required: true },
 		description: { type: String },
+		imageUrl: { type: String },
+		imageId: { type: String },
 		servings: { type: Number, required: true },
 		prepTime: { type: Number, required: true },
 		cookTime: { type: Number, required: true },

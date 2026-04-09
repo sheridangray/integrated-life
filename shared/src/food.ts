@@ -102,6 +102,7 @@ export const RecipeSchema = z.object({
 	userId: z.string(),
 	name: z.string().min(1),
 	description: z.string().optional(),
+	imageUrl: z.string().optional(),
 	servings: z.number().int().positive(),
 	prepTime: z.number().int().min(0),
 	cookTime: z.number().int().min(0),

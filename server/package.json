@@ -13,6 +13,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.85.0",
     "@asteasolutions/zod-to-openapi": "^7.3.4",
+    "@aws-sdk/client-s3": "^3.1027.0",
     "@integrated-life/shared": "*",
     "@types/multer": "^2.1.0",
     "cors": "^2.8.5",
