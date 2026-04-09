@@ -640,19 +640,23 @@ export async function runRecipeSeed() {
 			continue
 		}
 		
-		// Generate image
+		let imageUrl: string | undefined
+		let imageId: string | undefined
+		
+		// Try to generate image (optional - will still create recipe if it fails)
 		console.log(`Generating image for "${seed.name}"...`)
-		const imageBuffer = await generateRecipeImage(seed.name, seed.description)
-		if (!imageBuffer) {
-			console.log(`Skipping "${seed.name}" — image generation failed`)
-			continue
+		try {
+			const imageBuffer = await generateRecipeImage(seed.name, seed.description)
+			if (imageBuffer) {
+				imageId = `recipes/${seed.name.toLowerCase().replace(/\s+/g, '-')}.png`
+				imageUrl = await uploadImage(imageBuffer, imageId, 'image/png')
+				console.log(`  ✓ Image generated and uploaded`)
+			}
+		} catch (err) {
+			console.log(`  ⚠ Image generation failed (recipe will be created without image)`)
 		}
 		
-		// Upload to R2
-		const imageId = `recipes/${seed.name.toLowerCase().replace(/\s+/g, '-')}.png`
-		const imageUrl = await uploadImage(imageBuffer, imageId, 'image/png')
-		
-		// Create recipe
+		// Create recipe (with or without image)
 		await Recipe.create({
 			...seed,
 			imageUrl,
@@ -661,7 +665,7 @@ export async function runRecipeSeed() {
 			source: 'seed'
 		})
 		
-		console.log(`✓ Created "${seed.name}"`)
+		console.log(`✓ Created "${seed.name}"${imageUrl ? ' (with image)' : ' (no image)'}`)
 	}
 	
 	console.log('Done seeding recipes!')

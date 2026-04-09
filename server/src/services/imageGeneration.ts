@@ -23,7 +23,7 @@ export async function generateRecipeImage(recipeName: string, description?: stri
 
 	try {
 		const response = await together.images.generate({
-			model: 'black-forest-labs/FLUX.1-schnell-Free',
+			model: 'black-forest-labs/FLUX.1-schnell',
 			prompt,
 			width: 1024,
 			height: 1024,
