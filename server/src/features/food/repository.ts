@@ -25,7 +25,7 @@ export async function findRecipes(
 
 export async function findRecipeById(id: string, userId: string): Promise<RecipeDocument | null> {
 	if (!mongoose.isValidObjectId(id)) return null
-	return Recipe.findOne({ _id: id, userId }).exec()
+	return Recipe.findOne({ _id: id, $or: [{ userId }, { userId: null }] }).exec()
 }
 
 export async function findRecipesByIds(ids: string[]): Promise<RecipeDocument[]> {
