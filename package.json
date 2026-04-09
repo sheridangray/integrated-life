@@ -16,6 +16,7 @@
     "build:web:deploy": "npm run build:shared && npm run build:web",
     "generate:openapi": "npm run generate:openapi -w server",
     "generate:swift": "node scripts/generate-swift.js",
+    "seed:recipes": "npm run seed:recipes -w @integrated-life/server",
     "start": "node server/dist/src/server/index.js",
     "start:web": "npm run start -w client-web",
     "test": "npm run test -w shared && npm run test -w server && npm run test -w client-web"
