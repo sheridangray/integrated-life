@@ -583,3 +583,34 @@ export async function createRecipeFromAI(prompt: string, userId: string) {
 
 	return formatRecipe(doc.toObject())
 }
+
+export async function getMealPlanCookTime(mealPlanId: string, userId: string) {
+	const mealPlan = await repo.findMealPlanById(mealPlanId, userId)
+	if (!mealPlan) throw new AppError('Meal plan not found', 404)
+
+	const recipeIds = [...new Set(mealPlan.meals.map(m => m.recipeId.toString()))]
+	const recipes = await repo.findRecipesByIds(recipeIds)
+	const recipeMap = new Map(recipes.map(r => [r._id.toString(), r]))
+
+	const byDay = new Map<string, { minutes: number; meals: number }>()
+
+	for (const meal of mealPlan.meals) {
+		const recipe = recipeMap.get(meal.recipeId.toString())
+		if (!recipe) continue
+		const cookTime = recipe.cookTime + recipe.prepTime
+		const date = meal.scheduledDate instanceof Date
+			? meal.scheduledDate.toISOString().split('T')[0]
+			: String(meal.scheduledDate).split('T')[0]
+		const existing = byDay.get(date) ?? { minutes: 0, meals: 0 }
+		existing.minutes += cookTime
+		existing.meals += 1
+		byDay.set(date, existing)
+	}
+
+	return {
+		totalMinutes: Array.from(byDay.values()).reduce((sum, d) => sum + d.minutes, 0),
+		byDay: Array.from(byDay.entries())
+			.map(([date, data]) => ({ date, ...data }))
+			.sort((a, b) => a.date.localeCompare(b.date))
+	}
+}

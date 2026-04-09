@@ -222,6 +222,19 @@ struct UpdateMealPlanRequest: Encodable {
     var status: MealPlanStatus?
 }
 
+// MARK: - Meal Plan Cook Time
+
+struct MealPlanCookTime: Codable, Equatable {
+    let totalMinutes: Int
+    let byDay: [DayCookTime]
+}
+
+struct DayCookTime: Codable, Equatable {
+    let date: String
+    let minutes: Int
+    let meals: Int
+}
+
 // MARK: - Grocery List
 
 struct GroceryItem: Codable, Identifiable, Equatable {
