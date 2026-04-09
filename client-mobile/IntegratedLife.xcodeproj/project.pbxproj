@@ -58,6 +58,25 @@
 		81EDFF15EDB4743C3A122CE5 /* RoutineManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F076EBC795DA5EC90DF2E67 /* RoutineManagerView.swift */; };
 		8636470B2F5D379E5ED9B20A /* Workout.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB957B44064BF54C4C6C5DA1 /* Workout.swift */; };
 		86B5050DE9DD615453B1C976 /* HealthState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D3CE6F7E8870B6BBE0F815 /* HealthState.swift */; };
+		F00D00000000000000000002 /* FoodState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000001 /* FoodState.swift */; };
+		F00D00000000000000000004 /* HouseholdState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000003 /* HouseholdState.swift */; };
+		F00D00000000000000000006 /* FoodModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000005 /* FoodModels.swift */; };
+		F00D00000000000000000008 /* HouseholdModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000007 /* HouseholdModels.swift */; };
+		F00D0000000000000000000A /* FoodService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000009 /* FoodService.swift */; };
+		F00D0000000000000000000C /* HealthKitFoodService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D0000000000000000000B /* HealthKitFoodService.swift */; };
+		F00D0000000000000000000E /* HouseholdService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D0000000000000000000D /* HouseholdService.swift */; };
+		F00D00000000000000000010 /* BarcodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D0000000000000000000F /* BarcodeScannerView.swift */; };
+		F00D00000000000000000012 /* FoodLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000011 /* FoodLogView.swift */; };
+		F00D00000000000000000014 /* FoodPillarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000013 /* FoodPillarView.swift */; };
+		F00D00000000000000000016 /* GroceryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000015 /* GroceryListView.swift */; };
+		F00D00000000000000000018 /* MealPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000017 /* MealPlanView.swift */; };
+		F00D0000000000000000001A /* MealScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000019 /* MealScannerView.swift */; };
+		F00D0000000000000000001C /* RecipeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D0000000000000000001B /* RecipeDetailView.swift */; };
+		F00D0000000000000000001E /* CleanerRotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D0000000000000000001D /* CleanerRotationView.swift */; };
+		F00D00000000000000000020 /* HouseholdPillarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D0000000000000000001F /* HouseholdPillarView.swift */; };
+		F00D00000000000000000022 /* HouseholdScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000021 /* HouseholdScheduleView.swift */; };
+		F00D00000000000000000024 /* HouseholdSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000023 /* HouseholdSettingsView.swift */; };
+		F00D00000000000000000026 /* HouseholdUpcomingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D00000000000000000025 /* HouseholdUpcomingView.swift */; };
 		86D4879FBE89A7ACBAAC7153 /* TaskEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C1B6DA6609C75F91CF61CF /* TaskEditorView.swift */; };
 		898F5FFD5BF0C80DA9F89918 /* TimeBudget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 145D000C64EDF42C4F0C1608 /* TimeBudget.swift */; };
 		8B4E04014BBC80166CA12C23 /* AuthState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F52383F471281EB99FAA85 /* AuthState.swift */; };
@@ -173,6 +192,25 @@
 		80C1B6DA6609C75F91CF61CF /* TaskEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskEditorView.swift; sourceTree = "<group>"; };
 		81A5044B4A36201739BD0318 /* PillarOrderStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillarOrderStore.swift; sourceTree = "<group>"; };
 		81D3CE6F7E8870B6BBE0F815 /* HealthState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthState.swift; sourceTree = "<group>"; };
+		F00D00000000000000000001 /* FoodState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodState.swift; sourceTree = "<group>"; };
+		F00D00000000000000000003 /* HouseholdState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdState.swift; sourceTree = "<group>"; };
+		F00D00000000000000000005 /* FoodModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodModels.swift; sourceTree = "<group>"; };
+		F00D00000000000000000007 /* HouseholdModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdModels.swift; sourceTree = "<group>"; };
+		F00D00000000000000000009 /* FoodService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodService.swift; sourceTree = "<group>"; };
+		F00D0000000000000000000B /* HealthKitFoodService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitFoodService.swift; sourceTree = "<group>"; };
+		F00D0000000000000000000D /* HouseholdService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdService.swift; sourceTree = "<group>"; };
+		F00D0000000000000000000F /* BarcodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScannerView.swift; sourceTree = "<group>"; };
+		F00D00000000000000000011 /* FoodLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodLogView.swift; sourceTree = "<group>"; };
+		F00D00000000000000000013 /* FoodPillarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodPillarView.swift; sourceTree = "<group>"; };
+		F00D00000000000000000015 /* GroceryListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroceryListView.swift; sourceTree = "<group>"; };
+		F00D00000000000000000017 /* MealPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlanView.swift; sourceTree = "<group>"; };
+		F00D00000000000000000019 /* MealScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealScannerView.swift; sourceTree = "<group>"; };
+		F00D0000000000000000001B /* RecipeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeDetailView.swift; sourceTree = "<group>"; };
+		F00D0000000000000000001D /* CleanerRotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanerRotationView.swift; sourceTree = "<group>"; };
+		F00D0000000000000000001F /* HouseholdPillarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdPillarView.swift; sourceTree = "<group>"; };
+		F00D00000000000000000021 /* HouseholdScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdScheduleView.swift; sourceTree = "<group>"; };
+		F00D00000000000000000023 /* HouseholdSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdSettingsView.swift; sourceTree = "<group>"; };
+		F00D00000000000000000025 /* HouseholdUpcomingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdUpcomingView.swift; sourceTree = "<group>"; };
 		843E7211D9CD2EAF4217AB48 /* RecurrenceExpander.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrenceExpander.swift; sourceTree = "<group>"; };
 		92A5D1D2C37D3DB04F5DB271 /* IntegratedLifeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = IntegratedLifeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		931D1968BC86A3D09146DD4E /* PillarsOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillarsOverviewView.swift; sourceTree = "<group>"; };
@@ -329,8 +367,11 @@
 			children = (
 				20FDE70F3F72C04E0F5E4D8F /* APIClient.swift */,
 				C1066D582A8CA878662BA08B /* AuthService.swift */,
+				F00D00000000000000000009 /* FoodService.swift */,
+				F00D0000000000000000000B /* HealthKitFoodService.swift */,
 				D495646162D0FF25F6CEDFCB /* HealthKitService.swift */,
 				E6F4A822689FB3C3C7858115 /* HealthService.swift */,
+				F00D0000000000000000000D /* HouseholdService.swift */,
 				39767ED2DE4C7DDC860C3838 /* MonitorSyncService.swift */,
 				C15EAB6BE9BBEB1E6F6DFFB1 /* NotificationService.swift */,
 				DD8EFADE838E4DFF2DEFAC83 /* SleepDataAggregator.swift */,
@@ -359,6 +400,8 @@
 				1474D40AC71E33C879E32BB1 /* AppNavigationState.swift */,
 				F0F52383F471281EB99FAA85 /* AuthState.swift */,
 				55FA62FF8843E4A55C4EDBB5 /* Config.swift */,
+				F00D00000000000000000001 /* FoodState.swift */,
+				F00D00000000000000000003 /* HouseholdState.swift */,
 				81D3CE6F7E8870B6BBE0F815 /* HealthState.swift */,
 				4337BD9A8D2718A41D95C07E /* KeychainService.swift */,
 				CB1ECC5828ACDF51388DFC72 /* NotificationState.swift */,
@@ -436,6 +479,8 @@
 			isa = PBXGroup;
 			children = (
 				EAE5BE453C4E6B25D27EFDBB /* Health */,
+				F00D00000000000000000029 /* Food */,
+				F00D0000000000000000002A /* Household */,
 				A5E6E1C031EF392142C35318 /* Sleep */,
 				F421C4EBE6884BB13BAD775E /* Time */,
 				81A5044B4A36201739BD0318 /* PillarOrderStore.swift */,
@@ -449,6 +494,8 @@
 			isa = PBXGroup;
 			children = (
 				11F8E10316E3AC2179791181 /* Health */,
+				F00D00000000000000000027 /* Food */,
+				F00D00000000000000000028 /* Household */,
 				678562952D191FD695104C5C /* Sleep */,
 				828FA1BFFD4D43E64163A78D /* Time */,
 				A6DF7817DC127893228954F4 /* NotificationCategory.swift */,
@@ -503,6 +550,48 @@
 				EF327EF018A9E554180E1A70 /* AppStyles.swift */,
 			);
 			path = Styles;
+			sourceTree = "<group>";
+		};
+		F00D00000000000000000027 /* Food */ = {
+			isa = PBXGroup;
+			children = (
+				F00D00000000000000000005 /* FoodModels.swift */,
+			);
+			path = Food;
+			sourceTree = "<group>";
+		};
+		F00D00000000000000000028 /* Household */ = {
+			isa = PBXGroup;
+			children = (
+				F00D00000000000000000007 /* HouseholdModels.swift */,
+			);
+			path = Household;
+			sourceTree = "<group>";
+		};
+		F00D00000000000000000029 /* Food */ = {
+			isa = PBXGroup;
+			children = (
+				F00D0000000000000000000F /* BarcodeScannerView.swift */,
+				F00D00000000000000000011 /* FoodLogView.swift */,
+				F00D00000000000000000013 /* FoodPillarView.swift */,
+				F00D00000000000000000015 /* GroceryListView.swift */,
+				F00D00000000000000000017 /* MealPlanView.swift */,
+				F00D00000000000000000019 /* MealScannerView.swift */,
+				F00D0000000000000000001B /* RecipeDetailView.swift */,
+			);
+			path = Food;
+			sourceTree = "<group>";
+		};
+		F00D0000000000000000002A /* Household */ = {
+			isa = PBXGroup;
+			children = (
+				F00D0000000000000000001D /* CleanerRotationView.swift */,
+				F00D0000000000000000001F /* HouseholdPillarView.swift */,
+				F00D00000000000000000021 /* HouseholdScheduleView.swift */,
+				F00D00000000000000000023 /* HouseholdSettingsView.swift */,
+				F00D00000000000000000025 /* HouseholdUpcomingView.swift */,
+			);
+			path = Household;
 			sourceTree = "<group>";
 		};
 		F8AB8767F4DD9D62990F20C2 /* Home */ = {
@@ -633,7 +722,26 @@
 				E4C0561980AD6ED594BEBEA0 /* HealthReportListView.swift in Sources */,
 				17AEE95DDE2B99F70E26BD3C /* HealthService.swift in Sources */,
 				86B5050DE9DD615453B1C976 /* HealthState.swift in Sources */,
+				F00D00000000000000000010 /* BarcodeScannerView.swift in Sources */,
+				F00D0000000000000000001E /* CleanerRotationView.swift in Sources */,
+				F00D00000000000000000002 /* FoodState.swift in Sources */,
+				F00D00000000000000000012 /* FoodLogView.swift in Sources */,
+				F00D00000000000000000006 /* FoodModels.swift in Sources */,
+				F00D00000000000000000014 /* FoodPillarView.swift in Sources */,
+				F00D0000000000000000000A /* FoodService.swift in Sources */,
+				F00D00000000000000000016 /* GroceryListView.swift in Sources */,
+				F00D0000000000000000000C /* HealthKitFoodService.swift in Sources */,
+				F00D00000000000000000018 /* MealPlanView.swift in Sources */,
+				F00D0000000000000000001A /* MealScannerView.swift in Sources */,
 				E5540BD1E986484C4B735191 /* HealthTypes.swift in Sources */,
+				F00D00000000000000000004 /* HouseholdState.swift in Sources */,
+				F00D00000000000000000008 /* HouseholdModels.swift in Sources */,
+				F00D00000000000000000020 /* HouseholdPillarView.swift in Sources */,
+				F00D00000000000000000022 /* HouseholdScheduleView.swift in Sources */,
+				F00D00000000000000000024 /* HouseholdSettingsView.swift in Sources */,
+				F00D0000000000000000000E /* HouseholdService.swift in Sources */,
+				F00D00000000000000000026 /* HouseholdUpcomingView.swift in Sources */,
+				F00D0000000000000000001C /* RecipeDetailView.swift in Sources */,
 				80BF29C799CA4B90E5B04691 /* HistoricalSyncView.swift in Sources */,
 				12D53505E6958749939EC8ED /* HistoryDetailView.swift in Sources */,
 				4E6F7E4AEB6A3E9D06116802 /* HistoryItem.swift in Sources */,

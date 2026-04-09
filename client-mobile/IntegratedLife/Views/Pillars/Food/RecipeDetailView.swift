@@ -63,7 +63,7 @@ private struct RecipeCardView: View {
                     .foregroundStyle(.secondary)
             }
             if !recipe.tags.isEmpty {
-                FlowLayout(spacing: 4) {
+                RecipeTagFlowLayout(spacing: 4) {
                     ForEach(recipe.tags, id: \.self) { tag in
                         Text(tag)
                             .font(.caption2)
@@ -175,7 +175,7 @@ private struct RecipeDetailContent: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Tags")
                             .font(.headline)
-                        FlowLayout(spacing: 6) {
+                        RecipeTagFlowLayout(spacing: 6) {
                             ForEach(recipe.tags, id: \.self) { tag in
                                 Text(tag)
                                     .font(.caption)
@@ -226,7 +226,7 @@ struct MacroColumn: View {
 }
 
 /// Simple horizontal flow layout for tags.
-struct FlowLayout: Layout {
+struct RecipeTagFlowLayout: Layout {
     var spacing: CGFloat = 4
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
