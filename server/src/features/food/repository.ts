@@ -8,7 +8,7 @@ export async function findRecipes(
 	userId: string,
 	filters: { search?: string; tag?: string; ingredient?: string; page: number; limit: number }
 ): Promise<{ docs: RecipeDocument[]; total: number }> {
-	const query: Record<string, unknown> = { userId }
+	const query: Record<string, unknown> = { $or: [{ userId }, { userId: null }] }
 	if (filters.search) query.$text = { $search: filters.search }
 	if (filters.tag) query.tags = filters.tag
 	if (filters.ingredient) query['ingredients.name'] = { $regex: filters.ingredient, $options: 'i' }
@@ -55,7 +55,7 @@ export async function findMealPlans(
 	userId: string,
 	filters: { weekStartDate?: string; status?: string; page: number; limit: number }
 ): Promise<{ docs: MealPlanDocument[]; total: number }> {
-	const query: Record<string, unknown> = { userId }
+	const query: Record<string, unknown> = { $or: [{ userId }, { userId: null }] }
 	if (filters.weekStartDate) query.weekStartDate = new Date(filters.weekStartDate)
 	if (filters.status) query.status = filters.status
 
@@ -112,7 +112,7 @@ export async function findGroceryLists(
 	userId: string,
 	filters: { page: number; limit: number }
 ): Promise<{ docs: GroceryListDocument[]; total: number }> {
-	const query: Record<string, unknown> = { userId }
+	const query: Record<string, unknown> = { $or: [{ userId }, { userId: null }] }
 
 	const total = await GroceryList.countDocuments(query).exec()
 	const docs = await GroceryList.find(query)
@@ -149,7 +149,7 @@ export async function findFoodLogEntries(
 	userId: string,
 	filters: { startDate?: string; endDate?: string; mealType?: string; page: number; limit: number }
 ): Promise<{ docs: FoodLogEntryDocument[]; total: number }> {
-	const query: Record<string, unknown> = { userId }
+	const query: Record<string, unknown> = { $or: [{ userId }, { userId: null }] }
 
 	if (filters.startDate || filters.endDate) {
 		const dateFilter: Record<string, Date> = {}
