@@ -105,6 +105,14 @@ final class FoodService {
         try await api.delete(path: "/v1/food/meal-plans/\(id)", token: try await token())
     }
 
+    func fetchMealPlanCookTime(mealPlanId: String) async throws -> MealPlanCookTime {
+        try await api.get(
+            path: "/v1/food/meal-plans/\(mealPlanId)/cook-time",
+            token: try await token(),
+            as: MealPlanCookTime.self
+        )
+    }
+
     // MARK: - Grocery Lists
 
     func fetchGroceryLists(page: Int = 1) async throws -> PaginatedResponse<GroceryList> {

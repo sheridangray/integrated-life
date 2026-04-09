@@ -383,3 +383,15 @@ export async function createAIRecipe(req: AuthenticatedRequest, res: Response) {
 	const recipe = await foodService.createRecipeFromAI(parsed.data.prompt, req.user.userId)
 	return res.status(201).json(recipe)
 }
+
+export async function getMealPlanCookTime(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const result = await foodService.getMealPlanCookTime(req.params.id, req.user.userId)
+	return res.json(result)
+}

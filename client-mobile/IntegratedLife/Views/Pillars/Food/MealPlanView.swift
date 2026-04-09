@@ -33,6 +33,18 @@ private struct MealPlanContentView: View {
         return grouped.sorted { $0.key < $1.key }
     }
 
+    private func cookTimeForDay(_ date: String) -> Int? {
+        foodState.mealPlanCookTime?.byDay.first { $0.date == date }?.minutes
+    }
+
+    private var totalCookTimeFormatted: String? {
+        guard let minutes = foodState.mealPlanCookTime?.totalMinutes, minutes > 0 else { return nil }
+        if minutes < 60 { return "\(minutes)m" }
+        let h = minutes / 60
+        let m = minutes % 60
+        return m > 0 ? "\(h)h \(m)m" : "\(h)h"
+    }
+
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
@@ -45,6 +57,19 @@ private struct MealPlanContentView: View {
                     MealPlanStatusBadge(status: plan.status)
                 }
                 .padding(.horizontal)
+
+                // Total cook time
+                if let totalTime = totalCookTimeFormatted {
+                    HStack {
+                        Label("Total Cook Time", systemImage: "clock")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(totalTime)
+                            .font(.headline)
+                    }
+                    .padding(.horizontal)
+                }
 
                 // Generate grocery list button
                 if plan.status == .confirmed {
@@ -60,10 +85,13 @@ private struct MealPlanContentView: View {
 
                 // Days
                 ForEach(mealsByDay, id: \.0) { day, meals in
-                    DaySection(date: day, meals: meals)
+                    DaySection(date: day, meals: meals, cookTime: cookTimeForDay(day))
                 }
             }
             .padding(.vertical)
+        }
+        .task {
+            await foodState.loadMealPlanCookTime(mealPlanId: plan.id)
         }
     }
 }
@@ -71,6 +99,7 @@ private struct MealPlanContentView: View {
 private struct DaySection: View {
     let date: String
     let meals: [Meal]
+    let cookTime: Int?
 
     private var formattedDate: String {
         let input = DateFormatter()
@@ -82,11 +111,27 @@ private struct DaySection: View {
         return output.string(from: d)
     }
 
+    private var cookTimeFormatted: String? {
+        guard let minutes = cookTime, minutes > 0 else { return nil }
+        if minutes < 60 { return "\(minutes)m" }
+        let h = minutes / 60
+        let m = minutes % 60
+        return m > 0 ? "\(h)h \(m)m" : "\(h)h"
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(formattedDate)
-                .font(.headline)
-                .padding(.horizontal)
+            HStack {
+                Text(formattedDate)
+                    .font(.headline)
+                Spacer()
+                if let time = cookTimeFormatted {
+                    Label(time, systemImage: "clock")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal)
 
             ForEach(meals) { meal in
                 NavigationLink(value: FoodNavDestination.recipeDetail(meal.recipeId)) {

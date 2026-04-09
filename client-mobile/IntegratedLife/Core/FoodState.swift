@@ -19,6 +19,7 @@ final class FoodState: ObservableObject {
     // MARK: - Meal Plan
 
     @Published var currentMealPlan: MealPlan?
+    @Published var mealPlanCookTime: MealPlanCookTime?
     @Published var mealPlanLoading = false
 
     // MARK: - Grocery List
@@ -91,6 +92,14 @@ final class FoodState: ObservableObject {
         defer { mealPlanLoading = false }
         do {
             currentMealPlan = try await foodService.fetchCurrentMealPlan()
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    func loadMealPlanCookTime(mealPlanId: String) async {
+        do {
+            mealPlanCookTime = try await foodService.fetchMealPlanCookTime(mealPlanId: mealPlanId)
         } catch {
             self.error = error.localizedDescription
         }
