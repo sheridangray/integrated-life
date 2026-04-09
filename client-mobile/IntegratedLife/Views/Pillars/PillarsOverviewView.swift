@@ -9,6 +9,7 @@ struct PillarsOverviewView: View {
 	@ObservedObject var timeState: TimeState
 	@ObservedObject var sleepState: SleepState
 	@ObservedObject var healthState: HealthState
+	@ObservedObject var foodState: FoodState
 
 	@State private var pillarOrder: [Pillar] = PillarOrderStore.loadOrder()
 	@State private var draggedPillar: Pillar?
@@ -26,6 +27,7 @@ struct PillarsOverviewView: View {
 							for: pillar,
 							sleepState: sleepState,
 							healthState: healthState,
+							foodState: foodState,
 							lastDataRefresh: lastDataRefresh
 						)
 						NavigationLink(value: pillar) {
@@ -58,6 +60,7 @@ struct PillarsOverviewView: View {
 				await withTaskGroup(of: Void.self) { group in
 					group.addTask { await sleepState.loadForOverview() }
 					group.addTask { await healthState.loadHistory(page: 1) }
+					group.addTask { await foodState.loadForOverview() }
 				}
 				lastDataRefresh = Date()
 			}
@@ -73,6 +76,8 @@ struct PillarsOverviewView: View {
 			HealthPillarView(healthState: healthState, healthKitService: healthKitService)
 		case .sleep:
 			SleepPillarView(healthKitService: healthKitService, sleepState: sleepState)
+		case .food:
+			FoodPillarView(foodState: foodState)
 		default:
 			PillarOverviewPlaceholder(pillar: pillar)
 		}
@@ -163,6 +168,10 @@ private struct PillarMetricCard: View {
 						.foregroundStyle(.secondary)
 				} else if presentation.pillar == .health {
 					Text("Workouts logged · last 7 days")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				} else if presentation.pillar == .food {
+					Text("Calories today")
 						.font(.caption)
 						.foregroundStyle(.secondary)
 				} else if presentation.pillar == .sleep {

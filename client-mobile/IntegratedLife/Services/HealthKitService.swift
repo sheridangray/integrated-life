@@ -14,6 +14,8 @@ final class HealthKitService: ObservableObject {
 	private let writeTypes: Set<HKSampleType> = {
 		var types = Set<HKSampleType>()
 		types.insert(HKObjectType.workoutType())
+		// Include food/nutrition write types for HealthKit food log sync
+		types.formUnion(HealthKitFoodService.nutritionWriteTypes)
 		#if DEBUG
 		let excludedQuantityTypes: Set<HKQuantityTypeIdentifier> = [
 			.walkingAsymmetryPercentage, .walkingDoubleSupportPercentage,
