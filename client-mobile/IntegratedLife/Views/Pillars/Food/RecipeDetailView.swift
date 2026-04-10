@@ -3,6 +3,13 @@ import SwiftUI
 struct RecipeListView: View {
     @ObservedObject var foodState: FoodState
     @State private var searchText = ""
+    @State private var searchScope: SearchScope = .all
+    
+    enum SearchScope: String, CaseIterable {
+        case all = "All"
+        case ingredients = "Ingredients"
+        case tags = "Tags"
+    }
 
     var body: some View {
         Group {
@@ -14,6 +21,38 @@ struct RecipeListView: View {
             } else {
                 ScrollView {
                     LazyVStack(spacing: 8) {
+                        // Inline search field
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundStyle(.secondary)
+                            TextField("Search by name, ingredient, or tag", text: $searchText)
+                                .textFieldStyle(.plain)
+                            if !searchText.isEmpty {
+                                Button { searchText = "" } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        .padding(8)
+                        .background(Color.secondary.opacity(0.1))
+                        .cornerRadius(8)
+                        
+                        // Scope picker
+                        HStack(spacing: 8) {
+                            ForEach(SearchScope.allCases, id: \.self) { scope in
+                                Button { searchScope = scope } label: {
+                                    Text(scope.rawValue)
+                                        .font(.caption)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(searchScope == scope ? Color.accentColor : Color.secondary.opacity(0.2))
+                                        .foregroundStyle(searchScope == scope ? .white : .primary)
+                                        .cornerRadius(4)
+                                }
+                            }
+                        }
+                        
                         ForEach(foodState.recipes) { recipe in
                             NavigationLink(value: FoodNavDestination.recipeDetail(recipe.id)) {
                                 RecipeCardView(recipe: recipe)
@@ -25,10 +64,12 @@ struct RecipeListView: View {
                 }
             }
         }
-        .searchable(text: $searchText, prompt: "Search recipes")
-        .task(id: searchText) {
+        .task(id: [searchText, searchScope]) {
             try? await Task.sleep(for: .milliseconds(300))
-            await foodState.loadRecipes(search: searchText.isEmpty ? nil : searchText)
+            let search = searchText.isEmpty ? nil : searchText
+            let tag = searchScope == .tags ? search : nil
+            let ingredient = searchScope == .ingredients ? search : nil
+            await foodState.loadRecipes(search: search, tag: tag, ingredient: ingredient)
         }
     }
 }

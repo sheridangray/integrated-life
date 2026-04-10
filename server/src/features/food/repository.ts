@@ -9,7 +9,7 @@ export async function findRecipes(
 	filters: { search?: string; tag?: string; ingredient?: string; page: number; limit: number }
 ): Promise<{ docs: RecipeDocument[]; total: number }> {
 	const query: Record<string, unknown> = { $or: [{ userId }, { userId: null }] }
-	if (filters.search) query.$text = { $search: filters.search }
+	if (filters.search) query.$or = [{ name: { $regex: filters.search, $options: "i" } }, { "ingredients.name": { $regex: filters.search, $options: "i" } }, { tags: { $regex: filters.search, $options: "i" } }]
 	if (filters.tag) query.tags = filters.tag
 	if (filters.ingredient) query['ingredients.name'] = { $regex: filters.ingredient, $options: 'i' }
 

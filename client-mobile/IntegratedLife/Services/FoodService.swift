@@ -13,10 +13,13 @@ final class FoodService {
 
     // MARK: - Recipes
 
-    func fetchRecipes(search: String? = nil, tag: String? = nil, page: Int = 1, limit: Int = 20) async throws -> PaginatedResponse<Recipe> {
+    func fetchRecipes(search: String? = nil, tag: String? = nil, ingredient: String? = nil, page: Int = 1, limit: Int = 20) async throws -> PaginatedResponse<Recipe> {
         var query = "?page=\(page)&limit=\(limit)"
         if let search, !search.isEmpty {
             query += "&search=\(search.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? search)"
+        }
+        if let ingredient, !ingredient.isEmpty {
+            query += "&ingredient=(ingredient.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ingredient)"
         }
         if let tag, !tag.isEmpty {
             query += "&tag=\(tag.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? tag)"

@@ -53,12 +53,12 @@ final class FoodState: ObservableObject {
 
     // MARK: - Recipe Methods
 
-    func loadRecipes(search: String? = nil, tag: String? = nil) async {
+    func loadRecipes(search: String? = nil, tag: String? = nil, ingredient: String? = nil) async {
         recipesLoading = true
         error = nil
         defer { recipesLoading = false }
         do {
-            let response = try await foodService.fetchRecipes(search: search, tag: tag)
+            let response = try await foodService.fetchRecipes(search: search, tag: tag, ingredient: ingredient)
             recipes = response.items
         } catch {
             self.error = error.localizedDescription
