@@ -286,6 +286,25 @@ private struct RecipeDetailContent: View {
                         MacroColumn(label: "Fiber", value: "\(Int(nutrition.fiber))g", color: .green)
                     }
                 }
+                
+                // Quick Actions
+                HStack(spacing: 12) {
+                    Button {
+                        // TODO: Add to grocery list functionality
+                    } label: {
+                        Label("Add to Grocery", systemImage: "cart.badge.plus")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Button {
+                        // TODO: Add to meal plan functionality
+                    } label: {
+                        Label("Add to Meal Plan", systemImage: "calendar.badge.plus")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                }
 
                 // Ingredients with checkboxes
                 VStack(alignment: .leading, spacing: 8) {
@@ -299,10 +318,10 @@ private struct RecipeDetailContent: View {
                                 checkedIngredients.insert(ingredient.id)
                             }
                         } label: {
-                            HStack {
+                            HStack(alignment: .top, spacing: 12) {
                                 Image(systemName: checkedIngredients.contains(ingredient.id) ? "checkmark.circle.fill" : "circle")
                                     .foregroundStyle(checkedIngredients.contains(ingredient.id) ? .green : .secondary)
-                                    .font(.title3)
+                                    .frame(width: 24, height: 24)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("\(scaledQuantity(ingredient), specifier: scaledQuantity(ingredient) == scaledQuantity(ingredient).rounded() ? "%.0f" : "%.1f") \(ingredient.unit) \(ingredient.name)")
                                         .strikethrough(checkedIngredients.contains(ingredient.id))
