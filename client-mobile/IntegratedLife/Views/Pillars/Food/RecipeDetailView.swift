@@ -5,7 +5,7 @@ struct RecipeListView: View {
     @State private var searchText = ""
     @State private var searchScope: SearchScope = .all
     
-    enum SearchScope: String, CaseIterable {
+    enum SearchScope: String, CaseIterable, Equatable {
         case all = "All"
         case ingredients = "Ingredients"
         case tags = "Tags"
