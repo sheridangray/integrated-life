@@ -19,7 +19,7 @@ integrated-life/
 - **MongoDB** (local or Atlas)
 - **Google Cloud Console** project (for OAuth)
 - **Xcode** (for iOS development)
-- **Docker** or **Java** (for OpenAPI → Swift codegen)
+- **Java** or **Docker** (optional — only if you run `npm run generate:swift`; OpenAPI Generator can use either)
 
 ## Quick Start
 
@@ -83,6 +83,7 @@ Build and run in the simulator.
 
 | Script | Description |
 |--------|-------------|
+| `npm run dev` | Start server + web together (ensure MongoDB matches `MONGODB_URI` in `.env`) |
 | `npm run dev:server` | Start server with hot reload |
 | `npm run dev:web` | Start Next.js dev server |
 | `npm run build` | Build shared, server, and client-web |

@@ -44,6 +44,6 @@ jobs:
       - name: Generate OpenAPI spec
         run: npm run generate:openapi
 
-      - name: Generate Swift (Docker)
+      - name: Generate Swift (OpenAPI)
         run: |
-          npm run generate:swift || echo "Swift codegen skipped (requires Docker or Java)"
+          npm run generate:swift || echo "Swift codegen skipped (requires Java or Docker for generator)"
