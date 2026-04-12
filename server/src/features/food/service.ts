@@ -823,74 +823,53 @@ async function generateRecipeImages(
 	return { images, imageUrl, imageId }
 }
 
-async function callTogetherAI(systemPrompt: string, userMessage: string): Promise<string> {
+function getTogetherClient(): Together {
 	if (!env.TOGETHER_AI_API_KEY) {
 		throw new AppError('AI features not available — TOGETHER_AI_API_KEY is not configured', 503)
 	}
-	const client = new Together({ apiKey: env.TOGETHER_AI_API_KEY })
-	const response = await client.chat.completions.create({
-		model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo',
-		max_tokens: 4096,
-		messages: [
-			{ role: 'system', content: systemPrompt },
-			{ role: 'user', content: userMessage }
-		]
-	})
-	const text = response.choices?.[0]?.message?.content
-	if (!text) throw new AppError('AI returned no response', 502)
-	return text
+	return new Together({ apiKey: env.TOGETHER_AI_API_KEY })
 }
 
-/**
- * Extracts and parses a JSON object from LLM output.
- * Handles markdown code fences, single-line comments, and trailing commas.
- */
-function parseAIJson(text: string): Record<string, unknown> {
-	// Strip markdown code fences
-	const stripped = text.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim()
+async function generateRecipeJSON(systemPrompt: string, userMessage: string): Promise<Record<string, unknown>> {
+	const client = getTogetherClient()
+	const maxAttempts = 2
 
-	// Find the first { and extract a balanced JSON object
-	const start = stripped.indexOf('{')
-	if (start === -1) throw new Error('No JSON object found in AI response')
+	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+		let rawText = ''
+		try {
+			const response = await client.chat.completions.create({
+				model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo',
+				max_tokens: 4096,
+				messages: [
+					{ role: 'system', content: systemPrompt },
+					{ role: 'user', content: userMessage }
+				],
+				response_format: { type: 'json_object' }
+			})
 
-	let depth = 0
-	let inString = false
-	let escape = false
-	let end = -1
+			rawText = response.choices?.[0]?.message?.content ?? ''
+			if (!rawText) {
+				throw new Error('AI returned empty response')
+			}
 
-	for (let i = start; i < stripped.length; i++) {
-		const c = stripped[i]
-		if (escape) { escape = false; continue }
-		if (c === '\\' && inString) { escape = true; continue }
-		if (c === '"') { inString = !inString; continue }
-		if (inString) continue
-		if (c === '{') depth++
-		if (c === '}') { depth--; if (depth === 0) { end = i; break } }
+			return JSON.parse(rawText) as Record<string, unknown>
+		} catch (err) {
+			const msg = (err as Error).message
+			logger.warn(`AI recipe attempt ${attempt}/${maxAttempts} failed`, {
+				error: msg,
+				responsePreview: rawText.slice(0, 300) || '<empty>'
+			})
+			if (attempt === maxAttempts) {
+				throw new AppError(`AI recipe generation failed: ${msg}`, 502)
+			}
+		}
 	}
 
-	if (end === -1) throw new Error('Unclosed JSON object in AI response')
-
-	let json = stripped.slice(start, end + 1)
-	// Remove single-line comments and trailing commas (common LLM output issues)
-	json = json.replace(/\/\/[^\n"]*/g, '').replace(/,(\s*[}\]])/g, '$1')
-
-	return JSON.parse(json) as Record<string, unknown>
+	throw new AppError('AI recipe generation failed after retries', 502)
 }
 
 export async function createRecipeFromAI(prompt: string, userId: string) {
-	if (!env.TOGETHER_AI_API_KEY) {
-		throw new AppError('AI recipe creation not available', 503)
-	}
-
-	let recipeData: Record<string, unknown>
-	try {
-		const text = await callTogetherAI(AI_RECIPE_SYSTEM_PROMPT, prompt)
-		recipeData = parseAIJson(text)
-	} catch (err) {
-		if (err instanceof AppError) throw err
-		logger.error('AI recipe generation failed', { error: (err as Error).message })
-		throw new AppError('Failed to generate recipe from AI', 502)
-	}
+	const recipeData = await generateRecipeJSON(AI_RECIPE_SYSTEM_PROMPT, prompt)
 
 	let imageUrl: string | undefined
 	let imageId: string | undefined
@@ -959,35 +938,23 @@ export async function editRecipeWithAI(
 	action: 'overwrite' | 'variant',
 	userId: string
 ) {
-	if (!env.TOGETHER_AI_API_KEY) {
-		throw new AppError('AI recipe editing not available', 503)
-	}
-
 	const existing = await repo.findRecipeById(recipeId, userId)
 	if (!existing) throw new AppError('Recipe not found', 404)
 
-	let recipeData: Record<string, unknown>
-	try {
-		const existingJson = JSON.stringify({
-			name: existing.name,
-			description: existing.description,
-			servings: existing.servings,
-			prepTime: existing.prepTime,
-			cookTime: existing.cookTime,
-			ingredients: existing.ingredients,
-			instructions: existing.instructions,
-			tags: existing.tags,
-			nutritionPerServing: existing.nutritionPerServing
-		})
+	const existingJson = JSON.stringify({
+		name: existing.name,
+		description: existing.description,
+		servings: existing.servings,
+		prepTime: existing.prepTime,
+		cookTime: existing.cookTime,
+		ingredients: existing.ingredients,
+		instructions: existing.instructions,
+		tags: existing.tags,
+		nutritionPerServing: existing.nutritionPerServing
+	})
 
-		const userMessage = `Current recipe:\n${existingJson}\n\nEdit instruction: ${prompt}`
-		const text = await callTogetherAI(AI_RECIPE_EDIT_SYSTEM_PROMPT, userMessage)
-		recipeData = parseAIJson(text)
-	} catch (err) {
-		if (err instanceof AppError) throw err
-		logger.error('AI recipe edit failed', { error: (err as Error).message })
-		throw new AppError('Failed to edit recipe with AI', 502)
-	}
+	const userMessage = `Current recipe:\n${existingJson}\n\nEdit instruction: ${prompt}`
+	const recipeData = await generateRecipeJSON(AI_RECIPE_EDIT_SYSTEM_PROMPT, userMessage)
 
 	let imageResult: { images: Array<{ url: string; caption: string | null; order: number }>; imageUrl?: string; imageId?: string } = { images: [] }
 	try {

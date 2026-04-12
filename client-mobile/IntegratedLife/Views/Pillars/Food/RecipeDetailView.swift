@@ -582,7 +582,8 @@ private struct RecipeDetailContent: View {
                         Label("\(recipe.cookTime)m cook", systemImage: "flame")
                     }
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .
+                    foregroundStyle(.secondary)
                 }
 
                 if !recipe.tags.isEmpty {
@@ -679,17 +680,17 @@ private struct RecipeDetailContent: View {
                                 checkedIngredients.insert(ingredient.id)
                             }
                         } label: {
-                            HStack(alignment: .top, spacing: 12) {
+                            HStack(alignment: .firstTextBaseline, spacing: 12) {
                                 Image(systemName: checkedIngredients.contains(ingredient.id) ? "checkmark.circle.fill" : "circle")
                                     .font(.system(size: 22, weight: .regular))
                                     .foregroundStyle(checkedIngredients.contains(ingredient.id) ? .green : .secondary)
                                     .frame(width: rowLeadingSize, height: rowLeadingSize)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    let qty = scaledQuantity(ingredient)
-                                    let qtyStr = qty == qty.rounded() ? String(format: "%.0f", qty) : String(format: "%.1f", qty)
-                                    Text("\(qtyStr) \(ingredient.unit) \(ingredient.name)")
-                                        .foregroundStyle(.primary)
-                                }
+                                    .alignmentGuide(.firstTextBaseline) { d in d[VerticalAlignment.center] }
+                                let qty = scaledQuantity(ingredient)
+                                let qtyStr = qty == qty.rounded() ? String(format: "%.0f", qty) : String(format: "%.1f", qty)
+                                Text("\(qtyStr) \(ingredient.unit) \(ingredient.name)")
+                                    .foregroundStyle(.primary)
+                                    .fixedSize(horizontal: false, vertical: true)
                                 Spacer()
                             }
                         }
@@ -705,7 +706,7 @@ private struct RecipeDetailContent: View {
                         Button {
                             currentStep = currentStep == index ? nil : index
                         } label: {
-                            HStack(alignment: .top, spacing: 12) {
+                            HStack(alignment: .firstTextBaseline, spacing: 12) {
                                 Text("\(index + 1)")
                                     .font(.caption.weight(.bold))
                                     .monospacedDigit()
@@ -714,10 +715,12 @@ private struct RecipeDetailContent: View {
                                     .frame(width: rowLeadingSize, height: rowLeadingSize)
                                     .background(currentStep == index ? Color.accentColor : Color.accentColor.opacity(0.15), in: Circle())
                                     .foregroundStyle(currentStep == index ? .white : .primary)
+                                    .alignmentGuide(.firstTextBaseline) { d in d[VerticalAlignment.center] }
                                 Text(step)
                                     .font(.body)
                                     .foregroundStyle(currentStep == index ? .primary : .secondary)
                                     .multilineTextAlignment(.leading)
+                                    .fixedSize(horizontal: false, vertical: true)
                                 Spacer()
                             }
                         }
