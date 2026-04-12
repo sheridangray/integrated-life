@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import Anthropic from '@anthropic-ai/sdk'
+import Together from 'together-ai'
 import { AppError } from '../../lib/errors'
 import { logger } from '../../lib/logger'
 import { env } from '../../config'
@@ -823,30 +823,35 @@ async function generateRecipeImages(
 	return { images, imageUrl, imageId }
 }
 
+async function callTogetherAI(systemPrompt: string, userMessage: string): Promise<string> {
+	if (!env.TOGETHER_AI_API_KEY) {
+		throw new AppError('AI features not available — TOGETHER_AI_API_KEY is not configured', 503)
+	}
+	const client = new Together({ apiKey: env.TOGETHER_AI_API_KEY })
+	const response = await client.chat.completions.create({
+		model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo',
+		max_tokens: 4096,
+		messages: [
+			{ role: 'system', content: systemPrompt },
+			{ role: 'user', content: userMessage }
+		]
+	})
+	const text = response.choices?.[0]?.message?.content
+	if (!text) throw new AppError('AI returned no response', 502)
+	return text
+}
+
 export async function createRecipeFromAI(prompt: string, userId: string) {
-	if (!env.ANTHROPIC_API_KEY) {
+	if (!env.TOGETHER_AI_API_KEY) {
 		throw new AppError('AI recipe creation not available', 503)
 	}
 
-	const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
-
 	let recipeData: Record<string, unknown>
 	try {
-		const response = await client.messages.create({
-			model: 'claude-sonnet-4-6',
-			max_tokens: 4096,
-			messages: [
-				{ role: 'user', content: prompt }
-			],
-			system: AI_RECIPE_SYSTEM_PROMPT
-		})
-
-		const textBlock = response.content.find((b) => b.type === 'text')
-		if (!textBlock || textBlock.type !== 'text') {
-			throw new AppError('AI returned no response', 502)
-		}
-
-		recipeData = JSON.parse(textBlock.text) as Record<string, unknown>
+		const text = await callTogetherAI(AI_RECIPE_SYSTEM_PROMPT, prompt)
+		const jsonMatch = text.match(/\{[\s\S]*\}/)
+		if (!jsonMatch) throw new AppError('AI returned no JSON', 502)
+		recipeData = JSON.parse(jsonMatch[0]) as Record<string, unknown>
 	} catch (err) {
 		if (err instanceof AppError) throw err
 		logger.error('AI recipe generation failed', { error: (err as Error).message })
@@ -920,14 +925,12 @@ export async function editRecipeWithAI(
 	action: 'overwrite' | 'variant',
 	userId: string
 ) {
-	if (!env.ANTHROPIC_API_KEY) {
+	if (!env.TOGETHER_AI_API_KEY) {
 		throw new AppError('AI recipe editing not available', 503)
 	}
 
 	const existing = await repo.findRecipeById(recipeId, userId)
 	if (!existing) throw new AppError('Recipe not found', 404)
-
-	const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
 
 	let recipeData: Record<string, unknown>
 	try {
@@ -943,24 +946,11 @@ export async function editRecipeWithAI(
 			nutritionPerServing: existing.nutritionPerServing
 		})
 
-		const response = await client.messages.create({
-			model: 'claude-sonnet-4-6',
-			max_tokens: 4096,
-			messages: [
-				{
-					role: 'user',
-					content: `Current recipe:\n${existingJson}\n\nEdit instruction: ${prompt}`
-				}
-			],
-			system: AI_RECIPE_EDIT_SYSTEM_PROMPT
-		})
-
-		const textBlock = response.content.find((b) => b.type === 'text')
-		if (!textBlock || textBlock.type !== 'text') {
-			throw new AppError('AI returned no response', 502)
-		}
-
-		recipeData = JSON.parse(textBlock.text) as Record<string, unknown>
+		const userMessage = `Current recipe:\n${existingJson}\n\nEdit instruction: ${prompt}`
+		const text = await callTogetherAI(AI_RECIPE_EDIT_SYSTEM_PROMPT, userMessage)
+		const jsonMatch = text.match(/\{[\s\S]*\}/)
+		if (!jsonMatch) throw new AppError('AI returned no JSON', 502)
+		recipeData = JSON.parse(jsonMatch[0]) as Record<string, unknown>
 	} catch (err) {
 		if (err instanceof AppError) throw err
 		logger.error('AI recipe edit failed', { error: (err as Error).message })
