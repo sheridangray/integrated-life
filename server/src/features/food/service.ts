@@ -841,6 +841,42 @@ async function callTogetherAI(systemPrompt: string, userMessage: string): Promis
 	return text
 }
 
+/**
+ * Extracts and parses a JSON object from LLM output.
+ * Handles markdown code fences, single-line comments, and trailing commas.
+ */
+function parseAIJson(text: string): Record<string, unknown> {
+	// Strip markdown code fences
+	const stripped = text.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim()
+
+	// Find the first { and extract a balanced JSON object
+	const start = stripped.indexOf('{')
+	if (start === -1) throw new Error('No JSON object found in AI response')
+
+	let depth = 0
+	let inString = false
+	let escape = false
+	let end = -1
+
+	for (let i = start; i < stripped.length; i++) {
+		const c = stripped[i]
+		if (escape) { escape = false; continue }
+		if (c === '\\' && inString) { escape = true; continue }
+		if (c === '"') { inString = !inString; continue }
+		if (inString) continue
+		if (c === '{') depth++
+		if (c === '}') { depth--; if (depth === 0) { end = i; break } }
+	}
+
+	if (end === -1) throw new Error('Unclosed JSON object in AI response')
+
+	let json = stripped.slice(start, end + 1)
+	// Remove single-line comments and trailing commas (common LLM output issues)
+	json = json.replace(/\/\/[^\n"]*/g, '').replace(/,(\s*[}\]])/g, '$1')
+
+	return JSON.parse(json) as Record<string, unknown>
+}
+
 export async function createRecipeFromAI(prompt: string, userId: string) {
 	if (!env.TOGETHER_AI_API_KEY) {
 		throw new AppError('AI recipe creation not available', 503)
@@ -849,9 +885,7 @@ export async function createRecipeFromAI(prompt: string, userId: string) {
 	let recipeData: Record<string, unknown>
 	try {
 		const text = await callTogetherAI(AI_RECIPE_SYSTEM_PROMPT, prompt)
-		const jsonMatch = text.match(/\{[\s\S]*\}/)
-		if (!jsonMatch) throw new AppError('AI returned no JSON', 502)
-		recipeData = JSON.parse(jsonMatch[0]) as Record<string, unknown>
+		recipeData = parseAIJson(text)
 	} catch (err) {
 		if (err instanceof AppError) throw err
 		logger.error('AI recipe generation failed', { error: (err as Error).message })
@@ -948,9 +982,7 @@ export async function editRecipeWithAI(
 
 		const userMessage = `Current recipe:\n${existingJson}\n\nEdit instruction: ${prompt}`
 		const text = await callTogetherAI(AI_RECIPE_EDIT_SYSTEM_PROMPT, userMessage)
-		const jsonMatch = text.match(/\{[\s\S]*\}/)
-		if (!jsonMatch) throw new AppError('AI returned no JSON', 502)
-		recipeData = JSON.parse(jsonMatch[0]) as Record<string, unknown>
+		recipeData = parseAIJson(text)
 	} catch (err) {
 		if (err instanceof AppError) throw err
 		logger.error('AI recipe edit failed', { error: (err as Error).message })
