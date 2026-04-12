@@ -115,8 +115,8 @@ function formatRecipe(doc: Record<string, unknown>) {
 		instructions: d.instructions,
 		tags: d.tags,
 		nutritionPerServing: d.nutritionPerServing,
-		...(d.variantGroupId && { variantGroupId: d.variantGroupId }),
-		...(d.isVariantPrimary && { isVariantPrimary: d.isVariantPrimary })
+		...(d.variantGroupId ? { variantGroupId: d.variantGroupId as string } : {}),
+		...(d.isVariantPrimary ? { isVariantPrimary: d.isVariantPrimary as boolean } : {})
 	}
 }
 
@@ -133,7 +133,13 @@ function formatMealPlan(doc: Record<string, unknown>) {
 			recipeId: m.recipeId.toString(),
 			scheduledDate: m.scheduledDate instanceof Date ? m.scheduledDate.toISOString() : String(m.scheduledDate),
 			mealType: m.mealType,
-			servings: m.servings
+			servings: m.servings,
+			recipeName: undefined as string | undefined,
+			recipeImageUrl: undefined as string | undefined,
+			caloriesPerServing: undefined as number | undefined,
+			proteinPerServing: undefined as number | undefined,
+			carbsPerServing: undefined as number | undefined,
+			fatPerServing: undefined as number | undefined
 		})),
 		status: d.status
 	}
