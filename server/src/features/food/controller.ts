@@ -10,6 +10,7 @@ import {
 	createMealPlanValidator,
 	updateMealPlanValidator,
 	generateGroceryListValidator,
+	addGroceryItemsValidator,
 	updateGroceryListValidator,
 	foodLogFiltersValidator,
 	createFoodLogValidator,
@@ -45,6 +46,18 @@ export async function listRecipes(req: AuthenticatedRequest, res: Response) {
 
 	const result = await foodService.listRecipes(req.user.userId, filters)
 	return res.json(result)
+}
+
+export async function listRecipeTags(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const tags = await foodService.listRecipeTags(req.user.userId)
+	return res.json({ tags })
 }
 
 export async function getRecipe(req: AuthenticatedRequest, res: Response) {
@@ -221,6 +234,21 @@ export async function generateGroceryList(req: AuthenticatedRequest, res: Respon
 	return res.status(201).json(list)
 }
 
+export async function addGroceryItems(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const parsed = addGroceryItemsValidator.safeParse(req.body)
+	if (!parsed.success) return validationError(res, req, parsed.error)
+
+	const list = await foodService.addItemsToGroceryList(req.user.userId, parsed.data.items)
+	return res.json(list)
+}
+
 export async function updateGroceryList(req: AuthenticatedRequest, res: Response) {
 	if (!req.user) {
 		return res.status(401).json({
@@ -382,6 +410,43 @@ export async function createAIRecipe(req: AuthenticatedRequest, res: Response) {
 
 	const recipe = await foodService.createRecipeFromAI(parsed.data.prompt, req.user.userId)
 	return res.status(201).json(recipe)
+}
+
+const aiRecipeEditValidator = z.object({
+	prompt: z.string().min(1, 'Edit instruction is required').max(2000),
+	action: z.enum(['overwrite', 'variant'])
+})
+
+export async function editAIRecipe(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const parsed = aiRecipeEditValidator.safeParse(req.body)
+	if (!parsed.success) return validationError(res, req, parsed.error)
+
+	const recipe = await foodService.editRecipeWithAI(
+		req.params.id,
+		parsed.data.prompt,
+		parsed.data.action,
+		req.user.userId
+	)
+	return res.json(recipe)
+}
+
+export async function listRecipeVariants(req: AuthenticatedRequest, res: Response) {
+	if (!req.user) {
+		return res.status(401).json({
+			error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+			requestId: requestId(req)
+		})
+	}
+
+	const variants = await foodService.listRecipeVariants(req.params.groupId, req.user.userId)
+	return res.json({ variants })
 }
 
 export async function getMealPlanCookTime(req: AuthenticatedRequest, res: Response) {

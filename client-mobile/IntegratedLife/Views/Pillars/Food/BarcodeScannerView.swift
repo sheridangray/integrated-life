@@ -95,8 +95,11 @@ struct ScannedFoodResult: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Button("Done", action: onDismiss)
-                .buttonStyle(.borderedProminent)
+            Button(action: onDismiss) {
+                Text("Done")
+                    .appActionLabelStyle()
+            }
+            .buttonStyle(.borderedProminent)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)

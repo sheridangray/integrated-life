@@ -7,6 +7,7 @@ import {
 	UpdateMealPlanSchema,
 	GenerateGroceryListSchema,
 	UpdateGroceryListSchema,
+	AddGroceryItemsSchema,
 	FoodLogFiltersSchema,
 	CreateFoodLogSchema,
 	UpdateFoodLogSchema,
@@ -20,6 +21,7 @@ export const mealPlanFiltersValidator = MealPlanFiltersSchema
 export const createMealPlanValidator = CreateMealPlanSchema
 export const updateMealPlanValidator = UpdateMealPlanSchema
 export const generateGroceryListValidator = GenerateGroceryListSchema
+export const addGroceryItemsValidator = AddGroceryItemsSchema
 export const updateGroceryListValidator = UpdateGroceryListSchema
 export const foodLogFiltersValidator = FoodLogFiltersSchema
 export const createFoodLogValidator = CreateFoodLogSchema

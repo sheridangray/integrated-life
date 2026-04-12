@@ -144,11 +144,14 @@ struct WorkoutDetailView: View {
 									.foregroundStyle(.green)
 							}
 
-							Button("Start") {
+							Button {
 								Task { await startExercise(exercise) }
+							} label: {
+								Text("Start")
+									.appActionLabelStyle()
 							}
 							.buttonStyle(.bordered)
-							.controlSize(.small)
+							.controlSize(.regular)
 						}
 						.padding(.horizontal, 14)
 						.padding(.vertical, 12)

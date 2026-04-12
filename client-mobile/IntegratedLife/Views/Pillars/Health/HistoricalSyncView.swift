@@ -43,6 +43,7 @@ struct HistoricalSyncView: View {
 				Task { await runBackfill() }
 			} label: {
 				Label("Start Sync", systemImage: "arrow.up.circle.fill")
+					.appActionLabelStyle()
 					.frame(maxWidth: .infinity)
 			}
 			.buttonStyle(.borderedProminent)
@@ -104,7 +105,7 @@ struct HistoricalSyncView: View {
 				hasCompleted = false
 			} label: {
 				Text("Run Again")
-					.font(.subheadline)
+					.appActionLabelStyle()
 			}
 			.buttonStyle(.bordered)
 		}

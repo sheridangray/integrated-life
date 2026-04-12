@@ -56,12 +56,14 @@ struct MealScannerView: View {
                         showCamera = true
                     } label: {
                         Label("Camera", systemImage: "camera")
+                            .appActionLabelStyle()
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
 
                     PhotosPicker(selection: $selectedPhoto, matching: .images) {
                         Label("Photos", systemImage: "photo.on.rectangle")
+                            .appActionLabelStyle()
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
@@ -74,6 +76,7 @@ struct MealScannerView: View {
                         Task { await analyzePhoto() }
                     } label: {
                         Text("Analyze Meal")
+                            .appActionLabelStyle()
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)

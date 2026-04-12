@@ -1,8 +1,26 @@
 import path from 'path'
+import { existsSync } from 'fs'
 import dotenv from 'dotenv'
 import { z } from 'zod'
 
-dotenv.config({ path: path.resolve(__dirname, '../../../../.env') })
+/** Repo-root `.env` when running from source (`server/src/config`). */
+const envFromSourceTree = path.resolve(__dirname, '../../../.env')
+/** Repo-root `.env` when running compiled (`server/dist/src/config`). */
+const envFromDistTree = path.resolve(__dirname, '../../../../.env')
+
+function resolveEnvPath(): string {
+	const candidates = [
+		envFromSourceTree,
+		envFromDistTree,
+		path.resolve(process.cwd(), '.env'),
+		path.resolve(process.cwd(), '..', '.env')
+	]
+	return candidates.find((p) => existsSync(p)) ?? envFromSourceTree
+}
+
+// Default dotenv does not override existing process.env keys. Empty exports in the shell
+// (e.g. R2_ACCESS_KEY_ID=) would otherwise hide values from the repo-root `.env`.
+dotenv.config({ path: resolveEnvPath(), override: true })
 
 const envSchema = z.object({
 	NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),

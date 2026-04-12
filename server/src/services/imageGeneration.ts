@@ -15,11 +15,12 @@ function getClient(): Together | null {
 	return client
 }
 
-export async function generateRecipeImage(recipeName: string, description?: string): Promise<Buffer | null> {
+export async function generateRecipeImage(recipeName: string, description?: string, styleHint?: string): Promise<Buffer | null> {
 	const together = getClient()
 	if (!together) return null
 
-	const prompt = `Professional food photography of ${recipeName}${description ? `, ${description}` : ''}, styled on a white plate, soft lighting, overhead shot, high quality`
+	const angle = styleHint || 'overhead shot'
+	const prompt = `Professional food photography of ${recipeName}${description ? `, ${description}` : ''}, styled on a white plate, soft lighting, ${angle}, high quality`
 
 	try {
 		const response = await together.images.generate({

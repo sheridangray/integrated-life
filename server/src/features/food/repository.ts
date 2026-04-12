@@ -1,17 +1,58 @@
 import mongoose from 'mongoose'
 import { Recipe, RecipeDocument } from '../../models/Recipe'
+
+function escapeRegex(s: string): string {
+	return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 import { MealPlan, MealPlanDocument } from '../../models/MealPlan'
 import { GroceryList, GroceryListDocument } from '../../models/GroceryList'
 import { FoodLogEntry, FoodLogEntryDocument } from '../../models/FoodLogEntry'
 
+export async function distinctRecipeTags(userId: string): Promise<string[]> {
+	const raw = await Recipe.distinct('tags', { $or: [{ userId }, { userId: null }] }).exec()
+	const flat = (raw as unknown[]).flatMap((t) => (typeof t === 'string' && t.trim() ? [t] : []))
+	return [...new Set(flat)].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+}
+
 export async function findRecipes(
 	userId: string,
-	filters: { search?: string; tag?: string; ingredient?: string; page: number; limit: number }
+	filters: {
+		search?: string
+		tag?: string
+		ingredient?: string
+		maxTotalTimeMinutes?: number
+		page: number
+		limit: number
+	}
 ): Promise<{ docs: RecipeDocument[]; total: number }> {
-	const query: Record<string, unknown> = { $or: [{ userId }, { userId: null }] }
-	if (filters.search) query.$or = [{ name: { $regex: filters.search, $options: "i" } }, { "ingredients.name": { $regex: filters.search, $options: "i" } }, { tags: { $regex: filters.search, $options: "i" } }]
-	if (filters.tag) query.tags = filters.tag
-	if (filters.ingredient) query['ingredients.name'] = { $regex: filters.ingredient, $options: 'i' }
+	const userMatch: Record<string, unknown> = { $or: [{ userId }, { userId: null }] }
+	const andParts: Record<string, unknown>[] = [userMatch]
+
+	const search = filters.search?.trim()
+	if (search) {
+		const rx = new RegExp(escapeRegex(search), 'i')
+		andParts.push({ $or: [{ name: rx }, { 'ingredients.name': rx }] })
+	}
+
+	const ingredient = filters.ingredient?.trim()
+	if (ingredient) {
+		andParts.push({ 'ingredients.name': { $regex: escapeRegex(ingredient), $options: 'i' } })
+	}
+
+	const tag = filters.tag?.trim()
+	if (tag) {
+		andParts.push({ tags: new RegExp(`^${escapeRegex(tag)}$`, 'i') })
+	}
+
+	if (filters.maxTotalTimeMinutes != null && filters.maxTotalTimeMinutes > 0) {
+		andParts.push({
+			$expr: {
+				$lte: [{ $add: ['$prepTime', '$cookTime'] }, filters.maxTotalTimeMinutes]
+			}
+		})
+	}
+
+	const query: Record<string, unknown> = andParts.length === 1 ? andParts[0] : { $and: andParts }
 
 	const total = await Recipe.countDocuments(query).exec()
 	const docs = await Recipe.find(query)
@@ -30,6 +71,15 @@ export async function findRecipeById(id: string, userId: string): Promise<Recipe
 
 export async function findRecipesByIds(ids: string[]): Promise<RecipeDocument[]> {
 	return Recipe.find({ _id: { $in: ids } }).exec()
+}
+
+export async function findRecipeVariants(variantGroupId: string, userId: string): Promise<RecipeDocument[]> {
+	return Recipe.find({
+		variantGroupId,
+		$or: [{ userId }, { userId: null }]
+	})
+		.sort({ isVariantPrimary: -1, createdAt: 1 })
+		.exec()
 }
 
 export async function createRecipe(userId: string, data: Record<string, unknown>): Promise<RecipeDocument> {
@@ -108,20 +158,8 @@ export async function deleteMealPlan(id: string, userId: string): Promise<boolea
 	return result !== null
 }
 
-export async function findGroceryLists(
-	userId: string,
-	filters: { page: number; limit: number }
-): Promise<{ docs: GroceryListDocument[]; total: number }> {
-	const query: Record<string, unknown> = { $or: [{ userId }, { userId: null }] }
-
-	const total = await GroceryList.countDocuments(query).exec()
-	const docs = await GroceryList.find(query)
-		.sort({ createdAt: -1 })
-		.skip((filters.page - 1) * filters.limit)
-		.limit(filters.limit)
-		.exec()
-
-	return { docs, total }
+export async function findAllGroceryListsForUser(userId: string): Promise<GroceryListDocument[]> {
+	return GroceryList.find({ userId }).sort({ updatedAt: -1 }).exec()
 }
 
 export async function findGroceryListById(id: string, userId: string): Promise<GroceryListDocument | null> {
@@ -143,6 +181,12 @@ export async function updateGroceryList(
 ): Promise<GroceryListDocument | null> {
 	if (!mongoose.isValidObjectId(id)) return null
 	return GroceryList.findOneAndUpdate({ _id: id, userId }, { $set: data }, { new: true }).exec()
+}
+
+export async function deleteGroceryList(id: string, userId: string): Promise<boolean> {
+	if (!mongoose.isValidObjectId(id)) return false
+	const result = await GroceryList.findOneAndDelete({ _id: id, userId }).exec()
+	return result !== null
 }
 
 export async function findFoodLogEntries(

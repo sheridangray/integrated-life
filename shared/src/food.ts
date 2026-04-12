@@ -109,7 +109,9 @@ export const RecipeSchema = z.object({
 	ingredients: z.array(IngredientSchema),
 	instructions: z.array(z.string()),
 	tags: z.array(z.string()),
-	nutritionPerServing: NutritionSchema
+	nutritionPerServing: NutritionSchema,
+	variantGroupId: z.string().optional(),
+	isVariantPrimary: z.boolean().optional()
 })
 export type Recipe = z.infer<typeof RecipeSchema>
 
@@ -123,6 +125,15 @@ export const RecipeFiltersSchema = z.object({
 	search: z.string().optional(),
 	tag: z.string().optional(),
 	ingredient: z.string().optional(),
+	/** Max prep + cook time in minutes (inclusive). */
+	maxTotalTimeMinutes: z.preprocess(
+		(val) => {
+			if (val === undefined || val === null || val === '') return undefined
+			const n = Number(val)
+			return Number.isFinite(n) && n > 0 ? Math.floor(n) : undefined
+		},
+		z.number().int().positive().optional()
+	),
 	page: z
 		.string()
 		.transform(Number)
@@ -144,7 +155,13 @@ export const MealSchema = z.object({
 	recipeId: z.string(),
 	scheduledDate: z.string(),
 	mealType: MealTypeEnum,
-	servings: z.number().int().positive().default(1)
+	servings: z.number().int().positive().default(1),
+	recipeName: z.string().optional(),
+	recipeImageUrl: z.string().optional(),
+	caloriesPerServing: z.number().optional(),
+	proteinPerServing: z.number().optional(),
+	carbsPerServing: z.number().optional(),
+	fatPerServing: z.number().optional()
 })
 export type Meal = z.infer<typeof MealSchema>
 
@@ -197,11 +214,23 @@ export type GroceryItem = z.infer<typeof GroceryItemSchema>
 export const GroceryListSchema = z.object({
 	id: z.string(),
 	userId: z.string(),
-	mealPlanId: z.string(),
+	mealPlanId: z.string().nullable(),
 	items: z.array(GroceryItemSchema),
 	status: GroceryListStatusEnum
 })
 export type GroceryList = z.infer<typeof GroceryListSchema>
+
+export const AddGroceryItemsIngredientSchema = z.object({
+	name: z.string().min(1),
+	quantity: z.number(),
+	unit: z.string().min(1),
+	category: z.string().min(1)
+})
+
+export const AddGroceryItemsSchema = z.object({
+	items: z.array(AddGroceryItemsIngredientSchema).min(1)
+})
+export type AddGroceryItems = z.infer<typeof AddGroceryItemsSchema>
 
 export const UpdateGroceryListSchema = z.object({
 	items: z.array(GroceryItemSchema).optional(),

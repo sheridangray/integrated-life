@@ -42,7 +42,7 @@
 		<string>com.googleusercontent.apps</string>
 	</array>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Integrated Life reads your health data including heart rate, activity, sleep, and environmental metrics to provide personalized insights.</string>
+	<string>Integrated Life reads your health data including heart rate, activity, sleep, environmental metrics, and Health profile fields (date of birth and biological sex as gender) when you import them, to provide personalized insights.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Integrated Life saves your workout data to Apple Health so your activity is tracked in one place.</string>
 	<key>UILaunchScreen</key>

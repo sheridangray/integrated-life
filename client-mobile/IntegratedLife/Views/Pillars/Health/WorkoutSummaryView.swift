@@ -79,8 +79,11 @@ struct WorkoutSummaryView: View {
 			Text("Couldn't generate insights")
 				.font(.subheadline)
 				.foregroundStyle(.secondary)
-			Button("Retry") {
+			Button {
 				Task { await loadInsight() }
+			} label: {
+				Text("Retry")
+					.appActionLabelStyle()
 			}
 			.buttonStyle(.bordered)
 		}
@@ -93,8 +96,11 @@ struct WorkoutSummaryView: View {
 			Text("AI insights aren't available right now")
 				.font(.subheadline)
 				.foregroundStyle(.secondary)
-			Button("Retry") {
+			Button {
 				Task { await loadInsight() }
+			} label: {
+				Text("Retry")
+					.appActionLabelStyle()
 			}
 			.buttonStyle(.bordered)
 		}

@@ -9,6 +9,8 @@ struct ProfileView: View {
 	@State private var selectedDOB: Date = Calendar.current.date(byAdding: .year, value: -30, to: Date()) ?? Date()
 	@State private var hasDOB = false
 	@State private var isProfileLoaded = false
+	@State private var isImportingDOB = false
+	@State private var dobImportAlertMessage: String?
 
 	private let genderOptions = ["female", "male", "other"]
 
@@ -42,6 +44,21 @@ struct ProfileView: View {
 					.onChange(of: selectedGender) {
 						guard isProfileLoaded else { return }
 						Task { await authState.updateProfile(gender: selectedGender.isEmpty ? nil : selectedGender, dateOfBirth: nil) }
+					}
+
+					if healthKitService.isHealthDataAvailable {
+						Button {
+							Task { await importPersonalInfoFromAppleHealth() }
+						} label: {
+							HStack {
+								Label("Import from Apple Health", systemImage: "heart.fill")
+								if isImportingDOB {
+									Spacer()
+									ProgressView()
+								}
+							}
+						}
+						.disabled(isImportingDOB)
 					}
 
 					if hasDOB {
@@ -93,6 +110,14 @@ struct ProfileView: View {
 			#endif
 			}
 			.navigationTitle("Profile")
+			.alert("Apple Health", isPresented: Binding(
+				get: { dobImportAlertMessage != nil },
+				set: { if !$0 { dobImportAlertMessage = nil } }
+			)) {
+				Button("OK", role: .cancel) { dobImportAlertMessage = nil }
+			} message: {
+				Text(dobImportAlertMessage ?? "")
+			}
 			.onAppear {
 				guard !isProfileLoaded, let user = authState.user else { return }
 				selectedGender = user.gender ?? ""
@@ -106,6 +131,37 @@ struct ProfileView: View {
 				isProfileLoaded = true
 			}
 		}
+	}
+
+	private func importPersonalInfoFromAppleHealth() async {
+		isImportingDOB = true
+		defer { isImportingDOB = false }
+
+		// Merges any newly added read types for users who connected Health earlier.
+		try? await healthKitService.requestAuthorization()
+
+		let dob = healthKitService.fetchDateOfBirth()
+		let gender = healthKitService.fetchBiologicalSexGender()
+
+		guard dob != nil || gender != nil else {
+			dobImportAlertMessage = "Could not read date of birth or sex. Add them in the Health app (profile), allow access under Settings → Health → Data Access & Devices → Integrated Life, or enter them manually below."
+			return
+		}
+
+		if let dob {
+			selectedDOB = dob
+			hasDOB = true
+		}
+		if let gender {
+			selectedGender = gender
+		}
+
+		guard isProfileLoaded else { return }
+		let formatter = ISO8601DateFormatter()
+		await authState.updateProfile(
+			gender: gender,
+			dateOfBirth: dob.map { formatter.string(from: $0) }
+		)
 	}
 }
 

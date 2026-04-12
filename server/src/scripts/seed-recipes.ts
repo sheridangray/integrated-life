@@ -1,9 +1,27 @@
+import path from 'path'
+import { existsSync } from 'fs'
+import dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import { runRecipeSeed } from '../seeds/recipes'
 
+/** Load monorepo-root `.env` (same layout as `src/config/env.ts`, but from `src/scripts`). */
+function loadRootEnv(): void {
+	const fromSource = path.resolve(__dirname, '../../../.env')
+	const fromDist = path.resolve(__dirname, '../../../../.env')
+	const candidates = [
+		fromSource,
+		fromDist,
+		path.resolve(process.cwd(), '.env'),
+		path.resolve(process.cwd(), '..', '.env')
+	]
+	const envPath = candidates.find((p) => existsSync(p)) ?? fromSource
+	dotenv.config({ path: envPath, override: true })
+}
+
+loadRootEnv()
+
 async function main() {
-	// On Render, env vars are injected directly (no .env file)
-	// On local dev, you need a .env file in server/ directory
+	// Render / CI: set MONGODB_URI in the environment. Local: root `.env` loaded above.
 	const mongoUrl = process.env.MONGODB_URI
 	
 	if (!mongoUrl) {

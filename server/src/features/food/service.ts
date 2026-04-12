@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import Anthropic from '@anthropic-ai/sdk'
 import { AppError } from '../../lib/errors'
 import { logger } from '../../lib/logger'
@@ -6,6 +7,7 @@ import * as anthropic from '../../integrations/anthropic'
 import * as imageGen from '../../services/imageGeneration'
 import * as storage from '../../services/storage'
 import * as repo from './repository'
+import type { GroceryListDocument } from '../../models/GroceryList'
 import type { PaginatedResult } from './types'
 
 const PANTRY_STAPLES = new Set([
@@ -56,22 +58,55 @@ function assignStore(category: string): 'costco' | 'safeway' | 'other' {
 	return COSTCO_CATEGORIES.has(category.toLowerCase()) ? 'costco' : 'safeway'
 }
 
+function coerceRecipeImageId(value: unknown): string {
+	if (typeof value === 'string') return value.trim()
+	if (value == null) return ''
+	const s = String(value).trim()
+	return s === 'undefined' || s === 'null' ? '' : s
+}
+
 function formatRecipe(doc: Record<string, unknown>) {
 	const d = doc as Record<string, unknown> & { _id: { toString(): string } }
-	
-	// Migration: convert legacy imageUrl to images array if needed
-	const images = (d.images as Array<{url: string; caption?: string; order: number}> | undefined) ?? []
-	const legacyUrl = d.imageUrl as string | undefined
-	const finalImages = images.length > 0 
-		? images.sort((a, b) => a.order - b.order)
-		: (legacyUrl ? [{ url: legacyUrl, caption: null, order: 0 }] : [])
-	
+
+	const rawImages =
+		(d.images as Array<{ url?: string; caption?: string | null; order?: number }> | undefined) ?? []
+	const imagesWithUrls = rawImages.filter(
+		(img) => typeof img?.url === 'string' && img.url.trim().length > 0
+	) as Array<{ url: string; caption?: string | null; order: number }>
+
+	const legacyRaw = d.imageUrl
+	const legacyUrl =
+		typeof legacyRaw === 'string' && legacyRaw.trim().length > 0 ? legacyRaw.trim() : undefined
+
+	let finalImages: Array<{ url: string; caption: string | null; order: number }> = []
+	if (imagesWithUrls.length > 0) {
+		finalImages = [...imagesWithUrls]
+			.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+			.map((img) => ({
+				url: img.url,
+				caption: img.caption ?? null,
+				order: img.order ?? 0
+			}))
+	} else if (legacyUrl) {
+		finalImages = [{ url: legacyUrl, caption: null, order: 0 }]
+	}
+
+	const imageId = coerceRecipeImageId(d.imageId)
+	if (finalImages.length === 0 && imageId) {
+		const derived = storage.getPublicUrl(imageId)
+		finalImages = [{ url: derived, caption: null, order: 0 }]
+		logger.debug('formatRecipe: derived image URL from imageId', { imageId, derived })
+	}
+
+	const imageUrlOut = (legacyUrl ?? finalImages[0]?.url ?? null) as string | null
+
 	return {
 		id: d._id.toString(),
 		userId: String(d.userId),
 		name: d.name,
 		description: d.description ?? null,
-		imageUrl: d.imageUrl ?? null, // Keep for backward compatibility
+		imageUrl: imageUrlOut,
+		imageId: imageId || null,
 		images: finalImages,
 		servings: d.servings,
 		prepTime: d.prepTime,
@@ -79,7 +114,9 @@ function formatRecipe(doc: Record<string, unknown>) {
 		ingredients: d.ingredients,
 		instructions: d.instructions,
 		tags: d.tags,
-		nutritionPerServing: d.nutritionPerServing
+		nutritionPerServing: d.nutritionPerServing,
+		...(d.variantGroupId && { variantGroupId: d.variantGroupId }),
+		...(d.isVariantPrimary && { isVariantPrimary: d.isVariantPrimary })
 	}
 }
 
@@ -102,15 +139,135 @@ function formatMealPlan(doc: Record<string, unknown>) {
 	}
 }
 
+type FormattedMealPlan = ReturnType<typeof formatMealPlan>
+
+/** Bulk-fetch referenced recipes and attach name, image, and macro data to each meal. */
+async function enrichMealPlan(plan: FormattedMealPlan): Promise<FormattedMealPlan> {
+	if (plan.meals.length === 0) return plan
+	const recipeIds = [...new Set(plan.meals.map((m) => m.recipeId))]
+	const recipes = await repo.findRecipesByIds(recipeIds)
+	const recipeMap = new Map(recipes.map((r) => [r._id.toString(), r]))
+
+	return {
+		...plan,
+		meals: plan.meals.map((m) => {
+			const recipe = recipeMap.get(m.recipeId)
+			if (!recipe) return m
+			const images = (recipe.images ?? []) as Array<{ url?: string }>
+			const imageUrl = images.find((i) => i.url)?.url ?? (recipe.imageUrl as string | undefined)
+			const nutrition = recipe.nutritionPerServing as Record<string, number> | undefined
+			return {
+				...m,
+				recipeName: recipe.name,
+				recipeImageUrl: imageUrl ?? undefined,
+				caloriesPerServing: nutrition?.calories,
+				proteinPerServing: nutrition?.protein,
+				carbsPerServing: nutrition?.carbs,
+				fatPerServing: nutrition?.fat
+			}
+		})
+	}
+}
+
 function formatGroceryList(doc: Record<string, unknown>) {
 	const d = doc as Record<string, unknown> & { _id: { toString(): string } }
 	return {
 		id: d._id.toString(),
 		userId: String(d.userId),
-		mealPlanId: String(d.mealPlanId),
+		mealPlanId: d.mealPlanId != null && d.mealPlanId !== '' ? String(d.mealPlanId) : null,
 		items: d.items,
 		status: d.status
 	}
+}
+
+type GroceryItemPlain = {
+	ingredient: { name: string; quantity: number; unit: string; category: string }
+	store: 'costco' | 'safeway' | 'other'
+	checked: boolean
+	notes?: string
+}
+
+function mergeGroceryItemLists(existing: GroceryItemPlain[], incoming: GroceryItemPlain[]): GroceryItemPlain[] {
+	const map = new Map<string, GroceryItemPlain>()
+	const keyOf = (i: GroceryItemPlain) => `${i.ingredient.name.toLowerCase().trim()}|${i.ingredient.unit}`
+
+	for (const item of existing) {
+		map.set(keyOf(item), {
+			ingredient: { ...item.ingredient },
+			store: item.store,
+			checked: item.checked,
+			notes: item.notes
+		})
+	}
+	for (const item of incoming) {
+		const k = keyOf(item)
+		const cur = map.get(k)
+		if (cur) {
+			cur.ingredient.quantity = Math.round((cur.ingredient.quantity + item.ingredient.quantity) * 100) / 100
+			if (cur.store !== item.store) cur.store = 'other'
+		} else {
+			map.set(k, {
+				ingredient: { ...item.ingredient },
+				store: item.store,
+				checked: item.checked,
+				notes: item.notes
+			})
+		}
+	}
+	return Array.from(map.values())
+}
+
+function grocerySubdocsToPlain(
+	items: Array<{
+		ingredient: { name: string; quantity: number; unit: string; category: string }
+		store: string
+		checked: boolean
+		notes?: string
+	}>
+): GroceryItemPlain[] {
+	return items.map((i) => ({
+		ingredient: {
+			name: i.ingredient.name,
+			quantity: i.ingredient.quantity,
+			unit: i.ingredient.unit,
+			category: i.ingredient.category
+		},
+		store: i.store as GroceryItemPlain['store'],
+		checked: i.checked,
+		notes: i.notes
+	}))
+}
+
+async function consolidateUserGroceryLists(userId: string): Promise<void> {
+	const docs = await repo.findAllGroceryListsForUser(userId)
+	if (docs.length <= 1) return
+
+	const primary = docs[0]
+	const chronological = [...docs].reverse()
+	let merged: GroceryItemPlain[] = []
+	for (const d of chronological) {
+		merged = mergeGroceryItemLists(merged, grocerySubdocsToPlain(d.items))
+	}
+
+	const updated = await repo.updateGroceryList(primary._id.toString(), userId, {
+		items: merged,
+		status: 'draft'
+	})
+	if (!updated) return
+
+	for (let i = 1; i < docs.length; i++) {
+		await repo.deleteGroceryList(docs[i]._id.toString(), userId)
+	}
+}
+
+/** One consolidated grocery list per user (merges legacy duplicates on read/write). */
+async function ensureEvergreenGroceryList(userId: string): Promise<GroceryListDocument> {
+	await consolidateUserGroceryLists(userId)
+	const docs = await repo.findAllGroceryListsForUser(userId)
+	if (docs.length === 0) {
+		return repo.createGroceryList(userId, { items: [], status: 'draft' })
+	}
+	return docs[0]
 }
 
 function formatFoodLogEntry(doc: Record<string, unknown>) {
@@ -131,18 +288,57 @@ function formatFoodLogEntry(doc: Record<string, unknown>) {
 	}
 }
 
+function deduplicateVariants(docs: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
+	const seen = new Map<string, Record<string, unknown>>()
+	const result: Array<Record<string, unknown>> = []
+
+	for (const doc of docs) {
+		const groupId = doc.variantGroupId as string | undefined
+		if (!groupId) {
+			result.push(doc)
+			continue
+		}
+		if (seen.has(groupId)) {
+			const existing = seen.get(groupId)!
+			if (doc.isVariantPrimary && !existing.isVariantPrimary) {
+				const idx = result.indexOf(existing)
+				if (idx !== -1) result[idx] = doc
+				seen.set(groupId, doc)
+			}
+			continue
+		}
+		seen.set(groupId, doc)
+		result.push(doc)
+	}
+
+	return result
+}
+
 export async function listRecipes(
 	userId: string,
-	filters: { search?: string; tag?: string; ingredient?: string; page: number; limit: number }
+	filters: {
+		search?: string
+		tag?: string
+		ingredient?: string
+		maxTotalTimeMinutes?: number
+		page: number
+		limit: number
+	}
 ): Promise<PaginatedResult<ReturnType<typeof formatRecipe>>> {
 	const { docs, total } = await repo.findRecipes(userId, filters)
+	const objects = docs.map((d) => d.toObject())
+	const deduplicated = deduplicateVariants(objects)
 	return {
-		items: docs.map((d) => formatRecipe(d.toObject())),
+		items: deduplicated.map((d) => formatRecipe(d)),
 		total,
 		page: filters.page,
 		limit: filters.limit,
 		totalPages: Math.ceil(total / filters.limit)
 	}
+}
+
+export async function listRecipeTags(userId: string): Promise<string[]> {
+	return repo.distinctRecipeTags(userId)
 }
 
 export async function getRecipe(id: string, userId: string) {
@@ -170,38 +366,40 @@ export async function deleteRecipe(id: string, userId: string) {
 export async function listMealPlans(
 	userId: string,
 	filters: { weekStartDate?: string; status?: string; page: number; limit: number }
-): Promise<PaginatedResult<ReturnType<typeof formatMealPlan>>> {
+): Promise<PaginatedResult<FormattedMealPlan>> {
 	const { docs, total } = await repo.findMealPlans(userId, filters)
-	return {
-		items: docs.map((d) => formatMealPlan(d.toObject())),
-		total,
-		page: filters.page,
-		limit: filters.limit,
-		totalPages: Math.ceil(total / filters.limit)
-	}
+	const items = await Promise.all(docs.map(async (d) => enrichMealPlan(formatMealPlan(d.toObject()))))
+	return { items, total, page: filters.page, limit: filters.limit, totalPages: Math.ceil(total / filters.limit) }
 }
 
 export async function getCurrentMealPlan(userId: string) {
 	const doc = await repo.findCurrentMealPlan(userId)
 	if (!doc) throw new AppError('No current meal plan found', 404)
-	return formatMealPlan(doc.toObject())
+	return enrichMealPlan(formatMealPlan(doc.toObject()))
 }
 
 export async function getMealPlan(id: string, userId: string) {
 	const doc = await repo.findMealPlanById(id, userId)
 	if (!doc) throw new AppError('Meal plan not found', 404)
-	return formatMealPlan(doc.toObject())
+	return enrichMealPlan(formatMealPlan(doc.toObject()))
 }
 
 export async function createMealPlan(userId: string, data: Record<string, unknown>) {
-	const doc = await repo.createMealPlan(userId, data)
-	return formatMealPlan(doc.toObject())
+	try {
+		const doc = await repo.createMealPlan(userId, data)
+		return enrichMealPlan(formatMealPlan(doc.toObject()))
+	} catch (err: unknown) {
+		if (err && typeof err === 'object' && 'code' in err && (err as { code: number }).code === 11000) {
+			throw new AppError('A meal plan already exists for this week', 409)
+		}
+		throw err
+	}
 }
 
 export async function updateMealPlan(id: string, userId: string, data: Record<string, unknown>) {
 	const doc = await repo.updateMealPlan(id, userId, data)
 	if (!doc) throw new AppError('Meal plan not found', 404)
-	return formatMealPlan(doc.toObject())
+	return enrichMealPlan(formatMealPlan(doc.toObject()))
 }
 
 export async function deleteMealPlan(id: string, userId: string) {
@@ -213,17 +411,18 @@ export async function listGroceryLists(
 	userId: string,
 	filters: { page: number; limit: number }
 ): Promise<PaginatedResult<ReturnType<typeof formatGroceryList>>> {
-	const { docs, total } = await repo.findGroceryLists(userId, filters)
+	const doc = await ensureEvergreenGroceryList(userId)
 	return {
-		items: docs.map((d) => formatGroceryList(d.toObject())),
-		total,
+		items: [formatGroceryList(doc.toObject())],
+		total: 1,
 		page: filters.page,
 		limit: filters.limit,
-		totalPages: Math.ceil(total / filters.limit)
+		totalPages: 1
 	}
 }
 
 export async function getGroceryList(id: string, userId: string) {
+	await ensureEvergreenGroceryList(userId)
 	const doc = await repo.findGroceryListById(id, userId)
 	if (!doc) throw new AppError('Grocery list not found', 404)
 	return formatGroceryList(doc.toObject())
@@ -268,7 +467,7 @@ export async function generateGroceryList(mealPlanId: string, userId: string) {
 		}
 	}
 
-	const items = Array.from(aggregated.entries()).map(([name, info]) => ({
+	const newItems: GroceryItemPlain[] = Array.from(aggregated.entries()).map(([name, info]) => ({
 		ingredient: {
 			name: name.charAt(0).toUpperCase() + name.slice(1),
 			quantity: Math.round(info.quantity * 100) / 100,
@@ -279,22 +478,53 @@ export async function generateGroceryList(mealPlanId: string, userId: string) {
 		checked: false
 	}))
 
-	const doc = await repo.createGroceryList(userId, {
-		mealPlanId,
-		items,
+	const list = await ensureEvergreenGroceryList(userId)
+	const existing = grocerySubdocsToPlain(list.items)
+	const merged = mergeGroceryItemLists(existing, newItems)
+	const updated = await repo.updateGroceryList(list._id.toString(), userId, {
+		items: merged,
 		status: 'draft'
 	})
+	if (!updated) throw new AppError('Grocery list not found', 404)
 
-	return formatGroceryList(doc.toObject())
+	return formatGroceryList(updated.toObject())
+}
+
+export async function addItemsToGroceryList(
+	userId: string,
+	items: Array<{ name: string; quantity: number; unit: string; category: string }>
+) {
+	const newSubdocs: GroceryItemPlain[] = items.map((ing) => ({
+		ingredient: {
+			name: ing.name,
+			quantity: Math.round(ing.quantity * 100) / 100,
+			unit: ing.unit,
+			category: ing.category
+		},
+		store: assignStore(ing.category),
+		checked: false
+	}))
+
+	const list = await ensureEvergreenGroceryList(userId)
+	const existing = grocerySubdocsToPlain(list.items)
+	const merged = mergeGroceryItemLists(existing, newSubdocs)
+	const updated = await repo.updateGroceryList(list._id.toString(), userId, {
+		items: merged,
+		status: 'draft'
+	})
+	if (!updated) throw new AppError('Grocery list not found', 404)
+	return formatGroceryList(updated.toObject())
 }
 
 export async function updateGroceryList(id: string, userId: string, data: Record<string, unknown>) {
+	await ensureEvergreenGroceryList(userId)
 	const doc = await repo.updateGroceryList(id, userId, data)
 	if (!doc) throw new AppError('Grocery list not found', 404)
 	return formatGroceryList(doc.toObject())
 }
 
 export async function initiateShopping(id: string, userId: string) {
+	await ensureEvergreenGroceryList(userId)
 	const doc = await repo.findGroceryListById(id, userId)
 	if (!doc) throw new AppError('Grocery list not found', 404)
 
@@ -517,24 +747,75 @@ const AI_RECIPE_SYSTEM_PROMPT = `You are a recipe assistant. Parse user requests
 Schema:
 {
   "name": string,
-  "description": string,
+  "description": string (1 sentence),
   "servings": number,
   "prepTime": number (minutes),
   "cookTime": number (minutes),
   "ingredients": [{ "name": string, "quantity": number, "unit": string, "category": string }],
   "instructions": string[],
   "tags": string[],
-  "nutritionPerServing": { "calories": number, "protein": number, "carbs": number, "fat": number, "fiber": number }
+  "nutritionPerServing": {
+    "calories": number, "protein": number (g), "carbs": number (g), "fat": number (g), "fiber": number (g),
+    "sugar": number (g), "water": number (mL),
+    "saturatedFat": number (g), "monounsaturatedFat": number (g), "polyunsaturatedFat": number (g),
+    "cholesterol": number (mg), "transFat": number (g),
+    "vitaminA": number (mcg), "vitaminB6": number (mg), "vitaminB12": number (mcg),
+    "vitaminC": number (mg), "vitaminD": number (mcg), "vitaminE": number (mg), "vitaminK": number (mcg),
+    "thiamin": number (mg), "riboflavin": number (mg), "niacin": number (mg),
+    "folate": number (mcg), "pantothenicAcid": number (mg), "biotin": number (mcg),
+    "calcium": number (mg), "iron": number (mg), "magnesium": number (mg), "manganese": number (mg),
+    "phosphorus": number (mg), "potassium": number (mg), "zinc": number (mg), "selenium": number (mcg),
+    "copper": number (mg), "chromium": number (mcg), "molybdenum": number (mcg),
+    "chloride": number (mg), "iodine": number (mcg), "sodium": number (mg), "caffeine": number (mg)
+  }
 }
 
+All nutritionPerServing fields are REQUIRED — estimate realistic values based on the ingredients.
 Valid ingredient categories: produce, meat, seafood, dairy, bakery, pantry, frozen, beverages, other.
 Valid tags include: quick, kid-friendly, healthy, weeknight, weekend, asian, mediterranean, american, mexican, italian, vegetarian, low-carb, comfort, breakfast, seafood.
 
-When user says "add a recipe for X", create complete recipe JSON.
-When user says "make it vegetarian", modify the recipe to be vegetarian.
-When user says "double the servings", scale quantities accordingly.
-
 Respond with ONLY valid JSON, no markdown, no explanation.`
+
+const IMAGE_ANGLE_PROMPTS = [
+	'overhead shot, top-down view',
+	'45-degree angle, three-quarter view',
+	'close-up detail shot, macro perspective',
+	'side view, eye-level angle'
+]
+
+async function generateRecipeImages(
+	recipeName: string,
+	description?: string
+): Promise<{ images: Array<{ url: string; caption: string | null; order: number }>; imageUrl?: string; imageId?: string }> {
+	const slug = recipeName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+	const ts = Date.now()
+
+	const results = await Promise.allSettled(
+		IMAGE_ANGLE_PROMPTS.map(async (anglePrompt, idx) => {
+			const buffer = await imageGen.generateRecipeImage(recipeName, description, anglePrompt)
+			if (!buffer) return null
+			const key = `recipes/${ts}-${slug}-${idx}.png`
+			const url = await storage.uploadImage(buffer, key, 'image/png')
+			return { url, key, caption: null as string | null, order: idx }
+		})
+	)
+
+	const images: Array<{ url: string; caption: string | null; order: number }> = []
+	let imageUrl: string | undefined
+	let imageId: string | undefined
+
+	for (const result of results) {
+		if (result.status === 'fulfilled' && result.value) {
+			images.push({ url: result.value.url, caption: result.value.caption, order: result.value.order })
+			if (!imageUrl) {
+				imageUrl = result.value.url
+				imageId = result.value.key
+			}
+		}
+	}
+
+	return { images, imageUrl, imageId }
+}
 
 export async function createRecipeFromAI(prompt: string, userId: string) {
 	if (!env.ANTHROPIC_API_KEY) {
@@ -547,7 +828,7 @@ export async function createRecipeFromAI(prompt: string, userId: string) {
 	try {
 		const response = await client.messages.create({
 			model: 'claude-sonnet-4-6',
-			max_tokens: 2048,
+			max_tokens: 4096,
 			messages: [
 				{ role: 'user', content: prompt }
 			],
@@ -566,20 +847,19 @@ export async function createRecipeFromAI(prompt: string, userId: string) {
 		throw new AppError('Failed to generate recipe from AI', 502)
 	}
 
-	// Generate image for the recipe
 	let imageUrl: string | undefined
 	let imageId: string | undefined
+	let images: Array<{ url: string; caption: string | null; order: number }> = []
 	try {
-		const imageBuffer = await imageGen.generateRecipeImage(
+		const result = await generateRecipeImages(
 			recipeData.name as string,
 			recipeData.description as string | undefined
 		)
-		if (imageBuffer) {
-			imageId = `recipes/${Date.now()}-${(recipeData.name as string).toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`
-			imageUrl = await storage.uploadImage(imageBuffer, imageId, 'image/png')
-		}
+		images = result.images
+		imageUrl = result.imageUrl
+		imageId = result.imageId
 	} catch (err) {
-		logger.warn('Failed to generate/upload recipe image, continuing without image', {
+		logger.warn('Failed to generate/upload recipe images, continuing without images', {
 			error: (err as Error).message
 		})
 	}
@@ -587,10 +867,145 @@ export async function createRecipeFromAI(prompt: string, userId: string) {
 	const doc = await repo.createRecipe(userId, {
 		...recipeData,
 		...(imageUrl && { imageUrl }),
-		...(imageId && { imageId })
+		...(imageId && { imageId }),
+		...(images.length > 0 && { images })
 	})
 
 	return formatRecipe(doc.toObject())
+}
+
+const AI_RECIPE_EDIT_SYSTEM_PROMPT = `You are a recipe editor. You will receive an existing recipe as JSON and an edit instruction. Apply the edit and return the complete modified recipe JSON.
+
+Return the FULL recipe with all fields — same schema as below. Adjust nutritionPerServing realistically based on any ingredient changes.
+
+Schema:
+{
+  "name": string,
+  "description": string (1 sentence),
+  "servings": number,
+  "prepTime": number (minutes),
+  "cookTime": number (minutes),
+  "ingredients": [{ "name": string, "quantity": number, "unit": string, "category": string }],
+  "instructions": string[],
+  "tags": string[],
+  "nutritionPerServing": {
+    "calories": number, "protein": number (g), "carbs": number (g), "fat": number (g), "fiber": number (g),
+    "sugar": number (g), "water": number (mL),
+    "saturatedFat": number (g), "monounsaturatedFat": number (g), "polyunsaturatedFat": number (g),
+    "cholesterol": number (mg), "transFat": number (g),
+    "vitaminA": number (mcg), "vitaminB6": number (mg), "vitaminB12": number (mcg),
+    "vitaminC": number (mg), "vitaminD": number (mcg), "vitaminE": number (mg), "vitaminK": number (mcg),
+    "thiamin": number (mg), "riboflavin": number (mg), "niacin": number (mg),
+    "folate": number (mcg), "pantothenicAcid": number (mg), "biotin": number (mcg),
+    "calcium": number (mg), "iron": number (mg), "magnesium": number (mg), "manganese": number (mg),
+    "phosphorus": number (mg), "potassium": number (mg), "zinc": number (mg), "selenium": number (mcg),
+    "copper": number (mg), "chromium": number (mcg), "molybdenum": number (mcg),
+    "chloride": number (mg), "iodine": number (mcg), "sodium": number (mg), "caffeine": number (mg)
+  }
+}
+
+All nutritionPerServing fields are REQUIRED.
+Valid ingredient categories: produce, meat, seafood, dairy, bakery, pantry, frozen, beverages, other.
+Respond with ONLY valid JSON, no markdown, no explanation.`
+
+export async function editRecipeWithAI(
+	recipeId: string,
+	prompt: string,
+	action: 'overwrite' | 'variant',
+	userId: string
+) {
+	if (!env.ANTHROPIC_API_KEY) {
+		throw new AppError('AI recipe editing not available', 503)
+	}
+
+	const existing = await repo.findRecipeById(recipeId, userId)
+	if (!existing) throw new AppError('Recipe not found', 404)
+
+	const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
+
+	let recipeData: Record<string, unknown>
+	try {
+		const existingJson = JSON.stringify({
+			name: existing.name,
+			description: existing.description,
+			servings: existing.servings,
+			prepTime: existing.prepTime,
+			cookTime: existing.cookTime,
+			ingredients: existing.ingredients,
+			instructions: existing.instructions,
+			tags: existing.tags,
+			nutritionPerServing: existing.nutritionPerServing
+		})
+
+		const response = await client.messages.create({
+			model: 'claude-sonnet-4-6',
+			max_tokens: 4096,
+			messages: [
+				{
+					role: 'user',
+					content: `Current recipe:\n${existingJson}\n\nEdit instruction: ${prompt}`
+				}
+			],
+			system: AI_RECIPE_EDIT_SYSTEM_PROMPT
+		})
+
+		const textBlock = response.content.find((b) => b.type === 'text')
+		if (!textBlock || textBlock.type !== 'text') {
+			throw new AppError('AI returned no response', 502)
+		}
+
+		recipeData = JSON.parse(textBlock.text) as Record<string, unknown>
+	} catch (err) {
+		if (err instanceof AppError) throw err
+		logger.error('AI recipe edit failed', { error: (err as Error).message })
+		throw new AppError('Failed to edit recipe with AI', 502)
+	}
+
+	let imageResult: { images: Array<{ url: string; caption: string | null; order: number }>; imageUrl?: string; imageId?: string } = { images: [] }
+	try {
+		imageResult = await generateRecipeImages(
+			recipeData.name as string,
+			recipeData.description as string | undefined
+		)
+	} catch (err) {
+		logger.warn('Failed to generate images for edited recipe', { error: (err as Error).message })
+	}
+
+	const fullData = {
+		...recipeData,
+		...(imageResult.imageUrl && { imageUrl: imageResult.imageUrl }),
+		...(imageResult.imageId && { imageId: imageResult.imageId }),
+		...(imageResult.images.length > 0 && { images: imageResult.images })
+	}
+
+	if (action === 'overwrite') {
+		const doc = await repo.updateRecipe(recipeId, userId, fullData)
+		if (!doc) throw new AppError('Failed to update recipe', 500)
+		return formatRecipe(doc.toObject())
+	}
+
+	// action === 'variant': create a new recipe linked to the same variant group
+	const groupId = existing.variantGroupId || crypto.randomUUID()
+
+	if (!existing.variantGroupId) {
+		await repo.updateRecipe(recipeId, userId, {
+			variantGroupId: groupId,
+			isVariantPrimary: true
+		})
+	}
+
+	const doc = await repo.createRecipe(userId, {
+		...fullData,
+		variantGroupId: groupId,
+		isVariantPrimary: false
+	})
+
+	return formatRecipe(doc.toObject())
+}
+
+export async function listRecipeVariants(variantGroupId: string, userId: string) {
+	const docs = await repo.findRecipeVariants(variantGroupId, userId)
+	return docs.map((d) => formatRecipe(d.toObject()))
 }
 
 export async function getMealPlanCookTime(mealPlanId: string, userId: string) {

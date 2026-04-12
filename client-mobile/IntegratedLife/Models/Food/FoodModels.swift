@@ -181,10 +181,10 @@ struct Nutrition: Codable, Equatable {
 
 struct Ingredient: Codable, Identifiable, Equatable {
     var id: String { "\(name)-\(quantity)-\(unit)" }
-    let name: String
-    let quantity: Double
-    let unit: String
-    let category: IngredientCategory
+    var name: String
+    var quantity: Double
+    var unit: String
+    var category: IngredientCategory
 }
 
 // MARK: - Recipe Image
@@ -212,6 +212,8 @@ struct Recipe: Codable, Identifiable, Equatable {
     let instructions: [String]
     let tags: [String]
     let nutritionPerServing: Nutrition
+    let variantGroupId: String?
+    let isVariantPrimary: Bool?
 
     var totalTime: Int { prepTime + cookTime }
 
@@ -232,7 +234,7 @@ struct Recipe: Codable, Identifiable, Equatable {
     enum CodingKeys: String, CodingKey {
         case id, userId, name, description, imageUrl, images
         case servings, prepTime, cookTime, ingredients, instructions, tags
-        case nutritionPerServing
+        case nutritionPerServing, variantGroupId, isVariantPrimary
     }
     
     init(from decoder: Decoder) throws {
@@ -249,6 +251,8 @@ struct Recipe: Codable, Identifiable, Equatable {
         instructions = try container.decode([String].self, forKey: .instructions)
         tags = try container.decode([String].self, forKey: .tags)
         nutritionPerServing = try container.decode(Nutrition.self, forKey: .nutritionPerServing)
+        variantGroupId = try container.decodeIfPresent(String.self, forKey: .variantGroupId)
+        isVariantPrimary = try container.decodeIfPresent(Bool.self, forKey: .isVariantPrimary)
         
         // Handle images array with migration fallback
         if let decodedImages = try? container.decode([RecipeImage].self, forKey: .images), !decodedImages.isEmpty {
@@ -275,6 +279,8 @@ struct Recipe: Codable, Identifiable, Equatable {
         try container.encode(instructions, forKey: .instructions)
         try container.encode(tags, forKey: .tags)
         try container.encode(nutritionPerServing, forKey: .nutritionPerServing)
+        try container.encodeIfPresent(variantGroupId, forKey: .variantGroupId)
+        try container.encodeIfPresent(isVariantPrimary, forKey: .isVariantPrimary)
     }
 }
 
@@ -309,14 +315,20 @@ struct Meal: Codable, Identifiable, Equatable {
     let recipeId: String
     let scheduledDate: String
     let mealType: MealType
-    let servings: Int
+    var servings: Int
+    var recipeName: String?
+    var recipeImageUrl: String?
+    var caloriesPerServing: Int?
+    var proteinPerServing: Int?
+    var carbsPerServing: Int?
+    var fatPerServing: Int?
 }
 
 struct MealPlan: Codable, Identifiable, Equatable {
     let id: String
     let userId: String
     let weekStartDate: String
-    let meals: [Meal]
+    var meals: [Meal]
     let status: MealPlanStatus
 }
 
@@ -348,18 +360,30 @@ struct DayCookTime: Codable, Equatable {
 
 struct GroceryItem: Codable, Identifiable, Equatable {
     var id: String { "\(ingredient.name)-\(store.rawValue)" }
-    let ingredient: Ingredient
+    var ingredient: Ingredient
     let store: Store
     var checked: Bool
-    let notes: String?
+    var notes: String?
 }
 
 struct GroceryList: Codable, Identifiable, Equatable {
     let id: String
     let userId: String
-    let mealPlanId: String
+    let mealPlanId: String?
     var items: [GroceryItem]
     let status: GroceryListStatus
+}
+
+/// Body for `POST /v1/food/grocery-lists/add-items`
+struct AddGroceryItemPayload: Encodable, Equatable {
+    let name: String
+    let quantity: Double
+    let unit: String
+    let category: String
+}
+
+struct AddGroceryItemsRequestBody: Encodable {
+    let items: [AddGroceryItemPayload]
 }
 
 struct GenerateGroceryListRequest: Encodable {

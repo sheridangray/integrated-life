@@ -98,6 +98,32 @@ describe('Food Pillar Integration Tests', () => {
 			expect(res.body).toHaveProperty('page')
 		})
 
+		it('GET /v1/food/recipes/tags → 200', async () => {
+			const res = await request(app)
+				.get('/v1/food/recipes/tags')
+				.set('Authorization', `Bearer ${accessToken}`)
+				.expect(200)
+
+			expect(res.body.tags).toBeInstanceOf(Array)
+			expect(res.body.tags).toContain('healthy')
+		})
+
+		it('GET /v1/food/recipes?maxTotalTimeMinutes filters by prep + cook', async () => {
+			const tooTight = await request(app)
+				.get('/v1/food/recipes?maxTotalTimeMinutes=25')
+				.set('Authorization', `Bearer ${accessToken}`)
+				.expect(200)
+
+			expect(tooTight.body.items.some((r: { id: string }) => r.id === recipeId)).toBe(false)
+
+			const ok = await request(app)
+				.get('/v1/food/recipes?maxTotalTimeMinutes=30')
+				.set('Authorization', `Bearer ${accessToken}`)
+				.expect(200)
+
+			expect(ok.body.items.some((r: { id: string }) => r.id === recipeId)).toBe(true)
+		})
+
 		it('GET /v1/food/recipes/:id → 200 returns recipe', async () => {
 			const res = await request(app)
 				.get(`/v1/food/recipes/${recipeId}`)
@@ -200,6 +226,36 @@ describe('Food Pillar Integration Tests', () => {
 
 	describe('Grocery Lists', () => {
 		let groceryListId: string
+		let evergreenListId: string
+
+		it('POST /v1/food/grocery-lists/add-items → 200 creates or updates draft list', async () => {
+			const res = await request(app)
+				.post('/v1/food/grocery-lists/add-items')
+				.set('Authorization', `Bearer ${accessToken}`)
+				.send({
+					items: [{ name: 'Lime', quantity: 2, unit: 'whole', category: 'produce' }]
+				})
+				.expect(200)
+
+			expect(res.body.status).toBe('draft')
+			evergreenListId = res.body.id
+			expect(
+				res.body.items.some((i: { ingredient: { name: string } }) =>
+					i.ingredient.name.toLowerCase().includes('lime')
+				)
+			).toBe(true)
+		})
+
+		it('GET /v1/food/grocery-lists → 200 returns single evergreen list', async () => {
+			const res = await request(app)
+				.get('/v1/food/grocery-lists')
+				.set('Authorization', `Bearer ${accessToken}`)
+				.expect(200)
+
+			expect(res.body.total).toBe(1)
+			expect(res.body.items).toHaveLength(1)
+			expect(res.body.items[0].id).toBe(evergreenListId)
+		})
 
 		it('POST /v1/food/grocery-lists/generate → 201 generates from meal plan', async () => {
 			const recipe2 = {
@@ -244,10 +300,12 @@ describe('Food Pillar Integration Tests', () => {
 				.expect(201)
 
 			expect(res.body).toHaveProperty('id')
+			expect(res.body.id).toBe(evergreenListId)
 			expect(res.body.items).toBeInstanceOf(Array)
 			expect(res.body.status).toBe('draft')
 
 			const names = res.body.items.map((i: Record<string, Record<string, string>>) => i.ingredient.name.toLowerCase())
+			expect(names.some((n: string) => n.includes('lime'))).toBe(true)
 			expect(names).not.toContain('olive oil')
 			expect(names).not.toContain('salt')
 			expect(names).not.toContain('jasmine rice')

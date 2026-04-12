@@ -10,6 +10,8 @@ struct HealthKitIntegrationView: View {
 	var body: some View {
 		List {
 			connectionStatusSection
+			connectButtonSection
+			writePermissionSection
 
 			ForEach(HealthKitDataType.byCategory, id: \.category) { group in
 				Section {
@@ -39,10 +41,6 @@ struct HealthKitIntegrationView: View {
 					Label(group.category.rawValue, systemImage: group.category.icon)
 				}
 			}
-
-			writePermissionSection
-
-			connectButtonSection
 		}
 		.navigationTitle("Apple Health")
 	}

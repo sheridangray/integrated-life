@@ -64,7 +64,7 @@ struct CleanerRotationView: View {
                         Task { await householdState.advanceCleanerRotation() }
                     } label: {
                         Label("Advance Rotation", systemImage: "arrow.forward.circle.fill")
-                            .font(.subheadline.weight(.medium))
+                            .appActionLabelStyle()
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)

@@ -1,11 +1,26 @@
 import SwiftUI
 
+// MARK: - Typography
+
+/// Shared text styles so action labels read consistently across pillars (Home, Food, Health, etc.).
+enum AppTypography {
+	/// Labels for tappable actions: full-width CTAs, bordered / prominent buttons, and row actions like “Start”.
+	static let buttonLabel = Font.body.weight(.semibold)
+}
+
+extension View {
+	/// Standard font for button labels. Use with `PrimaryButtonStyle`, `.bordered`, `.borderedProminent`, etc.
+	func appActionLabelStyle() -> some View {
+		font(AppTypography.buttonLabel)
+	}
+}
+
 // MARK: - Button Styles
 
 struct PrimaryButtonStyle: ButtonStyle {
 	func makeBody(configuration: Configuration) -> some View {
 		configuration.label
-			.font(.body.weight(.medium))
+			.font(AppTypography.buttonLabel)
 			.frame(maxWidth: .infinity)
 			.frame(height: AppMetrics.buttonHeight)
 			.background(Color.blue.opacity(configuration.isPressed ? 0.85 : 1.0))
@@ -17,7 +32,7 @@ struct PrimaryButtonStyle: ButtonStyle {
 struct SecondaryButtonStyle: ButtonStyle {
 	func makeBody(configuration: Configuration) -> some View {
 		configuration.label
-			.font(.body.weight(.medium))
+			.font(AppTypography.buttonLabel)
 			.frame(maxWidth: .infinity)
 			.frame(height: AppMetrics.buttonHeight)
 			.background(Color.blue.opacity(configuration.isPressed ? 0.15 : 0.1))
@@ -29,7 +44,7 @@ struct SecondaryButtonStyle: ButtonStyle {
 struct SuccessButtonStyle: ButtonStyle {
 	func makeBody(configuration: Configuration) -> some View {
 		configuration.label
-			.font(.body.weight(.medium))
+			.font(AppTypography.buttonLabel)
 			.frame(maxWidth: .infinity)
 			.frame(height: AppMetrics.buttonHeight)
 			.background(Color.green.opacity(configuration.isPressed ? 0.85 : 1.0))

@@ -16,6 +16,8 @@ export type RecipeDocument = Document & {
 	servings: number
 	prepTime: number
 	cookTime: number
+	variantGroupId?: string
+	isVariantPrimary?: boolean
 	ingredients: Array<{
 		name: string
 		quantity: number
@@ -149,7 +151,9 @@ const recipeSchema = new Schema<RecipeDocument>(
 		ingredients: [ingredientSchema],
 		instructions: [{ type: String }],
 		tags: [{ type: String }],
-		nutritionPerServing: { type: nutritionSchema, required: true }
+		nutritionPerServing: { type: nutritionSchema, required: true },
+		variantGroupId: { type: String, default: null },
+		isVariantPrimary: { type: Boolean, default: false }
 	},
 	{ timestamps: true }
 )
@@ -157,6 +161,7 @@ const recipeSchema = new Schema<RecipeDocument>(
 recipeSchema.index({ userId: 1 })
 recipeSchema.index({ tags: 1 })
 recipeSchema.index({ name: 'text' })
+recipeSchema.index({ variantGroupId: 1 })
 
 export const Recipe: Model<RecipeDocument> =
 	mongoose.models.Recipe ?? mongoose.model<RecipeDocument>('Recipe', recipeSchema)

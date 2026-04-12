@@ -31,7 +31,6 @@ const exerciseSchema = new Schema<ExerciseDocument>(
 	{ timestamps: true }
 )
 
-exerciseSchema.index({ slug: 1 })
 exerciseSchema.index({ bodyParts: 1 })
 exerciseSchema.index({ muscles: 1 })
 exerciseSchema.index({ resistanceType: 1 })

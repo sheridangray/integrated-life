@@ -72,6 +72,41 @@ final class HealthKitService: ObservableObject {
 		healthStore.authorizationStatus(for: type)
 	}
 
+	// MARK: - Profile characteristics
+
+	/// Date of birth from the Health app profile, if the user has set it and granted read access.
+	func fetchDateOfBirth() -> Date? {
+		guard isHealthDataAvailable else { return nil }
+		do {
+			let components = try healthStore.dateOfBirthComponents()
+			guard let date = Calendar.current.date(from: components) else { return nil }
+			let cal = Calendar.current
+			let year = cal.component(.year, from: date)
+			let thisYear = cal.component(.year, from: Date())
+			guard year >= 1900, year <= thisYear, date <= Date() else { return nil }
+			return cal.startOfDay(for: date)
+		} catch {
+			return nil
+		}
+	}
+
+	/// Biological sex from the Health app profile, mapped to profile `gender` values (`female`, `male`, `other`).
+	func fetchBiologicalSexGender() -> String? {
+		guard isHealthDataAvailable else { return nil }
+		do {
+			let biologicalSex = try healthStore.biologicalSex().biologicalSex
+			switch biologicalSex {
+			case .female: return "female"
+			case .male: return "male"
+			case .other: return "other"
+			case .notSet: return nil
+			@unknown default: return nil
+			}
+		} catch {
+			return nil
+		}
+	}
+
 	// MARK: - Read Quantity Samples
 
 	func fetchQuantitySamples(

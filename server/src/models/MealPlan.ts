@@ -36,7 +36,7 @@ const mealPlanSchema = new Schema<MealPlanDocument>(
 	{ timestamps: true }
 )
 
-mealPlanSchema.index({ userId: 1, weekStartDate: -1 })
+mealPlanSchema.index({ userId: 1, weekStartDate: 1 }, { unique: true })
 mealPlanSchema.index({ userId: 1, status: 1 })
 
 export const MealPlan: Model<MealPlanDocument> =

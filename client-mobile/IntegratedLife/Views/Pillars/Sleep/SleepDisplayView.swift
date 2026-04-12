@@ -19,8 +19,13 @@ struct SleepDisplayView: View {
                 } description: {
                     Text(errorMessage)
                 } actions: {
-                    Button("Retry") { Task { await state.loadData() } }
-                        .buttonStyle(.bordered)
+                    Button {
+                        Task { await state.loadData() }
+                    } label: {
+                        Text("Retry")
+                            .appActionLabelStyle()
+                    }
+                    .buttonStyle(.bordered)
                 }
                 .padding(.top, 40)
             } else if state.currentNights.isEmpty { 

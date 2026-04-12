@@ -34,7 +34,6 @@ const userSchema = new Schema<UserDocument>(
 	{ timestamps: true }
 )
 
-userSchema.index({ googleId: 1 })
 userSchema.index({ email: 1 })
 
 export const User: Model<UserDocument> = mongoose.models.User ?? mongoose.model<UserDocument>('User', userSchema)

@@ -14,7 +14,8 @@ export type GroceryItemSubdoc = {
 
 export type GroceryListDocument = Document & {
 	userId: mongoose.Types.ObjectId
-	mealPlanId: mongoose.Types.ObjectId
+	/** Set when the list was generated from a meal plan; omitted for ad-hoc / recipe-picked lists. */
+	mealPlanId?: mongoose.Types.ObjectId
 	items: GroceryItemSubdoc[]
 	status: 'draft' | 'ordered' | 'complete'
 	createdAt: Date
@@ -43,8 +44,8 @@ const groceryItemSchema = new Schema<GroceryItemSubdoc>(
 
 const groceryListSchema = new Schema<GroceryListDocument>(
 	{
-		userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-		mealPlanId: { type: Schema.Types.ObjectId, ref: 'MealPlan', required: true },
+			userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+		mealPlanId: { type: Schema.Types.ObjectId, ref: 'MealPlan', required: false },
 		items: [groceryItemSchema],
 		status: { type: String, required: true, default: 'draft' }
 	},

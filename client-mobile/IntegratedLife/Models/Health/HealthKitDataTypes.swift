@@ -120,6 +120,12 @@ extension HealthKitDataType {
 		}
 		if let ecg = ecgType { set.insert(ecg) }
 		set.insert(HKObjectType.workoutType())
+		if let dob = HKObjectType.characteristicType(forIdentifier: .dateOfBirth) {
+			set.insert(dob)
+		}
+		if let sex = HKObjectType.characteristicType(forIdentifier: .biologicalSex) {
+			set.insert(sex)
+		}
 		return set
 	}()
 

@@ -49,9 +49,12 @@ struct RoutineManagerView: View {
 				.font(.subheadline)
 				.foregroundStyle(.tertiary)
 				.multilineTextAlignment(.center)
-			Button("Create Routine") {
+			Button {
 				editingRoutine = nil
 				showEditor = true
+			} label: {
+				Text("Create Routine")
+					.appActionLabelStyle()
 			}
 			.buttonStyle(.borderedProminent)
 		}

@@ -144,6 +144,7 @@ struct MonitorDetailView: View {
 					analysis == nil ? "Analyze with AI" : "Re-analyze",
 					systemImage: "sparkles"
 				)
+				.appActionLabelStyle()
 			}
 			.frame(maxWidth: .infinity)
 		}

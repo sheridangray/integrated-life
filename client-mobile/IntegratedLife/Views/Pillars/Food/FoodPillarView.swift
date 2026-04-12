@@ -11,7 +11,7 @@ enum FoodTab: String, CaseIterable, Identifiable {
 
 enum FoodNavDestination: Hashable {
     case recipeDetail(String)
-    case groceryListDetail(String)
+    case recipeDetailFromMealPlan(recipeId: String, planId: String, mealIndex: Int, currentServings: Int)
     case barcodeScanner
     case mealScanner
     case nutritionDetail(String)
@@ -35,13 +35,13 @@ struct FoodPillarView: View {
 
             switch selectedTab {
             case .mealPlan:
-                MealPlanView(foodState: foodState)
+                MealPlanView(foodState: foodState, selectedTab: $selectedTab)
             case .recipes:
                 RecipeListView(foodState: foodState)
             case .log:
                 FoodLogView(foodState: foodState)
             case .grocery:
-                GroceryListsView(foodState: foodState)
+                GroceryTabView(foodState: foodState)
             }
         }
         .navigationTitle("Food")
@@ -51,8 +51,15 @@ struct FoodPillarView: View {
             switch destination {
             case .recipeDetail(let id):
                 RecipeDetailView(recipeId: id, foodState: foodState)
-            case .groceryListDetail(let id):
-                GroceryListDetailView(groceryListId: id, foodState: foodState)
+            case .recipeDetailFromMealPlan(let recipeId, let planId, let mealIndex, let currentServings):
+                RecipeDetailView(
+                    recipeId: recipeId,
+                    foodState: foodState,
+                    showServingsStepper: true,
+                    mealPlanId: planId,
+                    mealIndex: mealIndex,
+                    mealCurrentServings: currentServings
+                )
             case .barcodeScanner:
                 BarcodeScannerView(foodState: foodState)
             case .mealScanner:

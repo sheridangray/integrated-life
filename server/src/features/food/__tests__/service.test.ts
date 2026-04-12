@@ -2,9 +2,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('../repository')
 vi.mock('../../../integrations/anthropic')
+vi.mock('../../../services/imageGeneration')
+vi.mock('../../../services/storage')
+vi.mock('@anthropic-ai/sdk')
+vi.mock('../../../config', () => ({
+	env: {
+		ANTHROPIC_API_KEY: 'test-key',
+		TOGETHER_AI_API_KEY: 'test-key'
+	}
+}))
 
 import * as repo from '../repository'
 import * as anthropic from '../../../integrations/anthropic'
+import * as imageGen from '../../../services/imageGeneration'
+import * as storage from '../../../services/storage'
+import Anthropic from '@anthropic-ai/sdk'
 import * as service from '../service'
 
 beforeEach(() => {
@@ -71,6 +83,32 @@ function mockFoodLogDoc(overrides = {}) {
 }
 
 describe('Grocery List Generation', () => {
+	const emptyEvergreenList = {
+		_id: { toString: () => 'list-1' },
+		userId: 'user-1',
+		items: [] as unknown[],
+		status: 'draft',
+		toObject() {
+			return this
+		}
+	}
+
+	beforeEach(() => {
+		vi.mocked(repo.findAllGroceryListsForUser).mockResolvedValue([] as never)
+		vi.mocked(repo.createGroceryList).mockResolvedValue(emptyEvergreenList as never)
+		vi.mocked(repo.updateGroceryList).mockImplementation((_id, _userId, data) =>
+			Promise.resolve({
+				_id: { toString: () => 'list-1' },
+				userId: 'user-1',
+				items: data.items as unknown[],
+				status: (data.status as string) ?? 'draft',
+				toObject() {
+					return this
+				}
+			} as never)
+		)
+	})
+
 	it('aggregates ingredients from multiple recipes', async () => {
 		const recipe1 = mockRecipeDoc()
 		const recipe2 = mockRecipeDoc({
@@ -92,19 +130,11 @@ describe('Grocery List Generation', () => {
 
 		vi.mocked(repo.findMealPlanById).mockResolvedValue(plan as never)
 		vi.mocked(repo.findRecipesByIds).mockResolvedValue([recipe1, recipe2] as never)
-		vi.mocked(repo.createGroceryList).mockResolvedValue({
-			_id: { toString: () => 'list-1' },
-			userId: 'user-1',
-			mealPlanId: 'plan-1',
-			items: [],
-			status: 'draft',
-			toObject() { return this }
-		} as never)
 
 		await service.generateGroceryList('plan-1', 'user-1')
 
-		const createCall = vi.mocked(repo.createGroceryList).mock.calls[0]
-		const items = (createCall[1] as Record<string, unknown>).items as Array<Record<string, unknown>>
+		const updateCall = vi.mocked(repo.updateGroceryList).mock.calls[0]
+		const items = (updateCall[2] as Record<string, unknown>).items as Array<Record<string, unknown>>
 
 		const names = items.map((i) => (i.ingredient as Record<string, unknown>).name)
 		expect(names).not.toContain('Olive oil')
@@ -130,15 +160,11 @@ describe('Grocery List Generation', () => {
 
 		vi.mocked(repo.findMealPlanById).mockResolvedValue(plan as never)
 		vi.mocked(repo.findRecipesByIds).mockResolvedValue([recipe1, recipe2] as never)
-		vi.mocked(repo.createGroceryList).mockResolvedValue({
-			_id: { toString: () => 'list-1' }, userId: 'user-1', mealPlanId: 'plan-1',
-			items: [], status: 'draft', toObject() { return this }
-		} as never)
 
 		await service.generateGroceryList('plan-1', 'user-1')
 
-		const createCall = vi.mocked(repo.createGroceryList).mock.calls[0]
-		const items = (createCall[1] as Record<string, unknown>).items as Array<{ ingredient: { name: string; quantity: number } }>
+		const updateCall = vi.mocked(repo.updateGroceryList).mock.calls[0]
+		const items = (updateCall[2] as Record<string, unknown>).items as Array<{ ingredient: { name: string; quantity: number } }>
 		const chicken = items.find((i) => i.ingredient.name.toLowerCase().includes('chicken'))
 		expect(chicken).toBeDefined()
 		expect(chicken!.ingredient.quantity).toBe(3)
@@ -158,15 +184,11 @@ describe('Grocery List Generation', () => {
 
 		vi.mocked(repo.findMealPlanById).mockResolvedValue(mockMealPlanDoc() as never)
 		vi.mocked(repo.findRecipesByIds).mockResolvedValue([recipe] as never)
-		vi.mocked(repo.createGroceryList).mockResolvedValue({
-			_id: { toString: () => 'list-1' }, userId: 'user-1', mealPlanId: 'plan-1',
-			items: [], status: 'draft', toObject() { return this }
-		} as never)
 
 		await service.generateGroceryList('plan-1', 'user-1')
 
-		const createCall = vi.mocked(repo.createGroceryList).mock.calls[0]
-		const items = (createCall[1] as Record<string, unknown>).items as Array<{ ingredient: { name: string } }>
+		const updateCall = vi.mocked(repo.updateGroceryList).mock.calls[0]
+		const items = (updateCall[2] as Record<string, unknown>).items as Array<{ ingredient: { name: string } }>
 		const names = items.map((i) => i.ingredient.name.toLowerCase())
 
 		expect(names).not.toContain('kosher salt')
@@ -190,15 +212,11 @@ describe('Grocery List Generation', () => {
 
 		vi.mocked(repo.findMealPlanById).mockResolvedValue(mockMealPlanDoc() as never)
 		vi.mocked(repo.findRecipesByIds).mockResolvedValue([recipe] as never)
-		vi.mocked(repo.createGroceryList).mockResolvedValue({
-			_id: { toString: () => 'list-1' }, userId: 'user-1', mealPlanId: 'plan-1',
-			items: [], status: 'draft', toObject() { return this }
-		} as never)
 
 		await service.generateGroceryList('plan-1', 'user-1')
 
-		const createCall = vi.mocked(repo.createGroceryList).mock.calls[0]
-		const items = (createCall[1] as Record<string, unknown>).items as Array<{ ingredient: { name: string }; store: string }>
+		const updateCall = vi.mocked(repo.updateGroceryList).mock.calls[0]
+		const items = (updateCall[2] as Record<string, unknown>).items as Array<{ ingredient: { name: string }; store: string }>
 
 		const chicken = items.find((i) => i.ingredient.name.toLowerCase().includes('chicken'))
 		const salmon = items.find((i) => i.ingredient.name.toLowerCase().includes('salmon'))
@@ -217,15 +235,11 @@ describe('Grocery List Generation', () => {
 		const plan = mockMealPlanDoc({ meals: [] })
 		vi.mocked(repo.findMealPlanById).mockResolvedValue(plan as never)
 		vi.mocked(repo.findRecipesByIds).mockResolvedValue([] as never)
-		vi.mocked(repo.createGroceryList).mockResolvedValue({
-			_id: { toString: () => 'list-1' }, userId: 'user-1', mealPlanId: 'plan-1',
-			items: [], status: 'draft', toObject() { return this }
-		} as never)
 
 		await service.generateGroceryList('plan-1', 'user-1')
 
-		const createCall = vi.mocked(repo.createGroceryList).mock.calls[0]
-		const items = (createCall[1] as Record<string, unknown>).items as unknown[]
+		const updateCall = vi.mocked(repo.updateGroceryList).mock.calls[0]
+		const items = (updateCall[2] as Record<string, unknown>).items as unknown[]
 		expect(items).toHaveLength(0)
 	})
 })
@@ -436,5 +450,341 @@ describe('Meal Plan Cook Time', () => {
 
 		expect(result.totalMinutes).toBe(0)
 		expect(result.byDay).toHaveLength(0)
+	})
+})
+
+describe('Meal Plan Enrichment', () => {
+	it('enriches meals with recipe name, image, and nutrition', async () => {
+		const recipe = mockRecipeDoc({
+			name: 'Grilled Chicken',
+			imageUrl: 'https://example.com/chicken.jpg',
+			nutritionPerServing: { calories: 280, protein: 35, carbs: 5, fat: 12, fiber: 2 }
+		})
+		const plan = mockMealPlanDoc()
+
+		vi.mocked(repo.findMealPlans).mockResolvedValue({ docs: [plan], total: 1 } as never)
+		vi.mocked(repo.findRecipesByIds).mockResolvedValue([recipe] as never)
+
+		const result = await service.listMealPlans('user-1', { page: 1, limit: 20 })
+		const meal = result.items[0].meals[0]
+
+		expect(meal.recipeName).toBe('Grilled Chicken')
+		expect(meal.recipeImageUrl).toBe('https://example.com/chicken.jpg')
+		expect(meal.caloriesPerServing).toBe(280)
+		expect(meal.proteinPerServing).toBe(35)
+		expect(meal.carbsPerServing).toBe(5)
+		expect(meal.fatPerServing).toBe(12)
+	})
+
+	it('handles missing recipes gracefully during enrichment', async () => {
+		const plan = mockMealPlanDoc({
+			meals: [
+				{ recipeId: { toString: () => 'recipe-missing' }, scheduledDate: new Date('2025-01-06'), mealType: 'dinner', servings: 2 }
+			]
+		})
+
+		vi.mocked(repo.findMealPlans).mockResolvedValue({ docs: [plan], total: 1 } as never)
+		vi.mocked(repo.findRecipesByIds).mockResolvedValue([] as never)
+
+		const result = await service.listMealPlans('user-1', { page: 1, limit: 20 })
+		const meal = result.items[0].meals[0]
+
+		expect(meal.recipeName).toBeUndefined()
+		expect(meal.recipeImageUrl).toBeUndefined()
+		expect(meal.caloriesPerServing).toBeUndefined()
+	})
+
+	it('enriches empty meal plan without errors', async () => {
+		const plan = mockMealPlanDoc({ meals: [] })
+
+		vi.mocked(repo.findMealPlans).mockResolvedValue({ docs: [plan], total: 1 } as never)
+
+		const result = await service.listMealPlans('user-1', { page: 1, limit: 20 })
+
+		expect(result.items[0].meals).toHaveLength(0)
+		expect(repo.findRecipesByIds).not.toHaveBeenCalled()
+	})
+
+	it('enriches getMealPlan by ID', async () => {
+		const recipe = mockRecipeDoc({ name: 'Pasta Carbonara' })
+		const plan = mockMealPlanDoc()
+
+		vi.mocked(repo.findMealPlanById).mockResolvedValue(plan as never)
+		vi.mocked(repo.findRecipesByIds).mockResolvedValue([recipe] as never)
+
+		const result = await service.getMealPlan('plan-1', 'user-1')
+
+		expect(result.meals[0].recipeName).toBe('Pasta Carbonara')
+	})
+
+	it('enriches getCurrentMealPlan', async () => {
+		const recipe = mockRecipeDoc({ name: 'Tacos' })
+		const plan = mockMealPlanDoc()
+
+		vi.mocked(repo.findCurrentMealPlan).mockResolvedValue(plan as never)
+		vi.mocked(repo.findRecipesByIds).mockResolvedValue([recipe] as never)
+
+		const result = await service.getCurrentMealPlan('user-1')
+
+		expect(result.meals[0].recipeName).toBe('Tacos')
+	})
+})
+
+describe('Duplicate Week Constraint', () => {
+	it('throws 409 on duplicate key error when creating meal plan', async () => {
+		const dupeError = Object.assign(new Error('E11000 duplicate key'), { code: 11000 })
+		vi.mocked(repo.createMealPlan).mockRejectedValue(dupeError)
+
+		await expect(service.createMealPlan('user-1', {
+			weekStartDate: '2025-01-06',
+			meals: [],
+			status: 'proposed'
+		})).rejects.toThrow('A meal plan already exists for this week')
+	})
+
+	it('re-throws non-duplicate errors from createMealPlan', async () => {
+		vi.mocked(repo.createMealPlan).mockRejectedValue(new Error('DB connection failed'))
+
+		await expect(service.createMealPlan('user-1', {
+			weekStartDate: '2025-01-06',
+			meals: [],
+			status: 'proposed'
+		})).rejects.toThrow('DB connection failed')
+	})
+})
+
+describe('Variant Deduplication in listRecipes', () => {
+	it('deduplicates recipes in the same variant group, keeping the primary', async () => {
+		const primary = mockRecipeDoc({
+			_id: { toString: () => 'recipe-primary' },
+			name: 'Cheese Pizza',
+			variantGroupId: 'group-1',
+			isVariantPrimary: true
+		})
+		const variant = mockRecipeDoc({
+			_id: { toString: () => 'recipe-variant' },
+			name: 'Pepperoni Pizza',
+			variantGroupId: 'group-1',
+			isVariantPrimary: false
+		})
+		const standalone = mockRecipeDoc({
+			_id: { toString: () => 'recipe-standalone' },
+			name: 'Tacos'
+		})
+
+		vi.mocked(repo.findRecipes).mockResolvedValue({
+			docs: [primary, variant, standalone],
+			total: 3
+		} as never)
+
+		const result = await service.listRecipes('user-1', { page: 1, limit: 20 })
+
+		expect(result.items).toHaveLength(2)
+		expect(result.items[0].name).toBe('Cheese Pizza')
+		expect(result.items[1].name).toBe('Tacos')
+	})
+
+	it('keeps first recipe if no primary is set in the group', async () => {
+		const v1 = mockRecipeDoc({
+			_id: { toString: () => 'recipe-v1' },
+			name: 'Green Curry',
+			variantGroupId: 'group-2',
+			isVariantPrimary: false
+		})
+		const v2 = mockRecipeDoc({
+			_id: { toString: () => 'recipe-v2' },
+			name: 'Red Curry',
+			variantGroupId: 'group-2',
+			isVariantPrimary: false
+		})
+
+		vi.mocked(repo.findRecipes).mockResolvedValue({
+			docs: [v1, v2],
+			total: 2
+		} as never)
+
+		const result = await service.listRecipes('user-1', { page: 1, limit: 20 })
+
+		expect(result.items).toHaveLength(1)
+		expect(result.items[0].name).toBe('Green Curry')
+	})
+
+	it('replaces non-primary with primary when primary appears later', async () => {
+		const nonPrimary = mockRecipeDoc({
+			_id: { toString: () => 'recipe-np' },
+			name: 'Red Curry',
+			variantGroupId: 'group-3',
+			isVariantPrimary: false
+		})
+		const primary = mockRecipeDoc({
+			_id: { toString: () => 'recipe-p' },
+			name: 'Green Curry',
+			variantGroupId: 'group-3',
+			isVariantPrimary: true
+		})
+
+		vi.mocked(repo.findRecipes).mockResolvedValue({
+			docs: [nonPrimary, primary],
+			total: 2
+		} as never)
+
+		const result = await service.listRecipes('user-1', { page: 1, limit: 20 })
+
+		expect(result.items).toHaveLength(1)
+		expect(result.items[0].name).toBe('Green Curry')
+	})
+
+	it('standalone recipes without variantGroupId pass through', async () => {
+		const r1 = mockRecipeDoc({ _id: { toString: () => 'r1' }, name: 'Pasta' })
+		const r2 = mockRecipeDoc({ _id: { toString: () => 'r2' }, name: 'Salad' })
+
+		vi.mocked(repo.findRecipes).mockResolvedValue({
+			docs: [r1, r2],
+			total: 2
+		} as never)
+
+		const result = await service.listRecipes('user-1', { page: 1, limit: 20 })
+
+		expect(result.items).toHaveLength(2)
+	})
+})
+
+describe('listRecipeVariants', () => {
+	it('returns all recipes in a variant group', async () => {
+		const v1 = mockRecipeDoc({
+			_id: { toString: () => 'v1' },
+			name: 'Cheese Pizza',
+			variantGroupId: 'group-1',
+			isVariantPrimary: true
+		})
+		const v2 = mockRecipeDoc({
+			_id: { toString: () => 'v2' },
+			name: 'Pepperoni Pizza',
+			variantGroupId: 'group-1',
+			isVariantPrimary: false
+		})
+
+		vi.mocked(repo.findRecipeVariants).mockResolvedValue([v1, v2] as never)
+
+		const result = await service.listRecipeVariants('group-1', 'user-1')
+
+		expect(result).toHaveLength(2)
+		expect(result[0].name).toBe('Cheese Pizza')
+		expect(result[1].name).toBe('Pepperoni Pizza')
+		expect(repo.findRecipeVariants).toHaveBeenCalledWith('group-1', 'user-1')
+	})
+
+	it('returns empty array for non-existent group', async () => {
+		vi.mocked(repo.findRecipeVariants).mockResolvedValue([] as never)
+
+		const result = await service.listRecipeVariants('nonexistent', 'user-1')
+
+		expect(result).toHaveLength(0)
+	})
+})
+
+describe('editRecipeWithAI', () => {
+	function mockAnthropicClient(responseText: string) {
+		const createFn = vi.fn().mockResolvedValue({
+			content: [{ type: 'text', text: responseText }]
+		})
+		vi.mocked(Anthropic).mockImplementation(function (this: unknown) {
+			(this as Record<string, unknown>).messages = { create: createFn }
+		} as never)
+		return createFn
+	}
+
+	const editedRecipeJson = JSON.stringify({
+		name: 'Veggie Chicken',
+		description: 'A vegetarian take',
+		servings: 4,
+		prepTime: 10,
+		cookTime: 20,
+		ingredients: [{ name: 'tofu', quantity: 1, unit: 'block', category: 'produce' }],
+		instructions: ['Press tofu', 'Grill'],
+		tags: ['vegetarian'],
+		nutritionPerServing: { calories: 200, protein: 20, carbs: 10, fat: 8, fiber: 3 }
+	})
+
+	beforeEach(() => {
+		vi.mocked(imageGen.generateRecipeImage).mockResolvedValue(null)
+		vi.mocked(storage.uploadImage).mockResolvedValue('https://r2.example.com/img.png')
+	})
+
+	it('overwrites the existing recipe when action is overwrite', async () => {
+		const existing = mockRecipeDoc()
+		vi.mocked(repo.findRecipeById).mockResolvedValue(existing as never)
+		mockAnthropicClient(editedRecipeJson)
+
+		const updated = mockRecipeDoc({ name: 'Veggie Chicken' })
+		vi.mocked(repo.updateRecipe).mockResolvedValue(updated as never)
+
+		const result = await service.editRecipeWithAI('recipe-1', 'make it vegetarian', 'overwrite', 'user-1')
+
+		expect(result.name).toBe('Veggie Chicken')
+		expect(repo.updateRecipe).toHaveBeenCalledWith(
+			'recipe-1',
+			'user-1',
+			expect.objectContaining({ name: 'Veggie Chicken' })
+		)
+		expect(repo.createRecipe).not.toHaveBeenCalled()
+	})
+
+	it('creates a variant when action is variant and original has no group', async () => {
+		const existing = mockRecipeDoc()
+		vi.mocked(repo.findRecipeById).mockResolvedValue(existing as never)
+		mockAnthropicClient(editedRecipeJson)
+
+		vi.mocked(repo.updateRecipe).mockResolvedValue(existing as never)
+		const newDoc = mockRecipeDoc({
+			_id: { toString: () => 'recipe-variant' },
+			name: 'Veggie Chicken',
+			variantGroupId: 'some-uuid',
+			isVariantPrimary: false
+		})
+		vi.mocked(repo.createRecipe).mockResolvedValue(newDoc as never)
+
+		const result = await service.editRecipeWithAI('recipe-1', 'make it vegetarian', 'variant', 'user-1')
+
+		expect(result.name).toBe('Veggie Chicken')
+		expect(repo.updateRecipe).toHaveBeenCalledWith(
+			'recipe-1',
+			'user-1',
+			expect.objectContaining({ isVariantPrimary: true })
+		)
+		expect(repo.createRecipe).toHaveBeenCalledWith(
+			'user-1',
+			expect.objectContaining({ isVariantPrimary: false })
+		)
+	})
+
+	it('creates a variant using existing variantGroupId', async () => {
+		const existing = mockRecipeDoc({ variantGroupId: 'existing-group' })
+		vi.mocked(repo.findRecipeById).mockResolvedValue(existing as never)
+		mockAnthropicClient(editedRecipeJson)
+
+		const newDoc = mockRecipeDoc({
+			_id: { toString: () => 'recipe-variant' },
+			name: 'Veggie Chicken',
+			variantGroupId: 'existing-group',
+			isVariantPrimary: false
+		})
+		vi.mocked(repo.createRecipe).mockResolvedValue(newDoc as never)
+
+		await service.editRecipeWithAI('recipe-1', 'make it vegetarian', 'variant', 'user-1')
+
+		expect(repo.updateRecipe).not.toHaveBeenCalled()
+		expect(repo.createRecipe).toHaveBeenCalledWith(
+			'user-1',
+			expect.objectContaining({ variantGroupId: 'existing-group' })
+		)
+	})
+
+	it('throws 404 when recipe not found', async () => {
+		vi.mocked(repo.findRecipeById).mockResolvedValue(null as never)
+
+		await expect(
+			service.editRecipeWithAI('nonexistent', 'make it vegan', 'overwrite', 'user-1')
+		).rejects.toThrow('Recipe not found')
 	})
 })

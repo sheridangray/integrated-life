@@ -13,22 +13,40 @@ final class FoodService {
 
     // MARK: - Recipes
 
-    func fetchRecipes(search: String? = nil, tag: String? = nil, ingredient: String? = nil, page: Int = 1, limit: Int = 20) async throws -> PaginatedResponse<Recipe> {
+    func fetchRecipes(
+        search: String? = nil,
+        tag: String? = nil,
+        maxTotalTimeMinutes: Int? = nil,
+        page: Int = 1,
+        limit: Int = 20
+    ) async throws -> PaginatedResponse<Recipe> {
         var query = "?page=\(page)&limit=\(limit)"
         if let search, !search.isEmpty {
             query += "&search=\(search.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? search)"
         }
-        if let ingredient, !ingredient.isEmpty {
-            query += "&ingredient=(ingredient.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ingredient)"
-        }
         if let tag, !tag.isEmpty {
             query += "&tag=\(tag.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? tag)"
+        }
+        if let maxTotalTimeMinutes {
+            query += "&maxTotalTimeMinutes=\(maxTotalTimeMinutes)"
         }
         return try await api.get(
             path: "/v1/food/recipes\(query)",
             token: try await token(),
             as: PaginatedResponse<Recipe>.self
         )
+    }
+
+    func fetchRecipeTags() async throws -> [String] {
+        struct TagsResponse: Decodable {
+            let tags: [String]
+        }
+        let body = try await api.get(
+            path: "/v1/food/recipes/tags",
+            token: try await token(),
+            as: TagsResponse.self
+        )
+        return body.tags
     }
 
     func fetchRecipe(id: String) async throws -> Recipe {
@@ -59,6 +77,43 @@ final class FoodService {
 
     func deleteRecipe(id: String) async throws {
         try await api.delete(path: "/v1/food/recipes/\(id)", token: try await token())
+    }
+
+    func createRecipeFromAI(prompt: String) async throws -> Recipe {
+        struct AIRecipeRequest: Encodable {
+            let prompt: String
+        }
+        return try await api.post(
+            path: "/v1/food/recipes/ai",
+            body: AIRecipeRequest(prompt: prompt),
+            token: try await token(),
+            as: Recipe.self
+        )
+    }
+
+    func editRecipeWithAI(id: String, prompt: String, action: String) async throws -> Recipe {
+        struct AIEditRequest: Encodable {
+            let prompt: String
+            let action: String
+        }
+        return try await api.put(
+            path: "/v1/food/recipes/\(id)/ai",
+            body: AIEditRequest(prompt: prompt, action: action),
+            token: try await token(),
+            as: Recipe.self
+        )
+    }
+
+    func fetchRecipeVariants(groupId: String) async throws -> [Recipe] {
+        struct VariantsResponse: Decodable {
+            let variants: [Recipe]
+        }
+        let body = try await api.get(
+            path: "/v1/food/recipes/variants/\(groupId)",
+            token: try await token(),
+            as: VariantsResponse.self
+        )
+        return body.variants
     }
 
     // MARK: - Meal Plans
@@ -138,6 +193,15 @@ final class FoodService {
         try await api.post(
             path: "/v1/food/grocery-lists/generate",
             body: GenerateGroceryListRequest(mealPlanId: mealPlanId),
+            token: try await token(),
+            as: GroceryList.self
+        )
+    }
+
+    func addGroceryItems(_ items: [AddGroceryItemPayload]) async throws -> GroceryList {
+        try await api.post(
+            path: "/v1/food/grocery-lists/add-items",
+            body: AddGroceryItemsRequestBody(items: items),
             token: try await token(),
             as: GroceryList.self
         )
