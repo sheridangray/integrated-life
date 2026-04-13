@@ -558,7 +558,7 @@ export async function initiateShopping(id: string, userId: string, customInstruc
 			})
 			logger.info(`OpenClaw webhook responded ${res.status}`)
 		} catch (err) {
-			logger.error('OpenClaw webhook failed', err)
+			logger.error('OpenClaw webhook failed', { error: String(err) })
 		}
 	} else {
 		logger.warn('OpenClaw webhook not configured — skipping')
