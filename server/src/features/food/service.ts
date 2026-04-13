@@ -567,8 +567,9 @@ export async function initiateShopping(id: string, userId: string, customInstruc
 			const responseText = await res.text()
 			logger.info('OpenClaw: webhook response', { status: res.status, body: responseText.slice(0, 500) })
 		} catch (err) {
-			const cause = err instanceof Error ? (err.cause ? String(err.cause) : err.message) : String(err)
-			logger.error('OpenClaw webhook failed', { error: String(err), cause })
+			const message = err instanceof Error ? err.message : String(err)
+			const stack = err instanceof Error ? (err.stack ?? '') : ''
+			logger.error('OpenClaw webhook failed', { error: message, stack: stack.slice(0, 500) })
 		}
 	} else {
 		logger.warn('OpenClaw webhook not configured — skipping', {
