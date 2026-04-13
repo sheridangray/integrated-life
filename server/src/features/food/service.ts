@@ -540,7 +540,21 @@ export async function initiateShopping(id: string, userId: string, customInstruc
 
 	await repo.updateGroceryList(id, userId, { status: 'ordered' })
 
+	logger.info('OpenClaw: checking config', {
+		hasWebhookUrl: !!env.OPENCLAW_WEBHOOK_URL,
+		hasHooksToken: !!env.OPENCLAW_HOOKS_TOKEN,
+		webhookUrl: env.OPENCLAW_WEBHOOK_URL || '(not set)'
+	})
+
 	if (env.OPENCLAW_WEBHOOK_URL && env.OPENCLAW_HOOKS_TOKEN) {
+		const webhookBody = {
+			message: prompt,
+			name: 'Instacart Order',
+			deliver: 'announce',
+			channel: 'slack',
+			to: 'user:U0ALXGJEY4Q'
+		}
+		logger.info('OpenClaw: firing webhook', { itemCount: uncheckedItems.length, promptLength: prompt.length })
 		try {
 			const res = await fetch(env.OPENCLAW_WEBHOOK_URL, {
 				method: 'POST',
@@ -548,20 +562,19 @@ export async function initiateShopping(id: string, userId: string, customInstruc
 					'Content-Type': 'application/json',
 					Authorization: `Bearer ${env.OPENCLAW_HOOKS_TOKEN}`
 				},
-				body: JSON.stringify({
-					message: prompt,
-					name: 'Instacart Order',
-					deliver: 'announce',
-					channel: 'slack',
-					to: 'user:U0ALXGJEY4Q'
-				})
+				body: JSON.stringify(webhookBody)
 			})
-			logger.info(`OpenClaw webhook responded ${res.status}`)
+			const responseText = await res.text()
+			logger.info('OpenClaw: webhook response', { status: res.status, body: responseText.slice(0, 500) })
 		} catch (err) {
-			logger.error('OpenClaw webhook failed', { error: String(err) })
+			const cause = err instanceof Error ? (err.cause ? String(err.cause) : err.message) : String(err)
+			logger.error('OpenClaw webhook failed', { error: String(err), cause })
 		}
 	} else {
-		logger.warn('OpenClaw webhook not configured — skipping')
+		logger.warn('OpenClaw webhook not configured — skipping', {
+			missingWebhookUrl: !env.OPENCLAW_WEBHOOK_URL,
+			missingHooksToken: !env.OPENCLAW_HOOKS_TOKEN
+		})
 	}
 
 	return {
