@@ -57,27 +57,6 @@ enum FoodLogSource: String, Codable {
     }
 }
 
-enum Store: String, Codable, CaseIterable, Identifiable {
-    case costco, safeway, other
-    var id: String { rawValue }
-
-    var displayName: String {
-        switch self {
-        case .costco: return "Costco"
-        case .safeway: return "Safeway"
-        case .other: return "Other"
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .costco: return "building.2"
-        case .safeway: return "cart"
-        case .other: return "bag"
-        }
-    }
-}
-
 // MARK: - Core Objects
 
 struct Nutrition: Codable, Equatable {
@@ -359,9 +338,8 @@ struct DayCookTime: Codable, Equatable {
 // MARK: - Grocery List
 
 struct GroceryItem: Codable, Identifiable, Equatable {
-    var id: String { "\(ingredient.name)-\(store.rawValue)" }
+    var id: String { "\(ingredient.name)-\(ingredient.unit)" }
     var ingredient: Ingredient
-    let store: Store
     var checked: Bool
     var notes: String?
 }
@@ -398,12 +376,7 @@ struct UpdateGroceryListRequest: Encodable {
 struct ShoppingResponse: Codable {
     let groceryListId: String
     let status: String
-    let stores: [String: StoreItems]
-
-    struct StoreItems: Codable {
-        let items: [GroceryItem]
-        let count: Int
-    }
+    let itemCount: Int
 }
 
 // MARK: - Food Log

@@ -378,8 +378,7 @@ final class FoodState: ObservableObject {
         await persistGroceryListItems(listId: listId, items: list.items)
     }
 
-    /// Adds a line item with an explicit store (e.g. from the Costco / Safeway section).
-    func addManualGroceryItem(name: String, quantity: Double, unit: String, store: Store) async {
+    func addManualGroceryItem(name: String, quantity: Double, unit: String, category: IngredientCategory = .other) async {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
         let u = unit.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -395,8 +394,8 @@ final class FoodState: ObservableObject {
         }
         guard var list = activeGroceryList else { return }
 
-        let ingredient = Ingredient(name: trimmedName, quantity: q, unit: unitOut, category: .other)
-        let newItem = GroceryItem(ingredient: ingredient, store: store, checked: false, notes: nil)
+        let ingredient = Ingredient(name: trimmedName, quantity: q, unit: unitOut, category: category)
+        let newItem = GroceryItem(ingredient: ingredient, checked: false, notes: nil)
         list.items.append(newItem)
         activeGroceryList = list
         await persistGroceryListItems(listId: list.id, items: list.items)
@@ -416,8 +415,9 @@ final class FoodState: ObservableObject {
 
     func initiateShopping() async -> ShoppingResponse? {
         guard let groceryListId = activeGroceryList?.id else { return nil }
+        let prompt = UserDefaults.standard.string(forKey: "openclaw.instacartPrompt")
         do {
-            let response = try await foodService.initiateShopping(groceryListId: groceryListId)
+            let response = try await foodService.initiateShopping(groceryListId: groceryListId, customInstructions: prompt)
             await loadMyGroceryList()
             return response
         } catch {

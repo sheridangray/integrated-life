@@ -2,13 +2,18 @@
 
 ## Overview
 
-The `POST /v1/food/grocery-lists/:id/initiate-shopping` endpoint returns a structured shopping list formatted for Instacart automation via OpenClaw.
+The `POST /v1/food/grocery-lists/:id/initiate-shopping` endpoint builds a shopping prompt from unchecked grocery items and fires it to OpenClaw, which handles the Instacart order asynchronously. OpenClaw messages the user on Slack for decisions and confirmations.
 
 ## Endpoint
 
 ```
 POST /v1/food/grocery-lists/:id/initiate-shopping
 Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "customInstructions": "optional — appended to the grocery list in the prompt"
+}
 ```
 
 ## Response Payload
@@ -17,72 +22,48 @@ Authorization: Bearer <token>
 {
   "groceryListId": "6789abcdef012345",
   "status": "initiated",
-  "stores": {
-    "costco": {
-      "items": [
-        {
-          "name": "Chicken breast",
-          "quantity": 4,
-          "unit": "lbs",
-          "notes": null
-        },
-        {
-          "name": "Broccoli",
-          "quantity": 2,
-          "unit": "head",
-          "notes": null
-        }
-      ],
-      "count": 2
-    },
-    "safeway": {
-      "items": [
-        {
-          "name": "Cheddar cheese",
-          "quantity": 8,
-          "unit": "oz",
-          "notes": null
-        }
-      ],
-      "count": 1
-    }
-  }
+  "itemCount": 5
 }
 ```
 
 ## Behavior
 
 1. Fetches the grocery list by ID (verifies user ownership)
-2. Splits items by store assignment (costco vs safeway)
-3. Updates grocery list status to `ordered`
-4. Returns the structured payload for external automation
+2. Filters to unchecked items only (returns 400 if none)
+3. Builds a natural-language prompt with the item list and optional custom instructions
+4. Updates grocery list status to `ordered`
+5. POSTs the prompt to the OpenClaw webhook (`OPENCLAW_WEBHOOK_URL`)
+6. Returns the simplified response to the client
 
-## Side Effects
+## Webhook Payload (to OpenClaw)
 
-- Grocery list `status` changes from `draft` → `ordered`
-- No external webhook is currently fired (stub ready for OpenClaw integration)
+```json
+{
+  "message": "Shop for this week's meal plan on Instacart.\n\nGROCERY LIST:\n- 4 lbs Chicken breast\n- 2 heads Broccoli\n...\n\n<custom instructions>",
+  "name": "Instacart Order",
+  "deliver": "announce",
+  "channel": "slack",
+  "to": "user:U0ALXGJEY4Q"
+}
+```
 
-## OpenClaw Integration (Future)
+OpenClaw returns `202 Accepted` with a task ID. The actual work happens asynchronously.
 
-To connect to OpenClaw for Instacart automation:
+## Environment Variables
 
-1. Add `OPENCLAW_WEBHOOK_URL` to environment config
-2. After building the response payload, POST it to the webhook URL:
-   ```typescript
-   await fetch(env.OPENCLAW_WEBHOOK_URL, {
-     method: 'POST',
-     headers: { 'Content-Type': 'application/json' },
-     body: JSON.stringify(payload)
-   })
-   ```
-3. Handle webhook delivery failure gracefully (retry, dead letter queue)
-4. The response payload format above is designed to be the webhook body
+| Variable | Required | Description |
+|---|---|---|
+| `OPENCLAW_WEBHOOK_URL` | Yes | OpenClaw agent endpoint URL |
+| `OPENCLAW_HOOKS_TOKEN` | Yes | Bearer token for webhook auth |
 
-## Store Mapping for Instacart
+If either is missing, the webhook is skipped and a warning is logged. The grocery list status still updates to `ordered`.
 
-| Store Key | Instacart Store |
-|-----------|----------------|
-| costco | Costco Wholesale |
-| safeway | Safeway |
+## Custom Instructions
 
-Items in the `other` store category are included in the `safeway` group by default.
+The iOS app stores an editable prompt in `UserDefaults` under `openclaw.instacartPrompt`. Users can edit this from Profile → Integrations → OpenClaw. The prompt includes store rules, pantry staples to exclude, ordering preferences, and instructions for the agent.
+
+## Error Handling
+
+- Webhook failures are caught and logged but do not fail the request
+- The grocery list remains in `ordered` status regardless of webhook outcome
+- Slack is the fallback channel for any issues (OpenClaw messages the user directly)

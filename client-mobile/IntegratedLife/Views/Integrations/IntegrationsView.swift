@@ -101,13 +101,45 @@ struct IntegrationsView: View {
 						}
 					}
 				}
-			} header: {
-				Text("Health & Fitness")
-			} footer: {
-				Text("Connect services to enable automated data import and richer insights.")
-			}
+		} header: {
+			Text("Health & Fitness")
+		} footer: {
+			Text("Connect services to enable automated data import and richer insights.")
 		}
-		.navigationTitle("Integrations")
+
+			Section {
+				NavigationLink {
+					OpenClawSettingsView()
+				} label: {
+					HStack(spacing: 12) {
+						Image(systemName: "terminal")
+							.font(.title2)
+							.foregroundStyle(.orange)
+							.frame(width: 36, height: 36)
+							.background(.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
+
+						VStack(alignment: .leading, spacing: 2) {
+							Text("OpenClaw")
+								.font(.body)
+							Text("Instacart automation")
+								.font(.caption)
+								.foregroundStyle(.secondary)
+						}
+
+						Spacer()
+
+						Image(systemName: "chevron.right")
+							.font(.caption)
+							.foregroundStyle(.tertiary)
+					}
+				}
+			} header: {
+				Text("Automation")
+			} footer: {
+				Text("Configure agent-based automations like Instacart grocery ordering.")
+			}
+	}
+	.navigationTitle("Integrations")
 		.task { await loadCalendarSettings() }
 		.onChange(of: calendarEnabled) { _, newValue in
 			guard settingsLoaded else { return }

@@ -199,7 +199,7 @@ describe('Grocery List Generation', () => {
 		expect(names).toContain('chicken breast')
 	})
 
-	it('assigns Costco for meat/seafood/produce, Safeway for others', async () => {
+	it('preserves ingredient categories', async () => {
 		const recipe = mockRecipeDoc({
 			ingredients: [
 				{ name: 'chicken breast', quantity: 2, unit: 'lbs', category: 'meat' },
@@ -216,19 +216,13 @@ describe('Grocery List Generation', () => {
 		await service.generateGroceryList('plan-1', 'user-1')
 
 		const updateCall = vi.mocked(repo.updateGroceryList).mock.calls[0]
-		const items = (updateCall[2] as Record<string, unknown>).items as Array<{ ingredient: { name: string }; store: string }>
+		const items = (updateCall[2] as Record<string, unknown>).items as Array<{ ingredient: { name: string; category: string } }>
 
 		const chicken = items.find((i) => i.ingredient.name.toLowerCase().includes('chicken'))
-		const salmon = items.find((i) => i.ingredient.name.toLowerCase().includes('salmon'))
-		const broccoli = items.find((i) => i.ingredient.name.toLowerCase().includes('broccoli'))
 		const cheese = items.find((i) => i.ingredient.name.toLowerCase().includes('cheddar'))
-		const bread = items.find((i) => i.ingredient.name.toLowerCase().includes('sourdough'))
 
-		expect(chicken?.store).toBe('costco')
-		expect(salmon?.store).toBe('costco')
-		expect(broccoli?.store).toBe('costco')
-		expect(cheese?.store).toBe('safeway')
-		expect(bread?.store).toBe('safeway')
+		expect(chicken?.ingredient.category).toBe('meat')
+		expect(cheese?.ingredient.category).toBe('dairy')
 	})
 
 	it('handles empty meal plan', async () => {

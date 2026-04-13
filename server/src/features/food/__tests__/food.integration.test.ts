@@ -310,14 +310,12 @@ describe('Food Pillar Integration Tests', () => {
 			expect(names).not.toContain('salt')
 			expect(names).not.toContain('jasmine rice')
 
-			const stores = res.body.items.map((i: Record<string, string>) => ({ name: (i.ingredient as unknown as Record<string, string>).name.toLowerCase(), store: i.store }))
-			const chickenItem = stores.find((s: Record<string, string>) => s.name.includes('chicken'))
-			const salmonItem = stores.find((s: Record<string, string>) => s.name.includes('salmon'))
-			const cheeseItem = stores.find((s: Record<string, string>) => s.name.includes('cheddar'))
+			const categories = res.body.items.map((i: Record<string, Record<string, string>>) => ({ name: i.ingredient.name.toLowerCase(), category: i.ingredient.category }))
+			const chickenItem = categories.find((c: Record<string, string>) => c.name.includes('chicken'))
+			const cheeseItem = categories.find((c: Record<string, string>) => c.name.includes('cheddar'))
 
-			if (chickenItem) expect(chickenItem.store).toBe('costco')
-			if (salmonItem) expect(salmonItem.store).toBe('costco')
-			if (cheeseItem) expect(cheeseItem.store).toBe('safeway')
+			if (chickenItem) expect(chickenItem.category).toBe('meat')
+			if (cheeseItem) expect(cheeseItem.category).toBe('dairy')
 
 			groceryListId = res.body.id
 		})
@@ -338,8 +336,7 @@ describe('Food Pillar Integration Tests', () => {
 				.expect(200)
 
 			expect(res.body.status).toBe('initiated')
-			expect(res.body.stores).toHaveProperty('costco')
-			expect(res.body.stores).toHaveProperty('safeway')
+			expect(res.body.itemCount).toBeGreaterThanOrEqual(0)
 		})
 	})
 

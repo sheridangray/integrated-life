@@ -27,9 +27,6 @@ export type GroceryListStatus = z.infer<typeof GroceryListStatusEnum>
 export const FoodLogSourceEnum = z.enum(['barcode', 'photo', 'manual', 'recipe'])
 export type FoodLogSource = z.infer<typeof FoodLogSourceEnum>
 
-export const StoreEnum = z.enum(['costco', 'safeway', 'other'])
-export type Store = z.infer<typeof StoreEnum>
-
 // --- Core Objects ---
 
 export const NutritionSchema = z.object({
@@ -205,7 +202,6 @@ export type MealPlanFilters = z.infer<typeof MealPlanFiltersSchema>
 
 export const GroceryItemSchema = z.object({
 	ingredient: IngredientSchema,
-	store: StoreEnum,
 	checked: z.boolean().default(false),
 	notes: z.string().optional()
 })

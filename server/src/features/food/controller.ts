@@ -272,7 +272,8 @@ export async function initiateShopping(req: AuthenticatedRequest, res: Response)
 		})
 	}
 
-	const result = await foodService.initiateShopping(req.params.id, req.user.userId)
+	const customInstructions = typeof req.body?.customInstructions === 'string' ? req.body.customInstructions : undefined
+	const result = await foodService.initiateShopping(req.params.id, req.user.userId, customInstructions)
 	return res.json(result)
 }
 

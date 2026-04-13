@@ -48,14 +48,8 @@ const PANTRY_STAPLES = new Set([
 	'crushed red pepper'
 ])
 
-const COSTCO_CATEGORIES = new Set(['meat', 'seafood', 'produce'])
-
 function isPantryStaple(name: string): boolean {
 	return PANTRY_STAPLES.has(name.toLowerCase().trim())
-}
-
-function assignStore(category: string): 'costco' | 'safeway' | 'other' {
-	return COSTCO_CATEGORIES.has(category.toLowerCase()) ? 'costco' : 'safeway'
 }
 
 function coerceRecipeImageId(value: unknown): string {
@@ -188,7 +182,6 @@ function formatGroceryList(doc: Record<string, unknown>) {
 
 type GroceryItemPlain = {
 	ingredient: { name: string; quantity: number; unit: string; category: string }
-	store: 'costco' | 'safeway' | 'other'
 	checked: boolean
 	notes?: string
 }
@@ -200,7 +193,6 @@ function mergeGroceryItemLists(existing: GroceryItemPlain[], incoming: GroceryIt
 	for (const item of existing) {
 		map.set(keyOf(item), {
 			ingredient: { ...item.ingredient },
-			store: item.store,
 			checked: item.checked,
 			notes: item.notes
 		})
@@ -210,11 +202,9 @@ function mergeGroceryItemLists(existing: GroceryItemPlain[], incoming: GroceryIt
 		const cur = map.get(k)
 		if (cur) {
 			cur.ingredient.quantity = Math.round((cur.ingredient.quantity + item.ingredient.quantity) * 100) / 100
-			if (cur.store !== item.store) cur.store = 'other'
 		} else {
 			map.set(k, {
 				ingredient: { ...item.ingredient },
-				store: item.store,
 				checked: item.checked,
 				notes: item.notes
 			})
@@ -226,7 +216,6 @@ function mergeGroceryItemLists(existing: GroceryItemPlain[], incoming: GroceryIt
 function grocerySubdocsToPlain(
 	items: Array<{
 		ingredient: { name: string; quantity: number; unit: string; category: string }
-		store: string
 		checked: boolean
 		notes?: string
 	}>
@@ -238,7 +227,6 @@ function grocerySubdocsToPlain(
 			unit: i.ingredient.unit,
 			category: i.ingredient.category
 		},
-		store: i.store as GroceryItemPlain['store'],
 		checked: i.checked,
 		notes: i.notes
 	}))
@@ -480,7 +468,6 @@ export async function generateGroceryList(mealPlanId: string, userId: string) {
 			unit: info.unit,
 			category: info.category
 		},
-		store: assignStore(info.category),
 		checked: false
 	}))
 
@@ -507,7 +494,6 @@ export async function addItemsToGroceryList(
 			unit: ing.unit,
 			category: ing.category
 		},
-		store: assignStore(ing.category),
 		checked: false
 	}))
 
@@ -529,39 +515,59 @@ export async function updateGroceryList(id: string, userId: string, data: Record
 	return formatGroceryList(doc.toObject())
 }
 
-export async function initiateShopping(id: string, userId: string) {
+export async function initiateShopping(id: string, userId: string, customInstructions?: string) {
 	await ensureEvergreenGroceryList(userId)
 	const doc = await repo.findGroceryListById(id, userId)
 	if (!doc) throw new AppError('Grocery list not found', 404)
 
-	const costcoItems = doc.items.filter((i) => i.store === 'costco')
-	const safewayItems = doc.items.filter((i) => i.store === 'safeway')
+	const uncheckedItems = doc.items.filter((i) => !i.checked)
+	if (uncheckedItems.length === 0) throw new AppError('No unchecked items to order', 400)
+
+	const itemLines = uncheckedItems.map((i) => {
+		const qty = i.ingredient.quantity % 1 === 0 ? String(Math.round(i.ingredient.quantity)) : String(i.ingredient.quantity)
+		const line = `- ${qty} ${i.ingredient.unit} ${i.ingredient.name}`
+		return i.notes ? `${line} (${i.notes})` : line
+	})
+
+	const prompt = [
+		'Shop for this week\'s meal plan on Instacart.',
+		'',
+		'GROCERY LIST:',
+		...itemLines,
+		'',
+		customInstructions ?? ''
+	].join('\n').trim()
 
 	await repo.updateGroceryList(id, userId, { status: 'ordered' })
+
+	if (env.OPENCLAW_WEBHOOK_URL && env.OPENCLAW_HOOKS_TOKEN) {
+		try {
+			const res = await fetch(env.OPENCLAW_WEBHOOK_URL, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${env.OPENCLAW_HOOKS_TOKEN}`
+				},
+				body: JSON.stringify({
+					message: prompt,
+					name: 'Instacart Order',
+					deliver: 'announce',
+					channel: 'slack',
+					to: 'user:U0ALXGJEY4Q'
+				})
+			})
+			logger.info(`OpenClaw webhook responded ${res.status}`)
+		} catch (err) {
+			logger.error('OpenClaw webhook failed', err)
+		}
+	} else {
+		logger.warn('OpenClaw webhook not configured — skipping')
+	}
 
 	return {
 		groceryListId: doc._id.toString(),
 		status: 'initiated',
-		stores: {
-			costco: {
-				items: costcoItems.map((i) => ({
-					name: i.ingredient.name,
-					quantity: i.ingredient.quantity,
-					unit: i.ingredient.unit,
-					notes: i.notes ?? null
-				})),
-				count: costcoItems.length
-			},
-			safeway: {
-				items: safewayItems.map((i) => ({
-					name: i.ingredient.name,
-					quantity: i.ingredient.quantity,
-					unit: i.ingredient.unit,
-					notes: i.notes ?? null
-				})),
-				count: safewayItems.length
-			}
-		}
+		itemCount: uncheckedItems.length
 	}
 }
 

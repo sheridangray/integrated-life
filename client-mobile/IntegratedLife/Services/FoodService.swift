@@ -216,11 +216,11 @@ final class FoodService {
         )
     }
 
-    func initiateShopping(groceryListId: String) async throws -> ShoppingResponse {
-        struct Empty: Encodable {}
+    func initiateShopping(groceryListId: String, customInstructions: String? = nil) async throws -> ShoppingResponse {
+        struct Body: Encodable { let customInstructions: String? }
         return try await api.post(
             path: "/v1/food/grocery-lists/\(groceryListId)/initiate-shopping",
-            body: Empty(),
+            body: Body(customInstructions: customInstructions),
             token: try await token(),
             as: ShoppingResponse.self
         )

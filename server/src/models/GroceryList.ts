@@ -7,7 +7,6 @@ export type GroceryItemSubdoc = {
 		unit: string
 		category: string
 	}
-	store: 'costco' | 'safeway' | 'other'
 	checked: boolean
 	notes?: string
 }
@@ -35,7 +34,6 @@ const groceryIngredientSchema = new Schema<GroceryItemSubdoc['ingredient']>(
 const groceryItemSchema = new Schema<GroceryItemSubdoc>(
 	{
 		ingredient: { type: groceryIngredientSchema, required: true },
-		store: { type: String, required: true, default: 'safeway' },
 		checked: { type: Boolean, default: false },
 		notes: { type: String }
 	},

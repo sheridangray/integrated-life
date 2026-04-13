@@ -47,14 +47,27 @@ private enum GroceryDisplay {
         if quantity >= 1, abs(quantity - round(quantity)) < 0.001 { return 1 }
         return 0.25
     }
+
+    static func categoryIcon(_ category: IngredientCategory) -> String {
+        switch category {
+        case .produce: return "leaf"
+        case .meat: return "flame"
+        case .seafood: return "fish"
+        case .dairy: return "cup.and.saucer"
+        case .bakery: return "birthday.cake"
+        case .pantry: return "cabinet"
+        case .frozen: return "snowflake"
+        case .beverages: return "wineglass"
+        case .other: return "bag"
+        }
+    }
 }
 
-/// Single evergreen grocery list for the user (no list-of-lists hub).
+/// Single evergreen grocery list for the user.
 struct GroceryTabView: View {
     @ObservedObject var foodState: FoodState
     @State private var showShoppingConfirm = false
     @State private var showAddSheet = false
-    @State private var addItemInitialStore: Store = .other
 
     var body: some View {
         Group {
@@ -71,7 +84,6 @@ struct GroceryTabView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .safeAreaInset(edge: .bottom) {
                         Button {
-                            addItemInitialStore = .other
                             showAddSheet = true
                         } label: {
                             Label("Add item", systemImage: "plus.circle.fill")
@@ -85,15 +97,12 @@ struct GroceryTabView: View {
                     GroceryListContent(
                         list: list,
                         foodState: foodState,
-                        onAddItem: { store in
-                            addItemInitialStore = store
-                            showAddSheet = true
-                        }
+                        onAddItem: { showAddSheet = true }
                     )
                 }
             } else {
                 ContentUnavailableView(
-                    "Couldn’t load grocery list",
+                    "Couldn't load grocery list",
                     systemImage: "exclamationmark.triangle",
                     description: Text(foodState.error ?? "Try again.")
                 )
@@ -105,7 +114,6 @@ struct GroceryTabView: View {
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button {
-                    addItemInitialStore = .other
                     showAddSheet = true
                 } label: {
                     Image(systemName: "plus")
@@ -123,9 +131,9 @@ struct GroceryTabView: View {
             }
         }
         .sheet(isPresented: $showAddSheet) {
-            AddGroceryItemSheet(initialStore: addItemInitialStore) { name, quantity, unit, store in
+            AddGroceryItemSheet { name, quantity, unit, category in
                 Task {
-                    await foodState.addManualGroceryItem(name: name, quantity: quantity, unit: unit, store: store)
+                    await foodState.addManualGroceryItem(name: name, quantity: quantity, unit: unit, category: category)
                 }
             }
         }
@@ -137,7 +145,7 @@ struct GroceryTabView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This will organize your list by store and initiate an Instacart order.")
+            Text("This will send your grocery list to OpenClaw which will place the Instacart order.")
         }
         .task {
             await foodState.loadMyGroceryList()
@@ -150,20 +158,24 @@ struct GroceryTabView: View {
 private struct GroceryListContent: View {
     let list: GroceryList
     @ObservedObject var foodState: FoodState
-    var onAddItem: (Store) -> Void
+    var onAddItem: () -> Void
 
-    private var itemsByStore: [(Store, [IndexedGroceryItem])] {
+    private static let categoryOrder: [IngredientCategory] = [
+        .produce, .meat, .seafood, .dairy, .bakery, .pantry, .frozen, .beverages, .other
+    ]
+
+    private var itemsByCategory: [(IngredientCategory, [IndexedGroceryItem])] {
         let indexed = list.items.enumerated().map { IndexedGroceryItem(index: $0.offset, item: $0.element) }
-        let grouped = Dictionary(grouping: indexed) { $0.item.store }
-        return Store.allCases.compactMap { store in
-            let items = grouped[store] ?? []
-            return items.isEmpty ? nil : (store, items)
+        let grouped = Dictionary(grouping: indexed) { $0.item.ingredient.category }
+        return Self.categoryOrder.compactMap { category in
+            let items = grouped[category] ?? []
+            return items.isEmpty ? nil : (category, items)
         }
     }
 
     var body: some View {
         List {
-            ForEach(itemsByStore, id: \.0) { store, items in
+            ForEach(itemsByCategory, id: \.0) { category, items in
                 Section {
                     ForEach(items) { indexed in
                         GroceryItemRow(
@@ -183,14 +195,7 @@ private struct GroceryListContent: View {
                         }
                     }
                 } header: {
-                    Label(store.displayName, systemImage: store.icon)
-                } footer: {
-                    Button {
-                        onAddItem(store)
-                    } label: {
-                        Label("Add item to \(store.displayName)", systemImage: "plus.circle")
-                            .font(.subheadline.weight(.medium))
-                    }
+                    Label(category.displayName, systemImage: GroceryDisplay.categoryIcon(category))
                 }
             }
         }
@@ -296,20 +301,13 @@ private struct GroceryItemRow: View {
 // MARK: - Add item sheet
 
 private struct AddGroceryItemSheet: View {
-    let initialStore: Store
-    let onSave: (String, Double, String, Store) -> Void
+    let onSave: (String, Double, String, IngredientCategory) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var quantityText = "1"
     @State private var unit = "each"
-    @State private var selectedStore: Store
-
-    init(initialStore: Store, onSave: @escaping (String, Double, String, Store) -> Void) {
-        self.initialStore = initialStore
-        self.onSave = onSave
-        _selectedStore = State(initialValue: initialStore)
-    }
+    @State private var selectedCategory: IngredientCategory = .other
 
     var body: some View {
         NavigationStack {
@@ -323,10 +321,10 @@ private struct AddGroceryItemSheet: View {
                         .textInputAutocapitalization(.never)
                 }
 
-                Section("Store") {
-                    Picker("Store", selection: $selectedStore) {
-                        ForEach(Store.allCases) { store in
-                            Text(store.displayName).tag(store)
+                Section("Category") {
+                    Picker("Category", selection: $selectedCategory) {
+                        ForEach(IngredientCategory.allCases, id: \.self) { category in
+                            Text(category.displayName).tag(category)
                         }
                     }
                 }
@@ -340,7 +338,7 @@ private struct AddGroceryItemSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add") {
                         let q = Double(quantityText.replacingOccurrences(of: ",", with: ".")) ?? 1
-                        onSave(name, q, unit, selectedStore)
+                        onSave(name, q, unit, selectedCategory)
                         dismiss()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)

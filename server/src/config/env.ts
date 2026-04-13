@@ -46,7 +46,10 @@ const envSchema = z.object({
 	APNS_TEAM_ID: z.string().optional(),
 	APNS_KEY_PATH: z.string().optional(),
 	/** Set to "true" to force sandbox (development) APNs even in production NODE_ENV */
-	APNS_USE_SANDBOX: z.string().optional()
+	APNS_USE_SANDBOX: z.string().optional(),
+	/** OpenClaw webhook for Instacart automation */
+	OPENCLAW_WEBHOOK_URL: z.string().optional().default(''),
+	OPENCLAW_HOOKS_TOKEN: z.string().optional().default('')
 })
 
 export type Env = z.infer<typeof envSchema>
