@@ -886,7 +886,7 @@ private struct RecipeImageGallery: View {
                     .tag(index)
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .automatic))
+            .tabViewStyle(.page(indexDisplayMode: images.count > 1 ? .always : .never))
             .frame(height: 250)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             
@@ -896,21 +896,6 @@ private struct RecipeImageGallery: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
-            }
-            
-            // Page indicator for multiple images
-            if images.count > 1 {
-                HStack(spacing: 6) {
-                    ForEach(Array(images.enumerated()), id: \.element.id) { index, _ in
-                        Circle()
-                            .fill(index == selectedIndex ? Color.accentColor : Color.secondary.opacity(0.3))
-                            .frame(width: 8, height: 8)
-                            .onTapGesture {
-                                withAnimation { selectedIndex = index }
-                            }
-                    }
-                }
-                .padding(.bottom, 4)
             }
         }
     }
