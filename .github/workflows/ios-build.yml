@@ -106,7 +106,8 @@ jobs:
           mv openapitools-original.json openapitools.json
 
       - name: Install xcodegen
-        run: brew install xcodegen
+        run: brew install xcodegen@2.18 || brew install xcodegen
+        # Pin to 2.18.x which creates Xcode 15-compatible projects
 
       - name: Generate Xcode project
         working-directory: client-mobile
