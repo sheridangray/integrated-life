@@ -105,12 +105,9 @@ jobs:
           node scripts/generate-swift.js
           mv openapitools-original.json openapitools.json
 
-      - name: Install xcodegen 2.18.0
+      - name: Install xcodegen via npm
         run: |
-          curl -L https://github.com/yonaskolb/XcodeGen/releases/download/2.18.0/xcodegen.zip -o /tmp/xcodegen.zip
-          unzip -o /tmp/xcodegen.zip -d /tmp/xcodegen
-          sudo cp /tmp/xcodegen/xcodegen-bin/xcodegen/bin/xcodegen /usr/local/bin/
-          sudo chmod +x /usr/local/bin/xcodegen
+          npm install -g xcodegen@2.18.0
           xcodegen --version
 
       - name: Generate Xcode project
