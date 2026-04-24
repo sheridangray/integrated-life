@@ -32,6 +32,16 @@ schemes:
       config: Release
     archive:
       config: Release
+  IntegratedLife-Staging:
+    build:
+      targets:
+        IntegratedLife: all
+    run:
+      config: Debug
+    profile:
+      config: Staging
+    archive:
+      config: Staging
   IntegratedLife-Device:
     build:
       targets:
@@ -60,6 +70,7 @@ targets:
     configFiles:
       Debug: Config.xcconfig
       Release: Config.Release.xcconfig
+      Staging: Config.Staging.xcconfig
     settings:
       base:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
