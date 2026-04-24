@@ -94,7 +94,7 @@ targets:
       properties:
         API_BASE_URL: $(API_BASE_URL)
         GOOGLE_CLIENT_ID: $(GOOGLE_CLIENT_ID)
-        NSHealthShareUsageDescription: "Integrated Life reads your health data including heart rate, activity, sleep, and environmental metrics to provide personalized insights."
+        NSHealthShareUsageDescription: "Integrated Life reads your health data including heart rate, activity, sleep, environmental metrics, and Health profile fields (date of birth and biological sex as gender) when you import them, to provide personalized insights."
         NSHealthUpdateUsageDescription: "Integrated Life saves your workout data to Apple Health so your activity is tracked in one place."
         CFBundleDisplayName: Integrated Life
         CFBundleName: Integrated Life
