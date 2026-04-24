@@ -16,10 +16,10 @@ settings:
     TARGETED_DEVICE_FAMILY: "1,2"
     INFOPLIST_FILE: IntegratedLife/Info.plist
 
-packages:
-  GoogleSignIn:
-    url: https://github.com/google/GoogleSignIn-iOS
-    from: "8.0.0"
+configs:
+  Debug: debug
+  Release: release
+  Staging: release
 
 schemes:
   IntegratedLife:
