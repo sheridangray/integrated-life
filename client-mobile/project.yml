@@ -21,6 +21,11 @@ configs:
   Release: release
   Staging: release
 
+packages:
+  googlesignin-ios:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: "8.0.0"
+
 schemes:
   IntegratedLife:
     build:
@@ -88,7 +93,7 @@ targets:
       properties:
         com.apple.developer.healthkit: true
     dependencies:
-      - package: GoogleSignIn
+      - package: googlesignin-ios
     info:
       path: IntegratedLife/Info.plist
       properties:
