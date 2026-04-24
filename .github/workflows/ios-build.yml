@@ -1,0 +1,147 @@
+name: iOS Build & Deploy
+
+on:
+  push:
+    branches: [staging, main]
+  workflow_dispatch:
+    inputs:
+      scheme:
+        description: 'Xcode scheme to build'
+        required: false
+        default: 'IntegratedLife'
+        type: choice
+        options:
+          - IntegratedLife
+          - IntegratedLife-Staging
+
+env:
+  WORKSPACE: client-mobile/IntegratedLife.xcworkspace
+  APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+  APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+  APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+
+jobs:
+  determine-track:
+    runs-on: ubuntu-latest
+    outputs:
+      track: ${{ steps.set-track.outputs.track }}
+      scheme: ${{ steps.set-track.outputs.scheme }}
+      configuration: ${{ steps.set-track.outputs.configuration }}
+    steps:
+      - name: Set track based on branch
+        id: set-track
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "track=production" >> $GITHUB_OUTPUT
+            echo "scheme=IntegratedLife" >> $GITHUB_OUTPUT
+            echo "configuration=Release" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "track=internal" >> $GITHUB_OUTPUT
+            echo "scheme=IntegratedLife-Staging" >> $GITHUB_OUTPUT
+            echo "configuration=Staging" >> $GITHUB_OUTPUT
+          else
+            echo "track=none" >> $GITHUB_OUTPUT
+          fi
+
+  build-ios:
+    needs: determine-track
+    if: needs.determine-track.outputs.track != 'none'
+    runs-on: macos-14
+    env:
+      SCHEME: ${{ needs.determine-track.outputs.scheme }}
+      CONFIGURATION: ${{ needs.determine-track.outputs.configuration }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.4'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build shared types
+        run: npm run build:shared
+
+      - name: Generate OpenAPI spec
+        run: npm run generate:openapi
+
+      - name: Generate Swift models
+        run: npm run generate:swift
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: client-mobile
+        run: xcodegen generate
+
+      - name: Resolve package dependencies
+        working-directory: client-mobile
+        run: xcodebuild -resolvePackageDependencies -workspace IntegratedLife.xcworkspace -scheme $SCHEME
+        env:
+          SCIP_COMPOUND_DEFAULT_REALM: 'com.apple.dt.Xcode.embedding.content'
+
+      - name: Print configuration
+        run: |
+          echo "Building scheme: $SCHEME"
+          echo "Configuration: $CONFIGURATION"
+          echo "Track: ${{ needs.determine-track.outputs.track }}"
+
+      - name: Build app
+        working-directory: client-mobile
+        run: |
+          xcodebuild \
+            -workspace IntegratedLife.xcworkspace \
+            -scheme $SCHEME \
+            -configuration $CONFIGURATION \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/IntegratedLife.xcarchive \
+            archive \
+            CODE_SIGN_IDENTITY='Apple Development' \
+            PROVISIONING_PROFILE_SPECIFIER='' \
+            OTHER_CODE_SIGN_FLAGS='--timestamp' \
+            -allowProvisioningUpdates
+
+      - name: Export IPA
+        working-directory: client-mobile
+        run: |
+          xcodebuild \
+            -exportArchive \
+            -archivePath build/IntegratedLife.xcarchive \
+            -exportPath build/export \
+            -exportOptionsPlist ExportOptions.plist \
+            -allowProvisioningUpdates
+
+      - name: Upload to TestFlight (Internal - Staging)
+        if: needs.determine-track.outputs.track == 'internal'
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-store-connect-issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          app-store-connect-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          app-store-connect-key-content: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+          app-path: client-mobile/build/export/IntegratedLife.ipa
+          group: 'Internal Testers'
+
+      - name: Upload to TestFlight (Production)
+        if: needs.determine-track.outputs.track == 'production'
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-store-connect-issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          app-store-connect-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          app-store-connect-key-content: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+          app-path: client-mobile/build/export/IntegratedLife.ipa
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-${{ needs.determine-track.outputs.track }}
+          path: client-mobile/build/export/
+          retention-days: 7
