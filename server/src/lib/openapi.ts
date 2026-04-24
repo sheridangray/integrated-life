@@ -150,6 +150,9 @@ registry.registerPath({
 	method: 'get',
 	path: '/v1/exercises/{id}',
 	summary: 'Get exercise detail',
+	request: {
+		params: z.object({ id: z.string() })
+	},
 	responses: {
 		200: {
 			description: 'Exercise detail',
@@ -163,6 +166,9 @@ registry.registerPath({
 	path: '/v1/exercises/{id}/favorite',
 	summary: 'Toggle exercise favorite',
 	security: [{ bearerAuth: [] }],
+	request: {
+		params: z.object({ id: z.string() })
+	},
 	responses: {
 		200: {
 			description: 'Favorite toggled',
@@ -177,6 +183,7 @@ registry.registerPath({
 	summary: 'Log an exercise',
 	security: [{ bearerAuth: [] }],
 	request: {
+		params: z.object({ id: z.string() }),
 		body: { content: { 'application/json': { schema: CreateExerciseLogSchema } } }
 	},
 	responses: {
@@ -192,6 +199,9 @@ registry.registerPath({
 	path: '/v1/exercises/{id}/last-log',
 	summary: 'Get last exercise log',
 	security: [{ bearerAuth: [] }],
+	request: {
+		params: z.object({ id: z.string() })
+	},
 	responses: {
 		200: {
 			description: 'Last log',
@@ -217,6 +227,9 @@ registry.registerPath({
 	method: 'get',
 	path: '/v1/workouts/{id}',
 	summary: 'Get workout detail',
+	request: {
+		params: z.object({ id: z.string() })
+	},
 	responses: {
 		200: {
 			description: 'Workout detail',
@@ -247,6 +260,7 @@ registry.registerPath({
 	summary: 'Update workout',
 	security: [{ bearerAuth: [] }],
 	request: {
+		params: z.object({ id: z.string() }),
 		body: { content: { 'application/json': { schema: UpdateWorkoutSchema } } }
 	},
 	responses: {
@@ -262,6 +276,9 @@ registry.registerPath({
 	path: '/v1/workouts/{id}',
 	summary: 'Delete workout',
 	security: [{ bearerAuth: [] }],
+	request: {
+		params: z.object({ id: z.string() })
+	},
 	responses: { 204: { description: 'Workout deleted' } }
 })
 
@@ -271,6 +288,7 @@ registry.registerPath({
 	summary: 'Log a workout session',
 	security: [{ bearerAuth: [] }],
 	request: {
+		params: z.object({ id: z.string() }),
 		body: { content: { 'application/json': { schema: CreateWorkoutLogSchema } } }
 	},
 	responses: {
@@ -322,6 +340,9 @@ registry.registerPath({
 	path: '/v1/health/insights/exercise/{exerciseId}',
 	summary: 'Get AI insight for an exercise',
 	security: [{ bearerAuth: [] }],
+	request: {
+		params: z.object({ exerciseId: z.string() })
+	},
 	responses: {
 		200: {
 			description: 'AI insight',
@@ -348,6 +369,9 @@ registry.registerPath({
 	path: '/v1/health/insights/monitor/{sampleType}',
 	summary: 'Get AI insight for a HealthKit sample type',
 	security: [{ bearerAuth: [] }],
+	request: {
+		params: z.object({ sampleType: z.string() })
+	},
 	responses: {
 		200: {
 			description: 'AI insight',
