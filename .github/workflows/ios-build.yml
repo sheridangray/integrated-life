@@ -15,7 +15,6 @@ on:
           - IntegratedLife-Staging
 
 env:
-  PROJECT: client-mobile/IntegratedLife.xcodeproj
   APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
   APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
   APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
@@ -50,6 +49,7 @@ jobs:
     env:
       SCHEME: ${{ needs.determine-track.outputs.scheme }}
       CONFIGURATION: ${{ needs.determine-track.outputs.configuration }}
+      DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -115,14 +115,13 @@ jobs:
       - name: Resolve package dependencies
         working-directory: client-mobile
         run: xcodebuild -resolvePackageDependencies -project IntegratedLife.xcodeproj -scheme $SCHEME
-        env:
-          SCIP_COMPOUND_DEFAULT_REALM: 'com.apple.dt.Xcode.embedding.content'
 
       - name: Print configuration
         run: |
           echo "Building scheme: $SCHEME"
           echo "Configuration: $CONFIGURATION"
           echo "Track: ${{ needs.determine-track.outputs.track }}"
+          echo "Development Team: $DEVELOPMENT_TEAM"
 
       - name: Build app
         working-directory: client-mobile
@@ -135,9 +134,7 @@ jobs:
             -archivePath build/IntegratedLife.xcarchive \
             archive \
             CODE_SIGN_IDENTITY='Apple Development' \
-            DEVELOPMENT_TEAM='${{ secrets.APPLE_DEVELOPMENT_TEAM_ID }}' \
-            PROVISIONING_PROFILE_SPECIFIER='' \
-            OTHER_CODE_SIGN_FLAGS='--timestamp' \
+            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             -allowProvisioningUpdates
 
       - name: Export IPA
