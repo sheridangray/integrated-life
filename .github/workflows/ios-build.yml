@@ -107,10 +107,10 @@ jobs:
 
       - name: Install xcodegen 2.18.0
         run: |
-          curl -L https://github.com/yonaskolb/XcodeGen/releases/download/2.18.0/xcodegen.zip -o xcodegen.zip
-          unzip xcodegen.zip -d xcodegen-bin
-          sudo mv xcodegen-bin/xcodegen /usr/local/bin/
-          chmod +x /usr/local/bin/xcodegen
+          curl -L https://github.com/yonaskolb/XcodeGen/releases/download/2.18.0/xcodegen.zip -o /tmp/xcodegen.zip
+          unzip -o /tmp/xcodegen.zip -d /tmp/xcodegen
+          sudo cp /tmp/xcodegen/xcodegen-bin/xcodegen/bin/xcodegen /usr/local/bin/
+          sudo chmod +x /usr/local/bin/xcodegen
           xcodegen --version
 
       - name: Generate Xcode project
