@@ -64,6 +64,12 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Setup Java (for OpenAPI Generator)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Install dependencies
         run: npm ci
 
@@ -73,8 +79,31 @@ jobs:
       - name: Generate OpenAPI spec
         run: npm run generate:openapi
 
-      - name: Generate Swift models
-        run: npm run generate:swift
+      - name: Generate Swift models (without Docker)
+        run: |
+          cat > openapitools-ci.json << 'EOF'
+          {
+            "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+            "generator-cli": {
+              "version": "7.19.0",
+              "useDocker": false,
+              "generators": {
+                "swift": {
+                  "generatorName": "swift5",
+                  "inputSpec": "openapi.json",
+                  "output": "./client-mobile/Generated",
+                  "additionalProperties": {
+                    "projectName": "IntegratedLifeAPI"
+                  }
+                }
+              }
+            }
+          }
+          EOF
+          mv openapitools.json openapitools-original.json
+          mv openapitools-ci.json openapitools.json
+          node scripts/generate-swift.js
+          mv openapitools-original.json openapitools.json
 
       - name: Install xcodegen
         run: brew install xcodegen
