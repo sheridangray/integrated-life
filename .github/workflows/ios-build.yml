@@ -46,7 +46,7 @@ jobs:
   build-ios:
     needs: determine-track
     if: needs.determine-track.outputs.track != 'none'
-    runs-on: macos-14
+    runs-on: macos-15
     env:
       SCHEME: ${{ needs.determine-track.outputs.scheme }}
       CONFIGURATION: ${{ needs.determine-track.outputs.configuration }}
@@ -56,7 +56,7 @@ jobs:
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '15.4'
+          xcode-version: '16.2'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -106,8 +106,7 @@ jobs:
           mv openapitools-original.json openapitools.json
 
       - name: Install xcodegen
-        run: brew install xcodegen@2.18 || brew install xcodegen
-        # Pin to 2.18.x which creates Xcode 15-compatible projects
+        run: brew install xcodegen
 
       - name: Generate Xcode project
         working-directory: client-mobile
