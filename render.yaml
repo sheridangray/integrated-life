@@ -19,9 +19,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        fromDatabase:
-          name: integrated-life-db
-          property: connectionString
+        sync: false
       - key: MONGODB_DB_NAME
         value: integrated-life-staging
       - key: JWT_SECRET
@@ -82,9 +80,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        fromDatabase:
-          name: integrated-life-db
-          property: connectionString
+        sync: false
       - key: MONGODB_DB_NAME
         value: integrated-life-prod
       - key: JWT_SECRET
@@ -127,12 +123,6 @@ services:
         value: https://api.integratedlife.app
       - key: NEXT_PUBLIC_GOOGLE_CLIENT_ID_WEB
         sync: false
-
-databases:
-  - name: integrated-life-db
-    databaseName: integratedlife
-    region: oregon
-    plan: starter
 
 # Custom domains (configure after initial deploy)
 # domains:
