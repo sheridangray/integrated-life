@@ -21,7 +21,7 @@ services:
       - key: MONGODB_URI
         fromDatabase:
           name: integrated-life-db
-          property: connection.string
+          property: connectionString
       - key: MONGODB_DB_NAME
         value: integrated-life-staging
       - key: JWT_SECRET
@@ -84,7 +84,7 @@ services:
       - key: MONGODB_URI
         fromDatabase:
           name: integrated-life-db
-          property: connection.string
+          property: connectionString
       - key: MONGODB_DB_NAME
         value: integrated-life-prod
       - key: JWT_SECRET
@@ -130,7 +130,7 @@ services:
 
 databases:
   - name: integrated-life-db
-    databaseName: integrated-life
+    databaseName: integratedlife
     region: oregon
     plan: starter
 
