@@ -1,0 +1,150 @@
+# Render Blueprint for Integrated Life
+# See: https://render.com/docs/blueprint-spec
+
+services:
+  # ===========================================
+  # STAGING ENVIRONMENT
+  # ===========================================
+
+  - type: web
+    name: integrated-life-api-staging
+    env: node
+    region: oregon
+    plan: starter
+    branch: staging
+    buildCommand: npm ci --include=dev && npm run build:shared && npm run build:server
+    startCommand: npm start
+    healthCheckPath: /v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        fromDatabase:
+          name: integrated-life-db
+          property: connection.string
+      - key: MONGODB_DB_NAME
+        value: integrated-life-staging
+      - key: JWT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID_WEB
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET_WEB
+        sync: false
+      - key: GOOGLE_CLIENT_ID_IOS
+        sync: false
+      - key: API_URL
+        value: https://api-staging.integratedlife.app
+      - key: WEB_URL
+        value: https://staging.integratedlife.app
+      - key: MOBILE_BUNDLE_ID
+        value: com.integratedlife.app
+      - key: CLOUDFLARE_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        value: integrated-life-images
+      - key: R2_PUBLIC_URL
+        sync: false
+
+  - type: web
+    name: integrated-life-web-staging
+    env: node
+    region: oregon
+    plan: starter
+    branch: staging
+    buildCommand: npm ci --include=dev && npm run build:web:deploy
+    startCommand: npm run start:web
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://api-staging.integratedlife.app
+      - key: NEXT_PUBLIC_GOOGLE_CLIENT_ID_WEB
+        sync: false
+
+  # ===========================================
+  # PRODUCTION ENVIRONMENT
+  # ===========================================
+
+  - type: web
+    name: integrated-life-api
+    env: node
+    region: oregon
+    plan: starter
+    branch: main
+    buildCommand: npm ci --include=dev && npm run build:shared && npm run build:server
+    startCommand: npm start
+    healthCheckPath: /v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        fromDatabase:
+          name: integrated-life-db
+          property: connection.string
+      - key: MONGODB_DB_NAME
+        value: integrated-life-prod
+      - key: JWT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID_WEB
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET_WEB
+        sync: false
+      - key: GOOGLE_CLIENT_ID_IOS
+        sync: false
+      - key: API_URL
+        value: https://api.integratedlife.app
+      - key: WEB_URL
+        value: https://integratedlife.app
+      - key: MOBILE_BUNDLE_ID
+        value: com.integratedlife.app
+      - key: CLOUDFLARE_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        value: integrated-life-images
+      - key: R2_PUBLIC_URL
+        sync: false
+
+  - type: web
+    name: integrated-life-web
+    env: node
+    region: oregon
+    plan: starter
+    branch: main
+    buildCommand: npm ci --include=dev && npm run build:web:deploy
+    startCommand: npm run start:web
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://api.integratedlife.app
+      - key: NEXT_PUBLIC_GOOGLE_CLIENT_ID_WEB
+        sync: false
+
+databases:
+  - name: integrated-life-db
+    databaseName: integrated-life
+    region: oregon
+    plan: starter
+
+# Custom domains (configure after initial deploy)
+# domains:
+#   - name: integratedlife.app
+#     type: primary
+#     services: [integrated-life-web]
+#   - name: api.integratedlife.app
+#     type: primary
+#     services: [integrated-life-api]
+#   - name: staging.integratedlife.app
+#     type: primary
+#     services: [integrated-life-web-staging]
+#   - name: api-staging.integratedlife.app
+#     type: primary
+#     services: [integrated-life-api-staging]
