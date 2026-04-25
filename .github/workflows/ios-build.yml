@@ -82,9 +82,10 @@ jobs:
       - name: Setup App Store Connect API Key for xcodebuild
         run: |
           mkdir -p ~/.appstoreconnect/private_keys
-          # Write the P8 content directly (not base64 encoded in secret)
-          echo "$APP_STORE_CONNECT_API_KEY_CONTENT" > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
-          echo "AUTH_KEY_PATH=$HOME/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8" >> $GITHUB_ENV
+          AUTH_KEY_FILE=~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
+          # Secret should be base64-encoded P8 file - decode to get raw P8
+          echo -n "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > "$AUTH_KEY_FILE"
+          echo "AUTH_KEY_PATH=$AUTH_KEY_FILE" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -131,7 +132,7 @@ jobs:
           mv openapitools.json openapitools-original.json
           mv openapitools-ci.json openapitools.json
           node scripts/generate-swift.js
-          mv openapitools-original.json openapitools.json
+          mv openapitools-original.json openapitools.txt
 
       - name: Install xcodegen
         run: brew install xcodegen
