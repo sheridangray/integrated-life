@@ -84,13 +84,14 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys
           AUTH_KEY_FILE=~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
 
-          # Write properly formatted PEM file
-          # Secret is base64-encoded raw key bytes
-          # 1. Decode to get raw key bytes
-          # 2. Re-encode to base64 with 64-char line width for PEM format
-          echo "-----BEGIN PRIVATE KEY-----" > "$AUTH_KEY_FILE"
-          echo -n "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode | base64 >> "$AUTH_KEY_FILE"
-          echo "-----END PRIVATE KEY-----" >> "$AUTH_KEY_FILE"
+          # Try to write directly first (if secret is PEM format)
+          echo "$APP_STORE_CONNECT_API_KEY_CONTENT" > "$AUTH_KEY_FILE"
+
+          # Check if it's valid PEM. If not, try base64 decode
+          if ! grep -q "BEGIN PRIVATE KEY" "$AUTH_KEY_FILE" 2>/dev/null; then
+            # Content is base64-encoded, decode it
+            echo -n "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > "$AUTH_KEY_FILE"
+          fi
 
           echo "AUTH_KEY_PATH=$AUTH_KEY_FILE" >> $GITHUB_ENV
 
