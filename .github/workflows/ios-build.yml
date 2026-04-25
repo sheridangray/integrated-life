@@ -49,7 +49,6 @@ jobs:
     env:
       SCHEME: ${{ needs.determine-track.outputs.scheme }}
       CONFIGURATION: ${{ needs.determine-track.outputs.configuration }}
-      DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -58,34 +57,12 @@ jobs:
         with:
           xcode-version: '16.4'
 
-      - name: Install Apple signing certificate
-        env:
-          CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
-          CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-        run: |
-          # Create temporary keychain
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          security create-keychain -p actions $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p actions $KEYCHAIN_PATH
-
-          # Import certificate
-          CERTIFICATE_PATH=$RUNNER_TEMP/certificate.p12
-          echo -n "$CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
-          security import $CERTIFICATE_PATH -P "$CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security set-key-partition-list -S apple-tool:,apple: -k actions $KEYCHAIN_PATH
-
-          # Add to keychain list and set as default
-          security list-keychains -d user -s $KEYCHAIN_PATH
-          security default-keychain -s $KEYCHAIN_PATH
-
       - name: Setup App Store Connect API Key for xcodebuild
         run: |
           mkdir -p ~/.appstoreconnect/private_keys
           AUTH_KEY_FILE=~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
 
           # Secret is the full P8 file content (including PEM headers)
-          # Write it directly
           echo "$APP_STORE_CONNECT_API_KEY_CONTENT" > "$AUTH_KEY_FILE"
 
           echo "AUTH_KEY_PATH=$AUTH_KEY_FILE" >> $GITHUB_ENV
@@ -153,9 +130,9 @@ jobs:
           echo "Building scheme: $SCHEME"
           echo "Configuration: $CONFIGURATION"
           echo "Track: ${{ needs.determine-track.outputs.track }}"
-          echo "Development Team: $DEVELOPMENT_TEAM"
+          echo "Using cloud signing with App Store Connect API key"
 
-      - name: Build and archive app
+      - name: Build and archive app (cloud signing)
         working-directory: client-mobile
         run: |
           xcodebuild \
@@ -165,14 +142,13 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath build/IntegratedLife.xcarchive \
             archive \
-            CODE_SIGN_IDENTITY='Apple Development' \
-            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             -authenticationKeyPath "$AUTH_KEY_PATH" \
             -authenticationKeyID "$APP_STORE_CONNECT_API_KEY_ID" \
             -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
-            -allowProvisioningUpdates
+            -allowProvisioningUpdates \
+            CODE_SIGN_STYLE=Automatic
 
-      - name: Export IPA
+      - name: Export IPA (cloud signing)
         working-directory: client-mobile
         run: |
           xcodebuild \
@@ -210,9 +186,3 @@ jobs:
           name: ios-build-${{ needs.determine-track.outputs.track }}
           path: client-mobile/build/export/
           retention-days: 7
-
-      - name: Clean up keychain
-        if: always()
-        run: |
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          security delete-keychain $KEYCHAIN_PATH || true

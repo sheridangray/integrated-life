@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>method</key>
-    <string>app-store</string>
+    <string>app-store-connect</string>
     <key>uploadSymbols</key>
     <true/>
     <key>uploadBitcode</key>
@@ -12,5 +12,7 @@
     <string>automatic</string>
     <key>destination</key>
     <string>export</string>
+    <key>manageAppVersionAndBuildNumber</key>
+    <true/>
 </dict>
 </plist>
