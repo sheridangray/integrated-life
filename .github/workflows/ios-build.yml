@@ -49,7 +49,7 @@ jobs:
     env:
       SCHEME: ${{ needs.determine-track.outputs.scheme }}
       CONFIGURATION: ${{ needs.determine-track.outputs.configuration }}
-      DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPER_TEAM_ID }}
+      DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -82,7 +82,8 @@ jobs:
       - name: Setup App Store Connect API Key for xcodebuild
         run: |
           mkdir -p ~/.appstoreconnect/private_keys
-          echo -n "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
+          # Write the P8 content directly (not base64 encoded in secret)
+          echo "$APP_STORE_CONNECT_API_KEY_CONTENT" > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
           echo "AUTH_KEY_PATH=$HOME/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8" >> $GITHUB_ENV
 
       - name: Setup Node.js
