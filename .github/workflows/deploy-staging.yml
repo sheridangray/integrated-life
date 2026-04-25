@@ -1,0 +1,63 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches: [staging]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build shared
+        run: npm run build:shared
+
+      - name: Run tests
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret-min-32-characters-long
+          GOOGLE_CLIENT_ID_WEB: test-web.apps.googleusercontent.com
+          GOOGLE_CLIENT_SECRET_WEB: test-secret
+          GOOGLE_CLIENT_ID_IOS: test-ios.apps.googleusercontent.com
+          MONGODB_URI: mongodb://localhost:27017/test-placeholder
+        run: npm test
+
+      - name: Build server
+        run: npm run build:server
+
+      - name: Build client-web
+        run: npm run build:web
+
+  deploy-api:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy (API Staging)
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"serviceId": "${{ secrets.RENDER_API_STAGING_SERVICE_ID }}", "clearCache": "do_not_clear"}' \
+            https://api.render.com/v1/services/${{ secrets.RENDER_API_STAGING_SERVICE_ID }}/deploys
+
+  deploy-web:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy (Web Staging)
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"serviceId": "${{ secrets.RENDER_WEB_STAGING_SERVICE_ID }}", "clearCache": "do_not_clear"}' \
+            https://api.render.com/v1/services/${{ secrets.RENDER_WEB_STAGING_SERVICE_ID }}/deploys

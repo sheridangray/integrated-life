@@ -64,7 +64,7 @@ struct RecipeListView: View {
                 }
             }
         }
-        .task(id: (searchText, searchScope)) {
+        .task(id: searchText + searchScope.rawValue) {
             try? await Task.sleep(for: .milliseconds(300))
             let search = searchText.isEmpty ? nil : searchText
             let tag = searchScope == .tags ? search : nil

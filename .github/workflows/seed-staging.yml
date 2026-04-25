@@ -1,0 +1,41 @@
+name: Seed Staging Database
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Source database'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+
+jobs:
+  sanitize-and-seed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install additional dependencies for sanitization
+        run: npm install -D @faker-js/faker
+
+      - name: Build shared
+        run: npm run build:shared
+
+      - name: Run sanitization script
+        env:
+          MONGODB_URI_PROD: ${{ secrets.MONGODB_URI_PROD }}
+          MONGODB_URI_STAGING: ${{ secrets.MONGODB_URI_STAGING }}
+          MONGODB_DB_NAME_PROD: integrated-life-prod
+          MONGODB_DB_NAME_STAGING: integrated-life-staging
+        run: npx tsx scripts/sanitize-db.ts
