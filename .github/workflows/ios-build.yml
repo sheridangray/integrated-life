@@ -75,7 +75,7 @@ jobs:
           security import $CERTIFICATE_PATH -P "$CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple: -k actions $KEYCHAIN_PATH
 
-          # Add to keychain list
+          # Add to keychain list and set as default
           security list-keychains -d user -s $KEYCHAIN_PATH
           security default-keychain -s $KEYCHAIN_PATH
 
@@ -144,7 +144,7 @@ jobs:
           echo "Track: ${{ needs.determine-track.outputs.track }}"
           echo "Development Team: $DEVELOPMENT_TEAM"
 
-      - name: Build app
+      - name: Build app (build only, no archive)
         working-directory: client-mobile
         run: |
           xcodebuild \
@@ -152,21 +152,27 @@ jobs:
             -scheme $SCHEME \
             -configuration $CONFIGURATION \
             -destination 'generic/platform=iOS' \
-            -archivePath build/IntegratedLife.xcarchive \
-            archive \
+            -derivedDataPath build/DerivedData \
+            build \
             CODE_SIGN_IDENTITY='Apple Development' \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-            -allowProvisioningUpdates
+            -allowProvisioningUpdates \
+            -allowProvisioningRegistration
 
-      - name: Export IPA
+      - name: Create IPA from build
         working-directory: client-mobile
         run: |
-          xcodebuild \
-            -exportArchive \
-            -archivePath build/IntegratedLife.xcarchive \
-            -exportPath build/export \
-            -exportOptionsPlist ExportOptions.plist \
-            -allowProvisioningUpdates
+          # Find the app bundle
+          APP_PATH=$(find build/DerivedData/Build/Products -name "*.app" | head -1)
+          echo "Found app at: $APP_PATH"
+
+          # Create IPA payload structure
+          mkdir -p build/ipa/Payload
+          cp -r "$APP_PATH" build/ipa/Payload/
+
+          # Create IPA
+          cd build/ipa
+          zip -r ../IntegratedLife.ipa Payload
 
       - name: Upload to TestFlight (Internal - Staging)
         if: needs.determine-track.outputs.track == 'internal'
@@ -175,7 +181,7 @@ jobs:
           app-store-connect-issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           app-store-connect-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           app-store-connect-key-content: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
-          app-path: client-mobile/build/export/IntegratedLife.ipa
+          app-path: client-mobile/build/IntegratedLife.ipa
           group: 'Internal Testers'
 
       - name: Upload to TestFlight (Production)
@@ -185,13 +191,13 @@ jobs:
           app-store-connect-issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           app-store-connect-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           app-store-connect-key-content: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
-          app-path: client-mobile/build/export/IntegratedLife.ipa
+          app-path: client-mobile/build/IntegratedLife.ipa
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ios-build-${{ needs.determine-track.outputs.track }}
-          path: client-mobile/build/export/
+          path: client-mobile/build/IntegratedLife.ipa
           retention-days: 7
 
       - name: Clean up keychain
