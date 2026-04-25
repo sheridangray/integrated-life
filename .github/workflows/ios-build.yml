@@ -49,7 +49,7 @@ jobs:
     env:
       SCHEME: ${{ needs.determine-track.outputs.scheme }}
       CONFIGURATION: ${{ needs.determine-track.outputs.configuration }}
-      DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM_ID }}
+      DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPER_TEAM_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -78,6 +78,12 @@ jobs:
           # Add to keychain list and set as default
           security list-keychains -d user -s $KEYCHAIN_PATH
           security default-keychain -s $KEYCHAIN_PATH
+
+      - name: Setup App Store Connect API Key for xcodebuild
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo -n "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
+          echo "AUTH_KEY_PATH=$HOME/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -144,7 +150,7 @@ jobs:
           echo "Track: ${{ needs.determine-track.outputs.track }}"
           echo "Development Team: $DEVELOPMENT_TEAM"
 
-      - name: Build app (build only, no archive)
+      - name: Build and archive app
         working-directory: client-mobile
         run: |
           xcodebuild \
@@ -152,27 +158,27 @@ jobs:
             -scheme $SCHEME \
             -configuration $CONFIGURATION \
             -destination 'generic/platform=iOS' \
-            -derivedDataPath build/DerivedData \
-            build \
+            -archivePath build/IntegratedLife.xcarchive \
+            archive \
             CODE_SIGN_IDENTITY='Apple Development' \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-            -allowProvisioningUpdates \
-            -allowProvisioningRegistration
+            -authenticationKeyPath "$AUTH_KEY_PATH" \
+            -authenticationKeyID "$APP_STORE_CONNECT_API_KEY_ID" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
+            -allowProvisioningUpdates
 
-      - name: Create IPA from build
+      - name: Export IPA
         working-directory: client-mobile
         run: |
-          # Find the app bundle
-          APP_PATH=$(find build/DerivedData/Build/Products -name "*.app" | head -1)
-          echo "Found app at: $APP_PATH"
-
-          # Create IPA payload structure
-          mkdir -p build/ipa/Payload
-          cp -r "$APP_PATH" build/ipa/Payload/
-
-          # Create IPA
-          cd build/ipa
-          zip -r ../IntegratedLife.ipa Payload
+          xcodebuild \
+            -exportArchive \
+            -archivePath build/IntegratedLife.xcarchive \
+            -exportPath build/export \
+            -exportOptionsPlist ExportOptions.plist \
+            -authenticationKeyPath "$AUTH_KEY_PATH" \
+            -authenticationKeyID "$APP_STORE_CONNECT_API_KEY_ID" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
+            -allowProvisioningUpdates
 
       - name: Upload to TestFlight (Internal - Staging)
         if: needs.determine-track.outputs.track == 'internal'
@@ -181,7 +187,7 @@ jobs:
           app-store-connect-issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           app-store-connect-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           app-store-connect-key-content: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
-          app-path: client-mobile/build/IntegratedLife.ipa
+          app-path: client-mobile/build/export/IntegratedLife.ipa
           group: 'Internal Testers'
 
       - name: Upload to TestFlight (Production)
@@ -191,13 +197,13 @@ jobs:
           app-store-connect-issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           app-store-connect-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           app-store-connect-key-content: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
-          app-path: client-mobile/build/IntegratedLife.ipa
+          app-path: client-mobile/build/export/IntegratedLife.ipa
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ios-build-${{ needs.determine-track.outputs.track }}
-          path: client-mobile/build/IntegratedLife.ipa
+          path: client-mobile/build/export/
           retention-days: 7
 
       - name: Clean up keychain
