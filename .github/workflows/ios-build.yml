@@ -164,7 +164,6 @@ jobs:
             -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
             -allowProvisioningUpdates \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-            CODE_SIGN_IDENTITY='Apple Distribution' \
             CODE_SIGN_STYLE=Automatic
 
       - name: Export IPA
