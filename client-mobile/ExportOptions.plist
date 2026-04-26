@@ -8,8 +8,11 @@
     <true/>
     <key>uploadBitcode</key>
     <false/>
-    <key>signingStyle</key>
-    <string>automatic</string>
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>com.integratedlife.app</key>
+        <string>Integrated Life App Store Profile</string>
+    </dict>
     <key>teamID</key>
     <string>29XGJ7H3RU</string>
     <key>destination</key>
