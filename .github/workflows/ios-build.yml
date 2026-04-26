@@ -19,6 +19,7 @@ env:
   APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
   APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
   DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM_ID }}
+  PROVISIONING_PROFILE_UUID: d778f92e-c648-4d45-b6ed-d83fe815bc2f
 
 jobs:
   determine-track:
@@ -88,7 +89,7 @@ jobs:
           PROFILE_PATH=$RUNNER_TEMP/IntegratedLife.mobileprovision
           echo -n "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode -o $PROFILE_PATH
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+          cp $PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles/$PROVISIONING_PROFILE_UUID.mobileprovision
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -154,6 +155,7 @@ jobs:
           echo "Configuration: $CONFIGURATION"
           echo "Track: ${{ needs.determine-track.outputs.track }}"
           echo "Development Team: $DEVELOPMENT_TEAM"
+          echo "Provisioning Profile UUID: $PROVISIONING_PROFILE_UUID"
 
       - name: Build and archive app
         working-directory: client-mobile
@@ -170,7 +172,8 @@ jobs:
             -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             CODE_SIGN_IDENTITY="Apple Distribution" \
-            CODE_SIGN_STYLE=Manual
+            CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE="$PROVISIONING_PROFILE_UUID"
 
       - name: Export IPA
         working-directory: client-mobile
