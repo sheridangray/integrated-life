@@ -83,6 +83,14 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
           security list-keychains -d user -s $KEYCHAIN_PATH login.keychain
 
+      - name: Import provisioning profile
+        run: |
+          PROFILE_PATH=$RUNNER_TEMP/IntegratedLife.mobileprovision
+          echo -n "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode -o $PROFILE_PATH
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "PROFILE_PATH=$PROFILE_PATH" >> $GITHUB_ENV
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -147,7 +155,7 @@ jobs:
           echo "Configuration: $CONFIGURATION"
           echo "Track: ${{ needs.determine-track.outputs.track }}"
           echo "Development Team: $DEVELOPMENT_TEAM"
-          echo "Using distribution certificate for signing"
+          echo "Using distribution certificate + provisioning profile for signing"
 
       - name: Build and archive app
         working-directory: client-mobile
@@ -162,7 +170,6 @@ jobs:
             -authenticationKeyPath "$AUTH_KEY_PATH" \
             -authenticationKeyID "$APP_STORE_CONNECT_API_KEY_ID" \
             -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
-            -allowProvisioningUpdates \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             CODE_SIGN_STYLE=Automatic
 
@@ -176,8 +183,7 @@ jobs:
             -exportOptionsPlist ExportOptions.plist \
             -authenticationKeyPath "$AUTH_KEY_PATH" \
             -authenticationKeyID "$APP_STORE_CONNECT_API_KEY_ID" \
-            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
-            -allowProvisioningUpdates
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
 
       - name: Upload to TestFlight (Internal - Staging)
         if: needs.determine-track.outputs.track == 'internal'
