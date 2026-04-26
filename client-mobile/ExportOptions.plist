@@ -9,7 +9,7 @@
     <key>uploadBitcode</key>
     <false/>
     <key>signingStyle</key>
-    <string>manual</string>
+    <string>automatic</string>
     <key>teamID</key>
     <string>29XGJ7H3RU</string>
     <key>destination</key>

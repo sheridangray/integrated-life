@@ -4,22 +4,12 @@ on:
   push:
     branches: [staging, main]
   workflow_dispatch:
-    inputs:
-      scheme:
-        description: 'Xcode scheme to build'
-        required: false
-        default: 'IntegratedLife'
-        type: choice
-        options:
-          - IntegratedLife
-          - IntegratedLife-Staging
 
 env:
   APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
   APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
   APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
   DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM_ID }}
-  PROVISIONING_PROFILE_UUID: d778f92e-c648-4d45-b6ed-d83fe815bc2f
 
 jobs:
   determine-track:
@@ -89,7 +79,7 @@ jobs:
           PROFILE_PATH=$RUNNER_TEMP/IntegratedLife.mobileprovision
           echo -n "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode -o $PROFILE_PATH
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles/$PROVISIONING_PROFILE_UUID.mobileprovision
+          cp $PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -155,7 +145,6 @@ jobs:
           echo "Configuration: $CONFIGURATION"
           echo "Track: ${{ needs.determine-track.outputs.track }}"
           echo "Development Team: $DEVELOPMENT_TEAM"
-          echo "Provisioning Profile UUID: $PROVISIONING_PROFILE_UUID"
 
       - name: Build and archive app
         working-directory: client-mobile
@@ -170,10 +159,9 @@ jobs:
             -authenticationKeyPath "$AUTH_KEY_PATH" \
             -authenticationKeyID "$APP_STORE_CONNECT_API_KEY_ID" \
             -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
-            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
+            -allowProvisioningUpdates \
             CODE_SIGN_IDENTITY="Apple Distribution" \
-            CODE_SIGN_STYLE=Manual \
-            PROVISIONING_PROFILE="$PROVISIONING_PROFILE_UUID"
+            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM"
 
       - name: Export IPA
         working-directory: client-mobile
@@ -185,7 +173,8 @@ jobs:
             -exportOptionsPlist ExportOptions.plist \
             -authenticationKeyPath "$AUTH_KEY_PATH" \
             -authenticationKeyID "$APP_STORE_CONNECT_API_KEY_ID" \
-            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
+            -allowProvisioningUpdates
 
       - name: Upload to TestFlight (Internal - Staging)
         if: needs.determine-track.outputs.track == 'internal'
