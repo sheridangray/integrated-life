@@ -9,7 +9,9 @@
     <key>uploadBitcode</key>
     <false/>
     <key>signingStyle</key>
-    <string>automatic</string>
+    <string>manual</string>
+    <key>teamID</key>
+    <string>29XGJ7H3RU</string>
     <key>destination</key>
     <string>export</string>
 </dict>

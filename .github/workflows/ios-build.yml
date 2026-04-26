@@ -26,7 +26,7 @@ jobs:
     outputs:
       track: ${{ steps.set-track.outputs.track }}
       scheme: ${{ steps.set-track.outputs.scheme }}
-      configuration: ${{ steps.set-track.outputs.configuration }}
+      configuration: ${{ needs.determine-track.outputs.configuration }}
     steps:
       - name: Set track based on branch
         id: set-track
@@ -89,7 +89,9 @@ jobs:
           echo -n "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode -o $PROFILE_PATH
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
-          echo "PROFILE_PATH=$PROFILE_PATH" >> $GITHUB_ENV
+          # Get profile UUID for build settings
+          PROFILE_UUID=$(security cms -D -i $PROFILE_PATH | plutil -extract UUID raw -)
+          echo "PROFILE_UUID=$PROFILE_UUID" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -155,7 +157,7 @@ jobs:
           echo "Configuration: $CONFIGURATION"
           echo "Track: ${{ needs.determine-track.outputs.track }}"
           echo "Development Team: $DEVELOPMENT_TEAM"
-          echo "Using distribution certificate + provisioning profile for signing"
+          echo "Provisioning Profile UUID: $PROFILE_UUID"
 
       - name: Build and archive app
         working-directory: client-mobile
@@ -170,8 +172,8 @@ jobs:
             -authenticationKeyPath "$AUTH_KEY_PATH" \
             -authenticationKeyID "$APP_STORE_CONNECT_API_KEY_ID" \
             -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
-            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-            CODE_SIGN_STYLE=Automatic
+            -allowProvisioningUpdates \
+            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM"
 
       - name: Export IPA
         working-directory: client-mobile
@@ -183,7 +185,8 @@ jobs:
             -exportOptionsPlist ExportOptions.plist \
             -authenticationKeyPath "$AUTH_KEY_PATH" \
             -authenticationKeyID "$APP_STORE_CONNECT_API_KEY_ID" \
-            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
+            -allowProvisioningUpdates
 
       - name: Upload to TestFlight (Internal - Staging)
         if: needs.determine-track.outputs.track == 'internal'
