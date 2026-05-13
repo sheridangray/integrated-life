@@ -221,8 +221,9 @@ private struct PenaltyDetailView: View {
                     map[k] = d
                 }
             }
+            let result = map
             await MainActor.run {
-                contributorDetails = map
+                contributorDetails = result
                 contributorsLoading = false
             }
         } catch {
