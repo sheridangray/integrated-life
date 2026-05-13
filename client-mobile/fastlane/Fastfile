@@ -21,6 +21,7 @@ platform :ios do
       scheme: SCHEME,
       configuration: "Release",
       export_method: "app-store",
+      xcargs: "MARKETING_VERSION=#{marketing_version} CURRENT_PROJECT_VERSION=#{ENV.fetch('BUILD_NUMBER', '1')}",
       export_options: signing_export_options
     )
 
@@ -43,6 +44,7 @@ platform :ios do
       scheme: SCHEME,
       configuration: "Release",
       export_method: "app-store",
+      xcargs: "MARKETING_VERSION=#{marketing_version} CURRENT_PROJECT_VERSION=#{ENV.fetch('BUILD_NUMBER', '1')}",
       export_options: signing_export_options
     )
 
@@ -127,5 +129,14 @@ platform :ios do
         BUNDLE_ID => lane_context[:PROFILE_UUID]
       }
     }
+  end
+
+  # Reads MARKETING_VERSION from the project file, falls back to "1.0.0"
+  def marketing_version
+    begin
+      get_version_number(xcodeproj: PROJECT, target: SCHEME)
+    rescue
+      "1.0.0"
+    end
   end
 end
