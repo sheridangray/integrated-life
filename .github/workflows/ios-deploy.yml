@@ -22,7 +22,7 @@ on:
 jobs:
   deploy:
     name: Build & Deploy iOS
-    runs-on: macos-14   # Xcode 15 is pre-installed on macos-14
+    runs-on: macos-26   # Xcode 26 is required for iOS 26 SDK (App Store requirement)
 
     defaults:
       run:
