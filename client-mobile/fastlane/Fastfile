@@ -76,18 +76,23 @@ platform :ios do
     # Sets MATCH_KEYCHAIN_NAME and MATCH_KEYCHAIN_PASSWORD in the environment.
     setup_ci
 
+    cert_path = File.expand_path("../distribution.p12", __dir__)
+
     import_certificate(
-      certificate_path: "distribution.p12",
+      certificate_path: cert_path,
       certificate_password: ENV.fetch("IOS_DISTRIBUTION_CERTIFICATE_PASSWORD"),
       keychain_name: ENV["MATCH_KEYCHAIN_NAME"],
       keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"]
     )
 
-    install_provisioning_profile(path: "AppStore.mobileprovision")
+    # __dir__ is client-mobile/fastlane/, so ../ resolves to client-mobile/
+    profile_path = File.expand_path("../AppStore.mobileprovision", __dir__)
+
+    install_provisioning_profile(path: profile_path)
 
     # Extract UUID so Xcode can locate the profile during export
     uuid = sh(
-      "security cms -D -i AppStore.mobileprovision 2>/dev/null | " \
+      "security cms -D -i '#{profile_path}' | " \
       "python3 -c \"import sys,plistlib; p=plistlib.loads(sys.stdin.buffer.read()); print(p['UUID'])\"",
       log: false
     ).strip
