@@ -23,7 +23,7 @@ struct LogExerciseView: View {
 	@State private var savedLog: ExerciseLog?
 
 	private let healthService = HealthService.shared
-	private let healthKitService = HealthKitService.shared
+	private var healthKitService: HealthKitService { HealthKitService.shared }
 	private var isInWorkout: Bool { workoutId != nil }
 
 	init(exercise: Exercise, workoutId: String? = nil, onComplete: ((ExerciseLog) -> Void)? = nil) {
