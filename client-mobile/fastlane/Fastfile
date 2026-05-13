@@ -1,0 +1,126 @@
+default_platform(:ios)
+
+PROJECT   = "IntegratedLife.xcodeproj"
+SCHEME    = "IntegratedLife"
+BUNDLE_ID = "com.integratedlife.app"
+TEAM_ID   = "29XGJ7H3RU"
+
+platform :ios do
+  # ---------------------------------------------------------------------------
+  # Public lanes
+  # ---------------------------------------------------------------------------
+
+  desc "Build and upload to TestFlight (staging)"
+  lane :beta do
+    api_key = connect_api_key
+    configure_signing
+    set_build_number
+
+    build_app(
+      project: PROJECT,
+      scheme: SCHEME,
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: signing_export_options
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+
+    clean_build_artifacts
+  end
+
+  desc "Build and upload to App Store (production)"
+  lane :release do
+    api_key = connect_api_key
+    configure_signing
+    set_build_number
+
+    build_app(
+      project: PROJECT,
+      scheme: SCHEME,
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: signing_export_options
+    )
+
+    upload_to_app_store(
+      api_key: api_key,
+      submit_for_review: false,
+      automatic_release: false,
+      skip_screenshots: true,
+      skip_metadata: true,
+      force: true
+    )
+
+    clean_build_artifacts
+  end
+
+  # ---------------------------------------------------------------------------
+  # Private helpers
+  # ---------------------------------------------------------------------------
+
+  private_lane :connect_api_key do
+    app_store_connect_api_key(
+      key_id: ENV.fetch("APP_STORE_CONNECT_API_KEY_ID"),
+      issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
+      key_content: ENV.fetch("APP_STORE_CONNECT_API_KEY_CONTENT"),
+      is_key_content_base64: true
+    )
+  end
+
+  private_lane :configure_signing do
+    # Creates a short-lived keychain isolated to this CI run.
+    # Sets MATCH_KEYCHAIN_NAME and MATCH_KEYCHAIN_PASSWORD in the environment.
+    setup_ci
+
+    import_certificate(
+      certificate_path: "distribution.p12",
+      certificate_password: ENV.fetch("IOS_DISTRIBUTION_CERTIFICATE_PASSWORD"),
+      keychain_name: ENV["MATCH_KEYCHAIN_NAME"],
+      keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"]
+    )
+
+    install_provisioning_profile(path: "AppStore.mobileprovision")
+
+    # Extract UUID so Xcode can locate the profile during export
+    uuid = sh(
+      "security cms -D -i AppStore.mobileprovision 2>/dev/null | " \
+      "python3 -c \"import sys,plistlib; p=plistlib.loads(sys.stdin.buffer.read()); print(p['UUID'])\"",
+      log: false
+    ).strip
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: PROJECT,
+      team_id: TEAM_ID,
+      code_sign_identity: "iPhone Distribution",
+      profile_uuid: uuid,
+      targets: [SCHEME],
+      build_configurations: ["Release"]
+    )
+
+    # Stash the UUID for use in export options
+    lane_context[:PROFILE_UUID] = uuid
+  end
+
+  private_lane :set_build_number do
+    # Uses the GitHub Actions run number for a guaranteed-incrementing build
+    # number that never conflicts. Falls back to a Unix timestamp locally.
+    build_number = ENV.fetch("BUILD_NUMBER", Time.now.to_i.to_s)
+    increment_build_number(
+      build_number: build_number,
+      xcodeproj: PROJECT
+    )
+  end
+
+  def signing_export_options
+    {
+      provisioningProfiles: {
+        BUNDLE_ID => lane_context[:PROFILE_UUID]
+      }
+    }
+  end
+end

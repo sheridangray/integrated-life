@@ -1,0 +1,79 @@
+name: iOS Deploy
+
+on:
+  push:
+    branches:
+      - staging   # → TestFlight
+      - main      # → App Store
+    paths:
+      - "client-mobile/**"
+      - ".github/workflows/ios-deploy.yml"
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: "Fastlane lane"
+        required: true
+        default: "beta"
+        type: choice
+        options:
+          - beta
+          - release
+
+jobs:
+  deploy:
+    name: Build & Deploy iOS
+    runs-on: macos-14   # Xcode 15 is pre-installed on macos-14
+
+    defaults:
+      run:
+        working-directory: client-mobile
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Ruby + Fastlane
+      # -----------------------------------------------------------------------
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          working-directory: client-mobile
+
+      # -----------------------------------------------------------------------
+      # Decode secrets written by CI into the client-mobile directory.
+      # Fastlane reads these files by name (distribution.p12, AppStore.mobileprovision).
+      # -----------------------------------------------------------------------
+      - name: Decode distribution certificate
+        run: echo "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}" | base64 --decode > distribution.p12
+
+      - name: Decode provisioning profile
+        run: echo "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode > AppStore.mobileprovision
+
+      # -----------------------------------------------------------------------
+      # Decide which lane to run
+      #   staging branch → beta  (TestFlight)
+      #   main branch    → release (App Store)
+      #   manual trigger → whatever the user selected
+      # -----------------------------------------------------------------------
+      - name: Resolve lane
+        id: lane
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "lane=${{ github.event.inputs.lane }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "lane=release" >> "$GITHUB_OUTPUT"
+          else
+            echo "lane=beta" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Fastlane
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+          IOS_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: bundle exec fastlane ${{ steps.lane.outputs.lane }}
