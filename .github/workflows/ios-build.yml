@@ -15,7 +15,7 @@ on:
           - IntegratedLife-Staging
 
 env:
-  WORKSPACE: client-mobile/IntegratedLife.xcworkspace
+  PROJECT: client-mobile/IntegratedLife.xcodeproj
   APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
   APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
   APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
@@ -114,7 +114,7 @@ jobs:
 
       - name: Resolve package dependencies
         working-directory: client-mobile
-        run: xcodebuild -resolvePackageDependencies -workspace IntegratedLife.xcworkspace -scheme $SCHEME
+        run: xcodebuild -resolvePackageDependencies -project IntegratedLife.xcodeproj -scheme $SCHEME
         env:
           SCIP_COMPOUND_DEFAULT_REALM: 'com.apple.dt.Xcode.embedding.content'
 
@@ -128,7 +128,7 @@ jobs:
         working-directory: client-mobile
         run: |
           xcodebuild \
-            -workspace IntegratedLife.xcworkspace \
+            -project IntegratedLife.xcodeproj \
             -scheme $SCHEME \
             -configuration $CONFIGURATION \
             -destination 'generic/platform=iOS' \
